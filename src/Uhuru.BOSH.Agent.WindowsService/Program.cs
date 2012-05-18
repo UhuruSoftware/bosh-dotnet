@@ -22,7 +22,7 @@ namespace Uhuru.BOSH.Agent.WindowsService
         /// </summary>
         internal static void Main()
         {
-            // sets the DEA priority higher.
+            //// sets the DEA priority higher.
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.AboveNormal;
 
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));

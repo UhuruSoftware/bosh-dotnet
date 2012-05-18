@@ -16,6 +16,15 @@
       <word>Plugins</word>
       <word>Renice</word>
       <word>Ulimit</word>
+      <word>Monit</word>
+      <word>Ntp</word>
+      <word>Ssh</word>
+      <word>Sshd</word>
+      <word>Util</word>
+      <word>Ubuntu</word>
+      <word>Unmount</word>
+      <word>unmount</word>
+      <word>Noop</word>
     </Recognized>
   </Words>
   <Acronyms>
@@ -29,6 +38,8 @@
       <Acronym>IIS</Acronym>
       <Acronym>SHA</Acronym>
       <Acronym>FDS</Acronym>
+      <Acronym>AWS</Acronym>
+      <Acronym>BOSH</Acronym>
     </CasingExceptions>
   </Acronyms>
 </Dictionary>
