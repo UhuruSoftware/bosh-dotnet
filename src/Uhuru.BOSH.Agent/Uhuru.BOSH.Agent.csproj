@@ -68,6 +68,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgentRunner.cs" />
+    <Compile Include="Errors\BoshException.cs" />
+    <Compile Include="Errors\FatalBoshException.cs" />
+    <Compile Include="Errors\HeartbeatException.cs" />
+    <Compile Include="Errors\LoadSettingsException.cs" />
+    <Compile Include="Errors\MessageHandlerException.cs" />
+    <Compile Include="Errors\RemoteException.cs" />
+    <Compile Include="Errors\StateException.cs" />
+    <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Infrastructures\AWSInfrastructure.cs" />
@@ -79,7 +87,6 @@
     <Compile Include="AlertProcessor.cs" />
     <Compile Include="Bootstrap.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="Errors.cs" />
     <Compile Include="FileAggregator.cs" />
     <Compile Include="FileMatcher.cs" />
     <Compile Include="Handler.cs" />
@@ -154,7 +161,7 @@
     <None Include="key.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\StyleCop.targets" />
+  <!--Import Project="$(SolutionDir)\StyleCop.targets" /-->
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
