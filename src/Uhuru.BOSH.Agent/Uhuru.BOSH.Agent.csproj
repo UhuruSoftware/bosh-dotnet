@@ -73,7 +73,6 @@
     <Compile Include="Errors\HeartbeatException.cs" />
     <Compile Include="Errors\LoadSettingsException.cs" />
     <Compile Include="Errors\MessageHandlerException.cs" />
-    <Compile Include="Errors\RemoteException.cs" />
     <Compile Include="Errors\StateException.cs" />
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
