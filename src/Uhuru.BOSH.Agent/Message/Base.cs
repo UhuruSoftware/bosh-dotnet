@@ -32,7 +32,6 @@ namespace Uhuru.BOSH.Agent.Message
             {
                 return Config.Settings;
             }
-            set;
         }
 
         public string StorePath
