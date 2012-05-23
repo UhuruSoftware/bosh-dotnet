@@ -55,5 +55,8 @@ namespace Uhuru.BOSH.Agent
         ////    [ "**/*.log" ]
         ////  end
         ////end
+        public string BaseDir { get; set; }
+
+        public IEnumerable<string> Globs { get; set; }
     }
 }

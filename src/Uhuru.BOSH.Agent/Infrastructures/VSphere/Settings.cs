@@ -22,6 +22,13 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////  @settings_file              = Bosh::Agent::Config.settings_file
     ////  @cdrom_settings_mount_point = File.join(base_dir, 'bosh', 'settings')
     ////end
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Settings"/> class.
+        /// </summary>
+        public Settings()
+        {
+            
+        }
 
     ////def load_settings
     ////  begin
@@ -35,6 +42,10 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////  end
     ////  Bosh::Agent::Config.settings = @settings
     ////end
+        private void LoadSettings()
+        {
+
+        }
 
     ////def load_cdrom_settings
     ////  check_cdrom
@@ -56,6 +67,11 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////  end
     ////end
 
+        private void LoadCDRomSettings()
+        {
+
+        }
+
     ////def check_cdrom
     ////  begin
     ////    File.read('/dev/cdrom', 0)
@@ -63,6 +79,10 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////    raise Bosh::Agent::LoadSettingsError, 'No bosh cdrom env'
     ////  end
     ////end
+        private void CheckCDRom()
+        {
+
+        }
 
     ////def create_cdrom_settings_mount_point
     ////  FileUtils.mkdir_p(@cdrom_settings_mount_point)
