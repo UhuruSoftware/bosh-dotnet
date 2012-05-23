@@ -6,43 +6,55 @@
 
 namespace Uhuru.BOSH.Agent.Message
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    using System.IO;
+    using Uhuru.BOSH.Agent.Errors;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class Base
     {
-      ////def logger
-      ////  Bosh::Agent::Config.logger
-      ////end
+        public string BaseDir { get; set; }
 
-      ////def base_dir
-      ////  Bosh::Agent::Config.base_dir
-      ////end
+        public string LogsDir
+        {
+            get
+            {
+                return Path.Combine(BaseDir, "sys", "log");
+            }
+        }
 
-      ////def logs_dir
-      ////  File.join(base_dir, "sys", "log")
-      ////end
+        public Dictionary<string, string> Settings
+        {
+            get
+            {
+                return Config.Settings;
+            }
+            set;
+        }
 
-      ////def settings
-      ////  Bosh::Agent::Config.settings
-      ////end
+        public string StorePath
+        {
+            get
+            {
+                return Path.Combine(BaseDir, "store");
+            }
+        }
 
-      ////def store_path
-      ////  File.join(base_dir, 'store')
-      ////end
+        public string StoreMigrationTarget
+        {
+            get
+            {
+                return Path.Combine(BaseDir, "store_migration_target");
+            }
+        }
 
-      ////def store_migration_target
-      ////  File.join(base_dir, 'store_migraton_target')
-      ////end
-
-      ////def handler_error(message)
-      ////  logger.error("Handler error: #{message}")
-      ////  raise Bosh::Agent::MessageHandlerError, message
-      ////end
+        public void ErrorHandler(string message)
+        {
+            Logger.Error(message);
+            throw new MessageHandlerException(message);
+        }
     }
 }

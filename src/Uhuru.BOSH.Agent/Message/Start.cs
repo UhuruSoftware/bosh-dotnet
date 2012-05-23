@@ -10,22 +10,27 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Uhuru.BOSH.Agent.Errors;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class Start
     {
-      ////def self.process(args)
-
-      ////  if Config.configure
-      ////    Bosh::Agent::Monit.start_services
-      ////  end
-
-      ////  "started"
-
-      ////rescue => e
-      ////  raise Bosh::Agent::MessageHandlerError, "Cannot start job: #{e}"
-      ////end
+        public static string Process(string[] args)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(Config.Configure))
+                {
+                    throw new NotImplementedException(); //TODO: florind Bosh::Agent::Monit.start_services
+                }
+                return "started";
+            }
+            catch (Exception e)
+            {
+                throw new MessageHandlerException(String.Format("Cannot start job: {0}", e.ToString()));
+            }
+        }
     }
 }
