@@ -58,6 +58,16 @@
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Unity, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Practices.Unity.Configuration, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Practices.Unity.Interception, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Practices.Unity.Interception.Configuration, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Newtonsoft.Json, Version=4.0.3.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -65,6 +75,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Uhuru.NatsClient, Version=0.9.0.0, Culture=neutral, PublicKeyToken=14594b8a48a91b15, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\Uhuru.NatsClient.dll</HintPath>
+    </Reference>
     <Reference Include="Uhuru.Utilities, Version=0.9.0.0, Culture=neutral, PublicKeyToken=14594b8a48a91b15, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Uhuru.Utilities.dll</HintPath>
     </Reference>
@@ -80,9 +93,11 @@
     <Compile Include="Errors\LoadSettingsException.cs" />
     <Compile Include="Errors\MessageHandlerException.cs" />
     <Compile Include="Errors\StateException.cs" />
+    <Compile Include="Errors\UnknownInfrastructure.cs" />
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Providers\IInfrastructure.cs" />
     <Compile Include="Infrastructures\AWSInfrastructure.cs" />
     <Compile Include="ApplyPlan\Job.cs" />
     <Compile Include="ApplyPlan\Package.cs" />
@@ -98,7 +113,6 @@
     <Compile Include="Heartbeat.cs" />
     <Compile Include="HeartbeatProcessor.cs" />
     <Compile Include="HttpHandler.cs" />
-    <Compile Include="Infrastructure.cs" />
     <Compile Include="Infrastructures\AWS\Registry.cs" />
     <Compile Include="Infrastructures\AWS\Settings.cs" />
     <Compile Include="Infrastructures\DummyInfrastructure.cs" />
@@ -114,6 +128,8 @@
     <Compile Include="Monit.cs" />
     <Compile Include="Network.cs" />
     <Compile Include="Ntp.cs" />
+    <Compile Include="Objects\AlertAttrib.cs" />
+    <Compile Include="Objects\AlertData.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Platforms\DummyPlatform.cs" />
     <Compile Include="Platforms\UbuntuPlatform.cs" />
@@ -126,6 +142,7 @@
     <Compile Include="SshdMonitor.cs" />
     <Compile Include="State.cs" />
     <Compile Include="Template.cs" />
+    <Compile Include="UnityProvider.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Message\Apply.cs" />
@@ -165,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="key.snk" />
+    <None Include="unity.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!--Import Project="$(SolutionDir)\StyleCop.targets" /-->

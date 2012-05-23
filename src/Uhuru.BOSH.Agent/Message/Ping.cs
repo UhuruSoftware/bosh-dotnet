@@ -16,8 +16,9 @@ namespace Uhuru.BOSH.Agent.Message
     /// </summary>
     public class Ping
     {
-      ////def self.process(args)
-      ////  "pong"
-      ////end
+        public static string Process(string[] args)
+        {
+            return "pong";
+        }
     }
 }

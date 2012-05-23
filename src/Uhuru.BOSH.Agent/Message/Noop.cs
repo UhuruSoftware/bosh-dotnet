@@ -17,8 +17,9 @@ namespace Uhuru.BOSH.Agent.Message
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Noop", Justification = "FxCop bug")]
     public class Noop
     {
-      ////def self.process(args)
-      ////  "nope"
-      ////end
+        public static string Process(string[] args)
+        {
+            return "nope";
+        }
     }
 }

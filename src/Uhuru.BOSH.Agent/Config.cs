@@ -10,9 +10,16 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+<<<<<<< HEAD
     using YamlDotNet.RepresentationModel;
     using Uhuru.Utilities;
     using System.IO;
+    using YamlDotNet.RepresentationModel;
+    using Uhuru.Utilities;
+    using System.IO;
+    using Uhuru.NatsClient;
+    using Uhuru.BOSH.Agent.Providers;
+    using Uhuru.BOSH.Agent.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -23,7 +30,6 @@ namespace Uhuru.BOSH.Agent
         const int DEFAULT_SSHD_MONITOR_INTERVAL = 30;
         const int DEFAULT_SSHD_START_DELAY = 30;
 
-        private static Infrastructure infrastructure = null;
         private static Platform platform = null;
 
         public static string BaseDir
@@ -86,7 +92,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static string Nats
+        public static Reactor Nats
         {
             get;
             set;
@@ -237,15 +243,24 @@ namespace Uhuru.BOSH.Agent
             Config.State = new State(Path.Combine(Config.BaseDir, "bosh", "state.yml"));
         }
 
-        public static Infrastructure Infrastructure
+        /// <summary>
+        /// Gets the current infrastructure.
+        /// </summary>
+        public static IInfrastructure Infrastructure
         {
             get
             {
-                if (Config.infrastructure == null)
+
+                try
                 {
-                    Config.infrastructure = new Infrastructure(Config.InfrastructureName).ProperInfrastructure;
+                    return UnityProvider.GetInstance.GetProvider<IInfrastructure>();
                 }
-                return Config.infrastructure;
+                catch (Exception ex)
+                {
+                    throw new UnknownInfrastructure(ex);
+                }
+
+                
             }
         }
 

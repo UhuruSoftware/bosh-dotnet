@@ -10,6 +10,7 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Collections.ObjectModel;
 
     /// <summary>
     /// TODO: Update summary.
@@ -22,6 +23,30 @@ namespace Uhuru.BOSH.Agent
         {
             // TODO: Complete member initialization
             this.p = p;
+        }
+
+        /// <summary>
+        /// Gets or sets the job.
+        /// </summary>
+        /// <value>
+        /// The job.
+        /// </value>
+        public string Job
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the ips.
+        /// </summary>
+        /// <value>
+        /// The ips.
+        /// </value>
+        public Collection<string> Ips
+        {
+            get;
+            set;
         }
     ////def initialize(state_file)
     ////  @state_file = state_file

@@ -4,19 +4,34 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Uhuru.BOSH.Agent.Infrastructures
+namespace Uhuru.BOSH.Agent.Infrastructures 
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Uhuru.BOSH.Agent.Providers;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class DummyInfrastructure
+    public class DummyInfrastructure : IInfrastructure
     {
-    ////def load_settings
-    ////end
+
+        /// <summary>
+        /// Loads the settings.
+        /// </summary>
+        public void LoadSettings()
+        {
+        }
+        /// <summary>
+        /// Gets the network settings.
+        /// </summary>
+        /// <param name="networkName">Name of the network.</param>
+        /// <param name="properties">The properties.</param>
+        public void GetNetworkSettings(string networkName, Dictionary<string, string> properties)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
