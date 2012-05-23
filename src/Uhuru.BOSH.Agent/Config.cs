@@ -14,6 +14,7 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.NatsClient;
     using Uhuru.Utilities;
     using YamlDotNet.RepresentationModel;
+    using Uhuru.BOSH.Agent.Objects;
 
     /// <summary>
     /// TODO: Update summary.
@@ -198,7 +199,7 @@ namespace Uhuru.BOSH.Agent
             YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
 
             Config.Configure = root.GetString("configure");
-
+            
             Config.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
             Config.AgentId = root.GetString("agent_id");
 
