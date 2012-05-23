@@ -21,6 +21,39 @@
             Gets or sets the varz message that will be served by the server.
             </summary>
         </member>
+        <member name="T:Uhuru.Utilities.SystemHosts">
+            <summary>
+            Utility for modifying the windows system hosts file.
+            </summary>
+        </member>
+        <member name="M:Uhuru.Utilities.SystemHosts.Add(System.String,System.String)">
+            <summary>
+            Adds the specified unique hostname.
+            </summary>
+            <param name="hostName">The hostname.</param>
+            <param name="ipAddress">The ip address.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.SystemHosts.TryRemove(System.String)">
+            <summary>
+            Tries the remove the specified host name.
+            </summary>
+            <param name="hostName">The hostname.</param>
+            <returns>True if removal was successful.</returns>
+        </member>
+        <member name="M:Uhuru.Utilities.SystemHosts.Exists(System.String)">
+            <summary>
+            Check is the host is present in etc\hosts.
+            </summary>
+            <param name="hostName">The hostname.</param>
+            <returns>
+            True if the host is present.
+            </returns>
+        </member>
+        <member name="P:Uhuru.Utilities.SystemHosts.HostsFilePath">
+            <summary>
+            Gets the hosts file path.
+            </summary>
+        </member>
         <member name="T:Uhuru.Utilities.ProcessUser">
             <summary>
             Windows User information about a Process.
@@ -860,6 +893,13 @@
             <param name="password">The password of the user to act as.</param>
             <param name="loadUserProfile">if set to <c>true</c> [load user profile].</param>
         </member>
+        <member name="M:Uhuru.Utilities.UserImpersonator.DeleteUserProfile(System.String,System.String)">
+            <summary>
+            Deletes the user profile.
+            </summary>
+            <param name="userName">Name of the user.</param>
+            <param name="password">The password.</param>
+        </member>
         <member name="M:Uhuru.Utilities.UserImpersonator.Dispose">
             <summary>
             Disposes the current object.
@@ -1454,13 +1494,33 @@
             This class contains helper functions for mounting a share as a local directory.
             </summary>
         </member>
-        <member name="M:Uhuru.Utilities.SambaWindowsClient.MountAndLink(System.String,System.String,System.String,System.String)">
+        <member name="M:Uhuru.Utilities.SambaWindowsClient.CreateFileSymbolicLink(System.String,System.String)">
+            <summary>
+            Creates the file symbolic link.
+            </summary>
+            <param name="sourceFileName">Name of the source file.</param>
+            <param name="targetFileName">Name of the target file.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.SambaWindowsClient.CreateDirectorySymbolicLink(System.String,System.String)">
+            <summary>
+            Creates the directory symbolic link.
+            </summary>
+            <param name="sourceDirectoryName">Name of the source directory.</param>
+            <param name="targetDirectoryName">Name of the target directory.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.SambaWindowsClient.Mount(System.String,System.String,System.String)">
             <summary>
             Mounts a remote share as a local directory.
             </summary>
             <param name="remotePath">The remote path.</param>
             <param name="remoteUser">A username used for authentication to the share.</param>
             <param name="remotePassword">A password used for authentication to the share.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.SambaWindowsClient.LinkDirectory(System.String,System.String)">
+            <summary>
+            Make a link.
+            </summary>
+            <param name="remotePath">The remote path.</param>
             <param name="localPath">The local path that will be the mount point.</param>
         </member>
         <member name="M:Uhuru.Utilities.SambaWindowsClient.Unmount(System.String)">
@@ -1482,6 +1542,17 @@
             <param name="instancePath">The directory considered to be the "root" of the resources that have to be persisted.</param>
             <param name="persistentItem">The directory or file that has to be persisted.</param>
             <param name="mountPath">The mounted directory that points to a share.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.SambaWindowsClient.CreateSymbolicLink(System.String,System.String,System.Int32)">
+            <summary>
+            Creates the symbolic link.
+            </summary>
+            <param name="symlinkFileName">Name of the symlink file.</param>
+            <param name="targetFileName">Name of the target file.</param>
+            <param name="flags">The flags. 0 for files and 1 for directories.</param>
+            <returns>
+            Returns 1 if successful.
+            </returns>
         </member>
         <member name="M:Uhuru.Utilities.SambaWindowsClient.ExecuteCommand(System.String)">
             <summary>
@@ -2998,6 +3069,47 @@
             </summary>
             <param name="member">The member (can be a field or a property).</param>
             <param name="value">The value.</param>
+        </member>
+        <member name="T:Uhuru.Utilities.FileArchive">
+            <summary>
+            TODO: Update summary.
+            </summary>
+        </member>
+        <member name="F:Uhuru.Utilities.FileArchive.zlibLock">
+            <summary>
+            The lock for SevenZipSharp initialization
+            </summary>
+        </member>
+        <member name="F:Uhuru.Utilities.FileArchive.zlibInitalized">
+            <summary>
+            Flag if the SevenZipShparp library as initialized.
+            </summary>
+        </member>
+        <member name="M:Uhuru.Utilities.FileArchive.ZipFile(System.String,System.String)">
+            <summary>
+            Compresses a file using the .zip format.
+            </summary>
+            <param name="sourceDir">The directory to compress.</param>
+            <param name="fileName">The name of the archive to be created.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.FileArchive.TarAndZipFile(System.String,System.String)">
+            <summary>
+            Tars and zips a directory.
+            </summary>
+            <param name="sourceDir">The directory to compress.</param>
+            <param name="fileName">The name of the archive to be created.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.FileArchive.UnzipFile(System.String,System.String)">
+            <summary>
+            Extracts data from a .zip archive.
+            </summary>
+            <param name="targetDir">The directory to put the extracted data in.</param>
+            <param name="zipFile">The file to extract data from.</param>
+        </member>
+        <member name="M:Uhuru.Utilities.FileArchive.SetupZlib">
+            <summary>
+            Setups the zlib library; gets the proper 32 or 64 bit library as a stream from a resource, and loads it.
+            </summary>
         </member>
     </members>
 </doc>

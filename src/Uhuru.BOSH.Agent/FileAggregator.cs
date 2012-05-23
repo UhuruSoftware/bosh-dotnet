@@ -10,80 +10,101 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+using System.IO;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class FileAggregator
     {
-    ////class Error < StandardError; end
-    ////class DirectoryNotFound < Error; end
-    ////class PackagingError < Error; end
+        public FileAggregator()
+        {
+          this.UsedDirs = new List<string>();
+        }
 
-    ////def initialize
-    ////  @used_dirs = []
-    ////end
+        // Generates a tarball including all the requested entries
+        // @return tarball path
+        public string GenerateTarball()
+        {
+            string tmpDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            try
+            {
+                // TODO: check if space left?
+                Directory.CreateDirectory(tmpDir);
 
-    ////# Generates a tarball including all the requested entries
-    ////# @return tarball path
-    ////def generate_tarball
-    ////  # TODO: check if space left?
-    ////  tmpdir = Dir.mktmpdir
-    ////  out_dir = Dir.mktmpdir
-    ////  @used_dirs << out_dir
+                string outDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(outDir);
 
-    ////  copy_files(tmpdir)
-    ////  tarball_path = File.join(out_dir, "files.tgz")
+                this.UsedDirs.Add(outDir);
 
-    ////  Dir.chdir(tmpdir) do
-    ////    tar_out = `tar -czf #{tarball_path} . 2>&1`
-    ////    raise PackagingError, "Cannot create tarball: #{tar_out}" unless $?.exitstatus == 0
-    ////  end
+                CopyFiles(tmpDir);
 
-    ////  tarball_path
-    ////ensure
-    ////  FileUtils.rm_rf(tmpdir) if tmpdir && File.directory?(tmpdir)
-    ////end
+                string tarballPath = Path.Combine(outDir, "files.tgz");
 
-    ////def cleanup
-    ////  @used_dirs.each do |dir|
-    ////    FileUtils.rm_rf(dir) if File.directory?(dir)
-    ////  end
-    ////end
+                Uhuru.Utilities.FileArchive.TarAndZipFile(tmpDir, tarballPath);
 
-    ////def copy_files(dst_directory)
-    ////  raise Error, "no matcher provided" unless @matcher
+                return tarballPath;
 
-    ////  unless File.directory?(@matcher.base_dir)
-    ////    raise DirectoryNotFound, "Base directory #{@matcher.base_dir} not found"
-    ////  end
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(tmpDir) && Directory.Exists(tmpDir))
+                {
+                    Directory.Delete(tmpDir, true);
+                }
+            }
+        }
 
-    ////  copied = 0
-    ////  base_dir = realpath(@matcher.base_dir)
+        public void cleanup()
+        {
+            foreach (string dir in this.UsedDirs)
+            {
+                if (Directory.Exists(dir))
+                {
+                    Directory.Delete(dir, true);
+                }
+            }
+         }
 
-    ////  Dir.chdir(base_dir) do
-    ////    @matcher.globs.each do |glob|
-    ////      Dir[glob].each do |file|
-    ////        path = File.expand_path(file)
+        public int CopyFiles(string dstDirectory)
+        {
+            if (this.Matcher == null)
+            {
+                throw new InvalidOperationException("no matcher provided");
+            }
 
-    ////        next unless File.file?(file)
-    ////        next unless path[0..base_dir.length-1] == base_dir
+            if (!Directory.Exists(this.Matcher.BaseDir))
+            {
+                throw new InvalidOperationException(string.Format("Base directory {0} not found", this.Matcher.BaseDir));
+            }
 
-    ////        dst_filename = File.join(dst_directory, path[base_dir.length..-1])
-    ////        FileUtils.mkdir_p(File.dirname(dst_filename))
-    ////        FileUtils.cp(realpath(path), dst_filename, :preserve => true)
-    ////        copied += 1
-    ////      end
-    ////    end
-    ////  end
+          int copied = 0;
 
-    ////  copied
-    ////end
+          string baseDir = Realpath(this.Matcher.BaseDir);
 
-    ////private
+          foreach (string glob in this.Matcher.Globs)
+          {
+            foreach (string file in Directory.GetFiles(glob))
+            {
+                string dstFilename = Path.Combine(dstDirectory, Path.GetFileName(file));
+                Directory.CreateDirectory(Path.GetDirectoryName(file));
 
-    ////def realpath(path)
-    ////  Pathname.new(path).realpath.to_s
-    ////end
+                File.Copy(file, dstFilename);
+
+                copied++;
+            }
+          }
+
+          return copied;
+        }
+
+        private string Realpath(string path)
+        {
+            return Path.GetFullPath(path);
+        }
+
+        public IList<string> UsedDirs { get; set; }
+
+        public FileMatcher Matcher { get; set; }
     }
 }

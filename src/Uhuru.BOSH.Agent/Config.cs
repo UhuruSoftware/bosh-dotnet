@@ -8,14 +8,12 @@ namespace Uhuru.BOSH.Agent
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-using YamlDotNet.RepresentationModel;
-using Uhuru.Utilities;
-using System.IO;
-    using Uhuru.NatsClient;
-    using Uhuru.BOSH.Agent.Providers;
+    using System.IO;
     using Uhuru.BOSH.Agent.Errors;
+    using Uhuru.BOSH.Agent.Providers;
+    using Uhuru.NatsClient;
+    using Uhuru.Utilities;
+    using YamlDotNet.RepresentationModel;
 
     /// <summary>
     /// TODO: Update summary.
@@ -198,45 +196,45 @@ using System.IO;
         public static void Setup(YamlStream config)
         {
             YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
-            
+
             Config.Configure = root.GetString("configure");
 
             Config.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
             Config.AgentId = root.GetString("agent_id");
 
-          Config.MessageBus = root.GetString("mbus");
+            Config.MessageBus = root.GetString("mbus");
 
-          Config.BlobstoreOptions  = root.GetString("blobstore_options");
-          Config.BlobstoreProvider = root.GetString("blobstore_provider");
+            Config.BlobstoreOptions = root.GetString("blobstore_options");
+            Config.BlobstoreProvider = root.GetString("blobstore_provider");
 
-          Config.InfrastructureName = root.GetString("infrastructure_name");
-          Config.PlatformName = root.GetString("platform_name");
+            Config.InfrastructureName = root.GetString("infrastructure_name");
+            Config.PlatformName = root.GetString("platform_name");
 
-          Config.SystemRoot = root.GetString("root_dir") ?? "/";
+            Config.SystemRoot = root.GetString("root_dir") ?? "/";
 
-          Config.ProcessAlerts = root.GetString("process_alerts");
-          Config.SmtpPort      = root.GetString("smtp_port");
-          Config.SmtpUser      = "vcap";
-          Config.SmtpPassword  = RandomPassword(8);
+            Config.ProcessAlerts = root.GetString("process_alerts");
+            Config.SmtpPort = root.GetString("smtp_port");
+            Config.SmtpUser = "vcap";
+            Config.SmtpPassword = RandomPassword(8);
 
-          Config.HeartbeatInterval = root.GetString("heartbeat_interval");
+            Config.HeartbeatInterval = root.GetString("heartbeat_interval");
 
-          Config.SshdMonitorInterval = root.GetInt("sshd_monitor_interval") ?? DEFAULT_SSHD_MONITOR_INTERVAL;
-          Config.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
-          Config.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
+            Config.SshdMonitorInterval = root.GetInt("sshd_monitor_interval") ?? DEFAULT_SSHD_MONITOR_INTERVAL;
+            Config.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
+            Config.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
 
             if (!string.IsNullOrEmpty(Config.Configure))
             {
                 Logger.Info(string.Format("Configuring Agent with: {0}", root.ToString()));
             }
 
-          Config.SettingsFile = Path.Combine(Config.BaseDir, "bosh", "settings.json");
+            Config.SettingsFile = Path.Combine(Config.BaseDir, "bosh", "settings.json");
 
-          Config.Credentials = root.GetString("credentials");
+            Config.Credentials = root.GetString("credentials");
 
-          Config.Settings = new Dictionary<string,string>();
+            Config.Settings = new Dictionary<string, string>();
 
-          Config.State = new State(Path.Combine(Config.BaseDir, "bosh", "state.yml"));
+            Config.State = new State(Path.Combine(Config.BaseDir, "bosh", "state.yml"));
         }
 
         /// <summary>
