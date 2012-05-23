@@ -16,8 +16,9 @@ namespace Uhuru.BOSH.Agent.Message
     /// </summary>
     public class PrepareNetworkChange
     {
-      ////def self.process(args)
-      ////  true
-      ////end
+        public static bool Process(string[] args)
+        {
+            return true;
+        }
     }
 }
