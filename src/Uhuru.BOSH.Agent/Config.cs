@@ -17,261 +17,261 @@ using System.IO;
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class Config
+    public static class Config
     {
         const string DEFAULT_BASE_DIR = "/var/vcap";
         const int DEFAULT_SSHD_MONITOR_INTERVAL = 30;
         const int DEFAULT_SSHD_START_DELAY = 30;
 
-        private Infrastructure infrastructure = null;
-        private Platform platform = null;
+        private static Infrastructure infrastructure = null;
+        private static Platform platform = null;
 
-        public string BaseDir
+        public static string BaseDir
         {
             get;
             set;
         }
 
-        public string MessageBus
+        public static string MessageBus
         {
             get;
             set;
         }
 
-        public string AgentId
+        public static string AgentId
         {
             get;
             set;
         }
 
-        public string Configure
+        public static string Configure
         {
             get;
             set;
         }
 
-        public string Blobstore
+        public static string Blobstore
         {
             get;
             set;
         }
 
-        public string BlobstoreProvider
+        public static string BlobstoreProvider
         {
             get;
             set;
         }
 
-        public string BlobstoreOptions
+        public static string BlobstoreOptions
         {
             get;
             set;
         }
 
-        public string SystemRoot
+        public static string SystemRoot
         {
             get;
             set;
         }
 
-        public string InfrastructureName
+        public static string InfrastructureName
         {
             get;
             set;
         }
 
-        public string PlatformName
+        public static string PlatformName
         {
             get;
             set;
         }
 
-        public string Nats
+        public static string Nats
         {
             get;
             set;
         }
 
-        public string ProcessAlerts
+        public static string ProcessAlerts
         {
             get;
             set;
         }
 
-        public string SmtpPort
+        public static string SmtpPort
         {
             get;
             set;
         }
 
-        public string SmtpUser
+        public static string SmtpUser
         {
             get;
             set;
         }
 
-        public string SmtpPassword
+        public static string SmtpPassword
         {
             get;
             set;
         }
 
-        public string HeartbeatInterval
+        public static string HeartbeatInterval
         {
             get;
             set;
         }
 
-        public string SettingsFile
+        public static string SettingsFile
         {
             get;
             set;
         }
 
-        public Dictionary<string, string> Settings
+        public static Dictionary<string, string> Settings
         {
             get;
             set;
         }
 
-        public State State
+        public static State State
         {
             get;
             set;
         }
 
-        public int SshdMonitorInterval
+        public static int SshdMonitorInterval
         {
             get;
             set;
         }
 
-        public int SshdStartDelay
+        public static int SshdStartDelay
         {
             get;
             set;
         }
 
-        public string SshdMonitorEnabled
+        public static string SshdMonitorEnabled
         {
             get;
             set;
         }
 
-        public string Credentials
+        public static string Credentials
         {
             get;
             set;
         }
 
 
-        public void Clear()
+        public static void Clear()
         {
-            this.BaseDir = null;
-            this.MessageBus = null;
-            this.AgentId = null;
-            this.Configure = null;
-            this.Blobstore = null;
-            this.BlobstoreProvider = null;
-            this.BlobstoreOptions = null;
-            this.SystemRoot = null;
-            this.InfrastructureName = null;
-            this.PlatformName = null;
-            this.Nats = null;
-            this.ProcessAlerts = null;
-            this.SmtpPort = null;
-            this.SmtpUser = null;
-            this.SmtpPassword = null;
-            this.HeartbeatInterval = null;
-            this.SettingsFile = null;
-            this.Settings = null;
-            this.State = null;
-            this.SshdMonitorInterval = 0;
-            this.SshdStartDelay = 0;
-            this.SshdMonitorEnabled = null;
-            this.Credentials = null;
+            Config.BaseDir = null;
+            Config.MessageBus = null;
+            Config.AgentId = null;
+            Config.Configure = null;
+            Config.Blobstore = null;
+            Config.BlobstoreProvider = null;
+            Config.BlobstoreOptions = null;
+            Config.SystemRoot = null;
+            Config.InfrastructureName = null;
+            Config.PlatformName = null;
+            Config.Nats = null;
+            Config.ProcessAlerts = null;
+            Config.SmtpPort = null;
+            Config.SmtpUser = null;
+            Config.SmtpPassword = null;
+            Config.HeartbeatInterval = null;
+            Config.SettingsFile = null;
+            Config.Settings = null;
+            Config.State = null;
+            Config.SshdMonitorInterval = 0;
+            Config.SshdStartDelay = 0;
+            Config.SshdMonitorEnabled = null;
+            Config.Credentials = null;
         }
 
 
-        public void setup(YamlStream config)
+        public static void Setup(YamlStream config)
         {
             YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
             
-            this.Configure = root.GetString("configure");
+            Config.Configure = root.GetString("configure");
 
-            this.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
-            this.AgentId = root.GetString("agent_id");
+            Config.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
+            Config.AgentId = root.GetString("agent_id");
 
-          this.MessageBus = root.GetString("mbus");
+          Config.MessageBus = root.GetString("mbus");
 
-          this.BlobstoreOptions  = root.GetString("blobstore_options");
-          this.BlobstoreProvider = root.GetString("blobstore_provider");
+          Config.BlobstoreOptions  = root.GetString("blobstore_options");
+          Config.BlobstoreProvider = root.GetString("blobstore_provider");
 
-          this.InfrastructureName = root.GetString("infrastructure_name");
-          this.PlatformName = root.GetString("platform_name");
+          Config.InfrastructureName = root.GetString("infrastructure_name");
+          Config.PlatformName = root.GetString("platform_name");
 
-          this.SystemRoot = root.GetString("root_dir") ?? "/";
+          Config.SystemRoot = root.GetString("root_dir") ?? "/";
 
-          this.ProcessAlerts = root.GetString("process_alerts");
-          this.SmtpPort      = root.GetString("smtp_port");
-          this.SmtpUser      = "vcap";
-          this.SmtpPassword  = RandomPassword(8);
+          Config.ProcessAlerts = root.GetString("process_alerts");
+          Config.SmtpPort      = root.GetString("smtp_port");
+          Config.SmtpUser      = "vcap";
+          Config.SmtpPassword  = RandomPassword(8);
 
-          this.HeartbeatInterval = root.GetString("heartbeat_interval");
+          Config.HeartbeatInterval = root.GetString("heartbeat_interval");
 
-          this.SshdMonitorInterval = root.GetInt("sshd_monitor_interval") ?? DEFAULT_SSHD_MONITOR_INTERVAL;
-          this.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
-          this.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
+          Config.SshdMonitorInterval = root.GetInt("sshd_monitor_interval") ?? DEFAULT_SSHD_MONITOR_INTERVAL;
+          Config.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
+          Config.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
 
-            if (!string.IsNullOrEmpty(this.Configure))
+            if (!string.IsNullOrEmpty(Config.Configure))
             {
                 Logger.Info(string.Format("Configuring Agent with: {0}", root.ToString()));
             }
 
-          this.SettingsFile = Path.Combine(this.BaseDir, "bosh", "settings.json");
+          Config.SettingsFile = Path.Combine(Config.BaseDir, "bosh", "settings.json");
 
-          this.Credentials = root.GetString("credentials");
+          Config.Credentials = root.GetString("credentials");
 
-          this.Settings = new Dictionary<string,string>();
+          Config.Settings = new Dictionary<string,string>();
 
-          this.State = new State(Path.Combine(this.BaseDir, "bosh", "state.yml"));
+          Config.State = new State(Path.Combine(Config.BaseDir, "bosh", "state.yml"));
         }
 
-        public Infrastructure Infrastructure
+        public static Infrastructure Infrastructure
         {
             get
             {
-                if (this.infrastructure == null)
+                if (Config.infrastructure == null)
                 {
-                    this.infrastructure = new Infrastructure(this.InfrastructureName).ProperInfrastructure;
+                    Config.infrastructure = new Infrastructure(Config.InfrastructureName).ProperInfrastructure;
                 }
-                return this.infrastructure;
+                return Config.infrastructure;
             }
         }
 
-        public Platform Platform
+        public static Platform Platform
         {
             get
             {
                 if (platform == null)
                 {
-                    platform = new Platform(this.PlatformName).ProperPlatform;
+                    platform = new Platform(Config.PlatformName).ProperPlatform;
                 }
                 return platform;
             }
         }
 
-        public string RandomPassword(int length)
+        public static string RandomPassword(int length)
         {
             return Uhuru.Utilities.Credentials.GenerateCredential(length);
         }
 
-        public string DefaultIp
+        public static string DefaultIp
         {
             get
             {
                 string ip = null;
-                foreach (Network network in this.State.Networks)
+                foreach (Network network in Config.State.Networks)
                 {
                     if (ip == null)
                     {
