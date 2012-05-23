@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uhuru.BOSH.Test", "Uhuru.BO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uhuru.BOSH.Encryption", "Uhuru.BOSH.Encryption\Uhuru.BOSH.Encryption.csproj", "{8AB11883-2E6B-4059-81A2-6C22619E1F2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlobstoreClient", "BlobstoreClient\BlobstoreClient.csproj", "{D90250E7-149D-422C-A116-B1D7AC75CEA3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uhuru.BOSH.BlobstoreClient", "Uhuru.BOSH.BlobstoreClient\Uhuru.BOSH.BlobstoreClient.csproj", "{D90250E7-149D-422C-A116-B1D7AC75CEA3}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution

@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="Client.cs" company="">
+// <copyright file="NotFoundException.cs" company="">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace BlobstoreClient.Clients
+namespace Uhuru.BOSH.BlobstoreClient.Errors
 {
     using System;
     using System.Collections.Generic;
@@ -14,17 +14,7 @@ namespace BlobstoreClient.Clients
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public interface Client
+    public class NotFoundException : BlolbstoreException
     {
-        //class Client
-        //  def create(contents)
-        //  end
-
-        //  def get(id, file = nil)
-        //  end
-
-        //  def delete(id)
-        //  end
-        //end
     }
 }

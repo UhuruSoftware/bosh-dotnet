@@ -10,28 +10,55 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class Bootstrap
     {
+        private Platform platform;
+        // private Infrastructure settings;
+
         ////    def initialize
         ////      FileUtils.mkdir_p(File.join(base_dir, 'bosh'))
         ////      @platform = Bosh::Agent::Config.platform
         ////    end
 
+        public Bootstrap()
+        {
+            Directory.CreateDirectory(Path.Combine(this.BaseDir, "bosh"));
+            this.platform = Config.Platform;
+        }
+
         ////    def logger
         ////      Bosh::Agent::Config.logger
         ////    end
 
-        ////    def base_dir
-        ////      Bosh::Agent::Config.base_dir
-        ////    end
+        object logger
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
 
-        ////    def store_path
-        ////      File.join(base_dir, 'store')
-        ////    end
+        string BaseDir
+        {
+            get
+            {
+                return Config.BaseDir;
+            }
+        }
+
+        string SotrePath
+        {
+            get
+            {
+                return Path.Combine(this.BaseDir, "store");
+            }
+        }
 
         ////    def configure
         ////      logger.info("Configuring instance")
@@ -61,10 +88,37 @@ namespace Uhuru.BOSH.Agent
         ////      { "settings" => @settings }
         ////    end
 
+        public Dictionary<string, object> Configure()
+        {
+            Logger.Info("Configure instance");
+
+            LoadSettings();
+            // Logger.Info("Loaded settings: {0}", this.settings.ToString());
+
+            //if (this.settings != null)
+            //{
+            //    UpdateIptables();
+            //    UpdatePasswords();
+            //    throw new NotImplementedException();
+            //}
+
+            var ret = new Dictionary<string, object>();
+            // ret["settings"] = this.settings;
+
+            return ret;
+        }
+
         ////    def load_settings
         ////      @settings = Bosh::Agent::Config.infrastructure.load_settings
         ////      Bosh::Agent::Config.settings = @settings
         ////    end
+
+        public void LoadSettings()
+        {
+            // this.settings = Config.Infrastructure
+            // Config.Settings = settings;
+            throw new NotImplementedException();
+        }
 
         ////    def iptables(cmd)
         ////      output = %x{iptables #{cmd} 2> /dev/null}
@@ -73,6 +127,12 @@ namespace Uhuru.BOSH.Agent
         ////      end
         ////      output
         ////    end
+
+        public void IpTables(string cmd)
+        {
+            // Consider using an alternative on windows, i.e. "ROUTE" command
+            throw new NotImplementedException();
+        }
 
         ////    def update_iptables
         ////      return unless rules = @settings['iptables']
@@ -98,13 +158,32 @@ namespace Uhuru.BOSH.Agent
         ////      end
         ////    end
 
+        public void UpdateIptables()
+        {
+            // rules = settings["iptables"];
+
+            throw new NotImplementedException();
+        }
+
+
         ////    def update_passwords
         ////      @platform.update_passwords(@settings) unless @settings["env"].nil?
         ////    end
 
+        public void UpdatePasswords()
+        {
+            throw new NotImplementedException();
+        }
+
         ////    def update_agent_id
         ////      Bosh::Agent::Config.agent_id = @settings["agent_id"]
         ////    end
+
+        public void UpdateAgentId()
+        {
+            // Config.AgentId = settings["agent_id"];
+            throw new NotImplementedException();
+        }
 
         ////    def update_credentials
         ////      env = @settings["env"]
@@ -114,6 +193,11 @@ namespace Uhuru.BOSH.Agent
         ////        end
         ////      end
         ////    end
+
+        public void UpdateCredentials()
+        {
+            throw new NotImplementedException();
+        }
 
         ////    def update_hostname
         ////      agent_id = @settings['agent_id']
@@ -245,6 +329,8 @@ namespace Uhuru.BOSH.Agent
         ////      %x[chmod 0770 /tmp]
         ////      %x[chmod 0700 /var/tmp]
         ////    end
+
+
 
         ////    def mount_persistent_disk
         ////      if @settings['disks']['persistent'].keys.size > 1

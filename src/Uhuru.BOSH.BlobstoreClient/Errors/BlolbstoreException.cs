@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace BlobstoreClient.Errors
+namespace Uhuru.BOSH.BlobstoreClient.Errors
 {
     using System;
     using System.Collections.Generic;
