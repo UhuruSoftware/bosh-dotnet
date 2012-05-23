@@ -24,6 +24,10 @@ using System.IO;
         const int DEFAULT_SSHD_MONITOR_INTERVAL = 30;
         const int DEFAULT_SSHD_START_DELAY = 30;
 
+        public const string BOSH_APP = "vcap";
+        public const string BOSH_APP_USER = "vcap";
+        public const string BOSH_APP_GROUP = "vcap";
+
         private static Infrastructure infrastructure = null;
         private static Platform platform = null;
 
