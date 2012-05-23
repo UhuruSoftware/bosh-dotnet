@@ -10,18 +10,29 @@ namespace Uhuru.BOSH.Agent.Infrastructures
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Uhuru.BOSH.Agent.Providers;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// VSphere Infrastructure
     /// </summary>
-    public class VSphereInfrastructure
+    public class VSphereInfrastructure : IInfrastructure
     {
-    ////def load_settings
-    ////  Settings.new.load_settings
-    ////end
+        /// <summary>
+        /// Loads the settings.
+        /// </summary>
+        public void LoadSettings()
+        {
+            throw new NotImplementedException();
+        }
 
-    ////def get_network_settings(network_name, properties)
-    ////  # Nothing to do
-    ////end
+        /// <summary>
+        /// Gets the network settings.
+        /// </summary>
+        /// <param name="networkName">Name of the network.</param>
+        /// <param name="properties">The properties.</param>
+        public void GetNetworkSettings(string networkName, Dictionary<string, string> properties)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

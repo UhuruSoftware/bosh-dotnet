@@ -14,6 +14,8 @@ using YamlDotNet.RepresentationModel;
 using Uhuru.Utilities;
 using System.IO;
     using Uhuru.NatsClient;
+    using Uhuru.BOSH.Agent.Providers;
+    using Uhuru.BOSH.Agent.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -24,7 +26,6 @@ using System.IO;
         const int DEFAULT_SSHD_MONITOR_INTERVAL = 30;
         const int DEFAULT_SSHD_START_DELAY = 30;
 
-        private static Infrastructure infrastructure = null;
         private static Platform platform = null;
 
         public static string BaseDir
@@ -238,15 +239,24 @@ using System.IO;
           Config.State = new State(Path.Combine(Config.BaseDir, "bosh", "state.yml"));
         }
 
-        public static Infrastructure Infrastructure
+        /// <summary>
+        /// Gets the current infrastructure.
+        /// </summary>
+        public static IInfrastructure Infrastructure
         {
             get
             {
-                if (Config.infrastructure == null)
+
+                try
                 {
-                    Config.infrastructure = new Infrastructure(Config.InfrastructureName).ProperInfrastructure;
+                    return UnityProvider.GetInstance.GetProvider<IInfrastructure>();
                 }
-                return Config.infrastructure;
+                catch (Exception ex)
+                {
+                    throw new UnknownInfrastructure(ex);
+                }
+
+                
             }
         }
 

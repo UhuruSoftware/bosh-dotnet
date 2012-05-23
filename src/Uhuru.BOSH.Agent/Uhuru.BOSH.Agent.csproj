@@ -61,6 +61,10 @@
     <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\..\lib\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Practices.Unity, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Practices.Unity.Configuration, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Practices.Unity.Interception, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Practices.Unity.Interception.Configuration, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=4.0.3.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -89,9 +93,11 @@
     <Compile Include="Errors\LoadSettingsException.cs" />
     <Compile Include="Errors\MessageHandlerException.cs" />
     <Compile Include="Errors\StateException.cs" />
+    <Compile Include="Errors\UnknownInfrastructure.cs" />
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Providers\IInfrastructure.cs" />
     <Compile Include="Infrastructures\AWSInfrastructure.cs" />
     <Compile Include="ApplyPlan\Job.cs" />
     <Compile Include="ApplyPlan\Package.cs" />
@@ -107,7 +113,6 @@
     <Compile Include="Heartbeat.cs" />
     <Compile Include="HeartbeatProcessor.cs" />
     <Compile Include="HttpHandler.cs" />
-    <Compile Include="Infrastructure.cs" />
     <Compile Include="Infrastructures\AWS\Registry.cs" />
     <Compile Include="Infrastructures\AWS\Settings.cs" />
     <Compile Include="Infrastructures\DummyInfrastructure.cs" />
@@ -137,6 +142,7 @@
     <Compile Include="SshdMonitor.cs" />
     <Compile Include="State.cs" />
     <Compile Include="Template.cs" />
+    <Compile Include="UnityProvider.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Message\Apply.cs" />
@@ -176,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="key.snk" />
+    <None Include="unity.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!--Import Project="$(SolutionDir)\StyleCop.targets" /-->
