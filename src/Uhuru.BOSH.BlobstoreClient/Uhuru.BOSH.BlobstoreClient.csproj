@@ -8,8 +8,8 @@
     <ProjectGuid>{D90250E7-149D-422C-A116-B1D7AC75CEA3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BlobstoreClient</RootNamespace>
-    <AssemblyName>BlobstoreClient</AssemblyName>
+    <RootNamespace>Uhuru.BOSH.BlobstoreClient</RootNamespace>
+    <AssemblyName>Uhuru.BOSH.BlobstoreClient</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace BlobstoreClient
+namespace Uhuru.BOSH.BlobstoreClient
 {
     using System;
     using System.Collections.Generic;
