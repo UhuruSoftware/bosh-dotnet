@@ -8,18 +8,12 @@ namespace Uhuru.BOSH.Agent
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-<<<<<<< HEAD
-    using YamlDotNet.RepresentationModel;
-    using Uhuru.Utilities;
     using System.IO;
-    using YamlDotNet.RepresentationModel;
-    using Uhuru.Utilities;
-    using System.IO;
-    using Uhuru.NatsClient;
-    using Uhuru.BOSH.Agent.Providers;
     using Uhuru.BOSH.Agent.Errors;
+    using Uhuru.BOSH.Agent.Providers;
+    using Uhuru.NatsClient;
+    using Uhuru.Utilities;
+    using YamlDotNet.RepresentationModel;
 
     /// <summary>
     /// TODO: Update summary.
