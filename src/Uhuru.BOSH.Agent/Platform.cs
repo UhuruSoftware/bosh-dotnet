@@ -16,6 +16,13 @@ namespace Uhuru.BOSH.Agent
     /// </summary>
     public class Platform
     {
+        private string p;
+
+        public Platform(string p)
+        {
+            // TODO: Complete member initialization
+            this.p = p;
+        }
     ////def initialize(platform_name)
     ////  @name = platform_name
     ////  # TODO: add to loadpath?
@@ -31,5 +38,16 @@ namespace Uhuru.BOSH.Agent
     ////def platform
     ////  Platform.const_get(@name.capitalize).new
     ////end
+
+        public Platform ProperPlatform
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+            }
+        }
     }
 }

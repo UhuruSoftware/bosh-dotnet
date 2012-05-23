@@ -16,6 +16,13 @@ namespace Uhuru.BOSH.Agent
     /// </summary>
     public class State
     {
+        private string p;
+
+        public State(string p)
+        {
+            // TODO: Complete member initialization
+            this.p = p;
+        }
     ////def initialize(state_file)
     ////  @state_file = state_file
     ////  @lock = Mutex.new
@@ -102,5 +109,7 @@ namespace Uhuru.BOSH.Agent
     ////def raise_format_error(state)
     ////  raise StateError, "Unexpected agent state format: expected Hash, got #{state.class}"
     ////end
+
+        public IEnumerable<Network> Networks { get; set; }
     }
 }

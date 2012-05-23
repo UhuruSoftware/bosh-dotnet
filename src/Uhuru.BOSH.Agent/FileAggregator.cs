@@ -20,8 +20,6 @@ namespace Uhuru.BOSH.Agent
     ////class DirectoryNotFound < Error; end
     ////class PackagingError < Error; end
 
-    ////attr_accessor :matcher
-
     ////def initialize
     ////  @used_dirs = []
     ////end
