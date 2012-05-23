@@ -10,9 +10,8 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-using Uhuru.BOSH.Agent.Objects;
+    using Uhuru.BOSH.Agent.Objects;
     using Uhuru.Utilities;
-    using System.Threading;
     using System.Globalization;
 
     /// <summary>
@@ -69,8 +68,7 @@ using Uhuru.BOSH.Agent.Objects;
 
             for (int i = 0; i < ALERT_RETRIES; i++)
             {
-                Thread.Sleep(i * RETRY_PERIOD);
-                SendViaMBus();
+                Utilities.TimerHelper.DelayedCall(i * RETRY_PERIOD, new Utilities.TimerCallback(SendViaMBus));
             }
         }
 
