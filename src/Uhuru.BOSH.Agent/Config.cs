@@ -10,122 +10,281 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+using YamlDotNet.RepresentationModel;
+using Uhuru.Utilities;
+using System.IO;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class Config
     {
-      ////DEFAULT_BASE_DIR = "/var/vcap"
-      ////DEFAULT_SSHD_MONITOR_INTERVAL = 30
-      ////DEFAULT_SSHD_START_DELAY = 30
+        const string DEFAULT_BASE_DIR = "/var/vcap";
+        const int DEFAULT_SSHD_MONITOR_INTERVAL = 30;
+        const int DEFAULT_SSHD_START_DELAY = 30;
 
-      ////CONFIG_OPTIONS = [
-      ////  :base_dir,
-      ////  :logger,
-      ////  :mbus,
-      ////  :agent_id,
-      ////  :configure,
-      ////  :blobstore,
-      ////  :blobstore_provider,
-      ////  :blobstore_options,
-      ////  :system_root,
-      ////  :infrastructure_name,
-      ////  :platform_name,
-      ////  :nats,
-      ////  :process_alerts,
-      ////  :smtp_port,
-      ////  :smtp_user,
-      ////  :smtp_password,
-      ////  :heartbeat_interval,
-      ////  :settings_file,
-      ////  :settings,
-      ////  :state,
-      ////  :sshd_monitor_interval,
-      ////  :sshd_start_delay,
-      ////  :sshd_monitor_enabled,
-      ////  :credentials
-      ////]
+        private Infrastructure infrastructure = null;
+        private Platform platform = null;
 
-      ////CONFIG_OPTIONS.each do |option|
-      ////  attr_accessor option
-      ////end
+        public string BaseDir
+        {
+            get;
+            set;
+        }
 
-      ////def clear
-      ////  CONFIG_OPTIONS.each do |option|
-      ////    send("#{option}=", nil)
-      ////  end
-      ////end
+        public string MessageBus
+        {
+            get;
+            set;
+        }
 
-      ////def setup(config)
-      ////  @configure = config["configure"]
+        public string AgentId
+        {
+            get;
+            set;
+        }
 
-      ////  # it is the responsibillity of the caller to make sure the dir exist
-      ////  unless log_dest = config["logging"]["file"]
-      ////    log_dest = STDOUT
-      ////  end
+        public string Configure
+        {
+            get;
+            set;
+        }
 
-      ////  @logger       = Logger.new(log_dest)
-      ////  @logger.level = Logger.const_get(config["logging"]["level"].upcase)
+        public string Blobstore
+        {
+            get;
+            set;
+        }
 
-      ////  @base_dir = config["base_dir"] || DEFAULT_BASE_DIR
-      ////  @agent_id = config["agent_id"]
+        public string BlobstoreProvider
+        {
+            get;
+            set;
+        }
 
-      ////  @mbus = config['mbus']
+        public string BlobstoreOptions
+        {
+            get;
+            set;
+        }
 
-      ////  @blobstore_options  = config["blobstore_options"]
-      ////  @blobstore_provider = config["blobstore_provider"]
+        public string SystemRoot
+        {
+            get;
+            set;
+        }
 
-      ////  @infrastructure_name = config['infrastructure_name']
-      ////  @platform_name = config['platform_name']
+        public string InfrastructureName
+        {
+            get;
+            set;
+        }
 
-      ////  @system_root = config['root_dir'] || "/"
+        public string PlatformName
+        {
+            get;
+            set;
+        }
 
-      ////  @process_alerts = config["process_alerts"]
-      ////  @smtp_port      = config["smtp_port"]
-      ////  @smtp_user      = "vcap"
-      ////  @smtp_password  = random_password(8)
+        public string Nats
+        {
+            get;
+            set;
+        }
 
-      ////  @heartbeat_interval = config["heartbeat_interval"]
+        public string ProcessAlerts
+        {
+            get;
+            set;
+        }
 
-      ////  @sshd_monitor_interval = config["sshd_monitor_interval"] || DEFAULT_SSHD_MONITOR_INTERVAL
-      ////  @sshd_start_delay = config["sshd_start_delay"] || DEFAULT_SSHD_START_DELAY
-      ////  @sshd_monitor_enabled = config["sshd_monitor_enabled"]
+        public string SmtpPort
+        {
+            get;
+            set;
+        }
 
-      ////  unless @configure
-      ////    @logger.info("Configuring Agent with: #{config.inspect}")
-      ////  end
+        public string SmtpUser
+        {
+            get;
+            set;
+        }
 
-      ////  @settings_file = File.join(@base_dir, 'bosh', 'settings.json')
+        public string SmtpPassword
+        {
+            get;
+            set;
+        }
 
-      ////  @credentials = config["credentials"]
+        public string HeartbeatInterval
+        {
+            get;
+            set;
+        }
 
-      ////  @settings = {}
+        public string SettingsFile
+        {
+            get;
+            set;
+        }
 
-      ////  @state = State.new(File.join(@base_dir, "bosh", "state.yml"))
-      ////end
+        public Dictionary<string, string> Settings
+        {
+            get;
+            set;
+        }
 
-      ////def infrastructure
-      ////  @infrastructure ||= Bosh::Agent::Infrastructure.new(@infrastructure_name).infrastructure
-      ////end
+        public State State
+        {
+            get;
+            set;
+        }
 
-      ////def platform
-      ////  @platform ||= Bosh::Agent::Platform.new(@platform_name).platform
-      ////end
+        public int SshdMonitorInterval
+        {
+            get;
+            set;
+        }
 
-      ////def random_password(len)
-      ////  OpenSSL::Random.random_bytes(len).unpack("H*")[0]
-      ////end
+        public int SshdStartDelay
+        {
+            get;
+            set;
+        }
 
-      ////def default_ip
-      ////  ip = nil
-      ////  @state["networks"].each do |k, v|
-      ////    ip = v["ip"] if ip.nil?
-      ////    if v.key?('default')
-      ////      ip = v["ip"]
-      ////    end
-      ////  end
-      ////  ip
-      ////end
+        public string SshdMonitorEnabled
+        {
+            get;
+            set;
+        }
+
+        public string Credentials
+        {
+            get;
+            set;
+        }
+
+
+        public void Clear()
+        {
+            this.BaseDir = null;
+            this.MessageBus = null;
+            this.AgentId = null;
+            this.Configure = null;
+            this.Blobstore = null;
+            this.BlobstoreProvider = null;
+            this.BlobstoreOptions = null;
+            this.SystemRoot = null;
+            this.InfrastructureName = null;
+            this.PlatformName = null;
+            this.Nats = null;
+            this.ProcessAlerts = null;
+            this.SmtpPort = null;
+            this.SmtpUser = null;
+            this.SmtpPassword = null;
+            this.HeartbeatInterval = null;
+            this.SettingsFile = null;
+            this.Settings = null;
+            this.State = null;
+            this.SshdMonitorInterval = 0;
+            this.SshdStartDelay = 0;
+            this.SshdMonitorEnabled = null;
+            this.Credentials = null;
+        }
+
+
+        public void setup(YamlStream config)
+        {
+            YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
+            
+            this.Configure = root.GetString("configure");
+
+            this.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
+            this.AgentId = root.GetString("agent_id");
+
+          this.MessageBus = root.GetString("mbus");
+
+          this.BlobstoreOptions  = root.GetString("blobstore_options");
+          this.BlobstoreProvider = root.GetString("blobstore_provider");
+
+          this.InfrastructureName = root.GetString("infrastructure_name");
+          this.PlatformName = root.GetString("platform_name");
+
+          this.SystemRoot = root.GetString("root_dir") ?? "/";
+
+          this.ProcessAlerts = root.GetString("process_alerts");
+          this.SmtpPort      = root.GetString("smtp_port");
+          this.SmtpUser      = "vcap";
+          this.SmtpPassword  = RandomPassword(8);
+
+          this.HeartbeatInterval = root.GetString("heartbeat_interval");
+
+          this.SshdMonitorInterval = root.GetInt("sshd_monitor_interval") ?? DEFAULT_SSHD_MONITOR_INTERVAL;
+          this.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
+          this.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
+
+            if (!string.IsNullOrEmpty(this.Configure))
+            {
+                Logger.Info(string.Format("Configuring Agent with: {0}", root.ToString()));
+            }
+
+          this.SettingsFile = Path.Combine(this.BaseDir, "bosh", "settings.json");
+
+          this.Credentials = root.GetString("credentials");
+
+          this.Settings = new Dictionary<string,string>();
+
+          this.State = new State(Path.Combine(this.BaseDir, "bosh", "state.yml"));
+        }
+
+        public Infrastructure Infrastructure
+        {
+            get
+            {
+                if (this.infrastructure == null)
+                {
+                    this.infrastructure = new Infrastructure(this.InfrastructureName).ProperInfrastructure;
+                }
+                return this.infrastructure;
+            }
+        }
+
+        public Platform Platform
+        {
+            get
+            {
+                if (platform == null)
+                {
+                    platform = new Platform(this.PlatformName).ProperPlatform;
+                }
+                return platform;
+            }
+        }
+
+        public string RandomPassword(int length)
+        {
+            return Uhuru.Utilities.Credentials.GenerateCredential(length);
+        }
+
+        public string DefaultIp
+        {
+            get
+            {
+                string ip = null;
+                foreach (Network network in this.State.Networks)
+                {
+                    if (ip == null)
+                    {
+                        ip = network.Ip;
+                    }
+
+                    if (network.Name == "default")
+                    {
+                        ip = network.Ip;
+                    }
+                }
+                return ip;
+            }
+        }
     }
 }
