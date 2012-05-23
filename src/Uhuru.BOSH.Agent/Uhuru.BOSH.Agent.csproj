@@ -58,6 +58,12 @@
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.0.3.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -65,6 +71,12 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Uhuru.NatsClient">
+      <HintPath>..\..\lib\Uhuru.NatsClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Uhuru.Utilities, Version=0.9.0.0, Culture=neutral, PublicKeyToken=14594b8a48a91b15, processorArchitecture=MSIL">
+      <HintPath>..\..\lib\Uhuru.Utilities.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgentRunner.cs" />
@@ -107,6 +119,8 @@
     <Compile Include="Message\Stop.cs" />
     <Compile Include="Monit.cs" />
     <Compile Include="Ntp.cs" />
+    <Compile Include="Objects\AlertAttrib.cs" />
+    <Compile Include="Objects\AlertData.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="Platforms\DummyPlatform.cs" />
     <Compile Include="Platforms\UbuntuPlatform.cs" />
