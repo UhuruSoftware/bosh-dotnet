@@ -13,6 +13,7 @@ namespace Uhuru.BOSH.Agent
 using YamlDotNet.RepresentationModel;
 using Uhuru.Utilities;
 using System.IO;
+    using Uhuru.NatsClient;
 
     /// <summary>
     /// TODO: Update summary.
@@ -86,7 +87,7 @@ using System.IO;
             set;
         }
 
-        public static string Nats
+        public static Reactor Nats
         {
             get;
             set;
