@@ -29,7 +29,7 @@ namespace Uhuru.BOSH.Agent
         public const string BOSH_APP_USER = "vcap";
         public const string BOSH_APP_GROUP = "vcap";
 
-        private static Platform platform = null;
+        private static IPlatform platform = null;
 
         public static string BaseDir
         {
@@ -263,13 +263,13 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        public static Platform Platform
+        public static IPlatform Platform
         {
             get
             {
                 if (platform == null)
                 {
-                    platform = new Platform(Config.PlatformName).ProperPlatform;
+                    platform = UnityProvider.GetInstance.GetProvider<IPlatform>();
                 }
                 return platform;
             }

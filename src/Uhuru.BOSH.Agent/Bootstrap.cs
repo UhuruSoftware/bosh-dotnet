@@ -14,13 +14,14 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.Utilities;
     using System.Diagnostics;
     using System.Management;
+    using Uhuru.BOSH.Agent.Providers;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class Bootstrap
     {
-        private Platform platform;
+        private IPlatform platform;
         // private Infrastructure settings;
         private Dictionary<string, string> settings;
 
