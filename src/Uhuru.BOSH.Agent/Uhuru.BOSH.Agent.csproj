@@ -108,6 +108,7 @@
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Objects\Job.cs" />
+    <Compile Include="Platforms\WindowsPlatform.cs" />
     <Compile Include="Providers\IInfrastructure.cs" />
     <Compile Include="Infrastructures\AWSInfrastructure.cs" />
     <Compile Include="ApplyPlan\Job.cs" />
@@ -141,13 +142,8 @@
     <Compile Include="Ntp.cs" />
     <Compile Include="Objects\AlertAttrib.cs" />
     <Compile Include="Objects\AlertData.cs" />
-    <Compile Include="Platform.cs" />
     <Compile Include="Platforms\DummyPlatform.cs" />
-    <Compile Include="Platforms\UbuntuPlatform.cs" />
-    <Compile Include="Platforms\Ubuntu\Disk.cs" />
-    <Compile Include="Platforms\Ubuntu\LogRotate.cs" />
-    <Compile Include="Platforms\Ubuntu\Network.cs" />
-    <Compile Include="Platforms\Ubuntu\Password.cs" />
+    <Compile Include="Providers\IPlatform.cs" />
     <Compile Include="RemoteException.cs" />
     <Compile Include="SmtpServer.cs" />
     <Compile Include="SshdMonitor.cs" />
@@ -189,11 +185,17 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Platforms\Dummy\Templates\" />
-    <Folder Include="Platforms\Ubuntu\Templates\" />
+    <Folder Include="Platforms\Windows\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="key.snk" />
     <None Include="unity.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Uhuru.BOSH.BlobstoreClient\Uhuru.BOSH.BlobstoreClient.csproj">
+      <Project>{D90250E7-149D-422C-A116-B1D7AC75CEA3}</Project>
+      <Name>Uhuru.BOSH.BlobstoreClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!--Import Project="$(SolutionDir)\StyleCop.targets" /-->
