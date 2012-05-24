@@ -10,6 +10,8 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
+    using Uhuru.BOSH.Agent.ApplyPlan.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -20,12 +22,35 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////attr_reader :link_path
       ////attr_reader :template
 
+        public string InstallPath
+        {
+            get
+            {
+                return installPath;
+            }
+        }
+
+        public string LinkPath
+        {
+            get
+            {
+                return linkPath;
+            }
+        }
+
+        public string Template
+        {
+            get
+            {
+                return template;
+            }
+        }
+
       ////def initialize(spec, config_binding = nil)
       ////  unless spec.is_a?(Hash)
       ////    raise ArgumentError, "Invalid job spec, " +
       ////                         "Hash expected, #{spec.class} given"
       ////  end
-
       ////  %w(name template version sha1 blobstore_id).each do |key|
       ////    if spec[key].nil?
       ////      raise ArgumentError, "Invalid spec, #{key} is missing"
@@ -45,6 +70,41 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  @link_path = File.join(@base_dir, "jobs", @template)
       ////end
 
+        private string baseDir;
+        private string name;
+        private string template;
+        private string installPath;
+        private string linkPath;
+        private string version;
+        private string checksum;
+        private string blobstoreId;
+        private dynamic configBinding;
+
+        public Job(dynamic spec, object configBiding = null)
+        {
+            // TODO: check to se if any king of IDicrionty
+            // if (spec is IDictionary<,>)
+
+            var required = new string[] { "name", "template", "version", "sha1", "blobstore_id" };
+            foreach(var requiredKey in required)
+            {
+                if (!spec.ContainsKey("requiredKey"))
+                {
+                    throw new ArgumentException(String.Format("Invalid spec. {0} is missing", requiredKey));
+                }
+            }
+
+            baseDir = Config.BaseDir;
+            name = spec["name"];
+            template = spec["template"];
+            version = spec["version"];
+            checksum = spec["checksum"];
+            blobstoreId = spec["blobstore_id"];
+            configBinding = spec["config_binding"];
+            installPath = Path.Combine(baseDir, "data", "jobs", template, version);
+            linkPath = Path.Combine(baseDir, "jobs", template);
+        }
+
       ////def install
       ////  fetch_template
       ////  bind_configuration
@@ -53,12 +113,40 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  install_failed("system call error: #{e.message}")
       ////end
 
+        public void Install()
+        {
+            try
+            {
+                FetchTemplate();
+                BindConfiguration();
+                HardenPermissions();
+            }
+            catch (Exception e)
+            {
+                throw new InstallationException("Apply job install error.", e);
+            }
+        }
+
+
       ////def configure
       ////  run_post_install_hook
       ////  configure_monit
       ////rescue SystemCallError => e
       ////  config_failed("system call error: #{e.message}")
       ////end
+
+        public void Configure()
+        {
+            try
+            {
+                RunPostInstallHook();
+                ConfigureMonit();
+            }
+            catch (Exception e)
+            {
+                throw new ConfigurationException("Apply job configuration error.", e);
+            }
+        }
 
       ////private
 
@@ -69,6 +157,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  Bosh::Agent::Util.unpack_blob(@blobstore_id, @checksum, @install_path)
       ////  Bosh::Agent::Util.create_symlink(@install_path, @link_path)
       ////end
+
+        private void FetchTemplate()
+        {
+            throw new NotImplementedException();
+        }
 
       ////def bind_configuration
       ////  if @config_binding.nil?
@@ -132,6 +225,13 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  end
       ////end
 
+        private void BindConfiguration()
+        {
+            // TODO: determine if ERB templateing engine is a requirement.
+            // if not, chose an appropriate one for C#/.NET
+            throw new NotImplementedException();
+        }
+
       ////def harden_permissions
       ////  return unless Bosh::Agent::Config.configure
 
@@ -150,10 +250,22 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  end
       ////end
 
+        private void HardenPermissions()
+        {
+            // TODO: first determine the security level the bosh agent is running on 
+            throw new NotImplementedException();
+        }
+
       ////# TODO: move from util here? (not being used anywhere else)
       ////def run_post_install_hook
       ////  Bosh::Agent::Util.run_hook("post_install", @template)
       ////end
+
+        private void RunPostInstallHook()
+        {
+            // TODO: maybe this is just a Process start helper function
+            throw new NotImplementedException();
+        }
 
       ////def configure_monit
       ////  Dir.foreach(@install_path).each do |file|
@@ -166,6 +278,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////    end
       ////  end
       ////end
+
+        public void ConfigureMonit()
+        {
+            throw new NotSupportedException("Monit specific");
+        }
 
       ////def install_job_monitrc(template_path, label)
       ////  if @config_binding.nil?
@@ -196,6 +313,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  FileUtils.mkdir_p(File.dirname(link_path))
       ////  Bosh::Agent::Util.create_symlink(out_file, link_path)
       ////end
+
+        private void InstallJobMonitrc()
+        {
+            throw new NotSupportedException("Monit specific");
+        }
 
       ////# HACK
       ////# Force manual mode on all services which don't have mode already set.
@@ -232,6 +354,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
       ////  result.strip
       ////end
+
+        private void AddMods()
+        {
+            throw new NotSupportedException("Monit specific");
+        }
 
       ////def install_failed(message)
       ////  raise InstallationError, "Failed to install job '#{@name}': #{message}"
