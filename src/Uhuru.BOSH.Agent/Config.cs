@@ -15,6 +15,7 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.Utilities;
     using YamlDotNet.RepresentationModel;
     using Uhuru.BOSH.Agent.Objects;
+    using System.Collections.ObjectModel;
 
     /// <summary>
     /// TODO: Update summary.
@@ -67,7 +68,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static string BlobstoreOptions
+        public static Collection<string> BlobstoreOptions
         {
             get;
             set;
@@ -209,7 +210,7 @@ namespace Uhuru.BOSH.Agent
 
             Config.MessageBus = root.GetString("mbus");
 
-            Config.BlobstoreOptions = root.GetString("blobstore_options");
+            Config.BlobstoreOptions = new Collection<string>(){root.GetString("blobstore_options")};
             Config.BlobstoreProvider = root.GetString("blobstore_provider");
 
             Config.InfrastructureName = root.GetString("infrastructure_name");

@@ -91,6 +91,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="Unit\EncryptionHandlerTest.cs" />
+    <Compile Include="Unit\RemoteExceptionTest.cs" />
     <Compile Include="Unit\StateTest.cs" />
   </ItemGroup>
   <ItemGroup>
