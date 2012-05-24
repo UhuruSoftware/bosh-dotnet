@@ -191,6 +191,12 @@
     <None Include="key.snk" />
     <None Include="unity.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Uhuru.BOSH.BlobstoreClient\Uhuru.BOSH.BlobstoreClient.csproj">
+      <Project>{D90250E7-149D-422C-A116-B1D7AC75CEA3}</Project>
+      <Name>Uhuru.BOSH.BlobstoreClient</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!--Import Project="$(SolutionDir)\StyleCop.targets" /-->
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -65,7 +65,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
       //  end
       //end
 
-        public void Create(object contents)
+        public string Create(object contents)
         {
             throw new NotImplementedException();
         }

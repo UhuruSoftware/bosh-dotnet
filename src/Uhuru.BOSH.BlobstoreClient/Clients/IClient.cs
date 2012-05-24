@@ -27,8 +27,8 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
         //  end
         //end
 
-        public void Create(object contents);
-        public object Get(object id, object file);
-        public void Delete(string id);
+        string Create(object contents);
+        object Get(object id, object file);
+        void Delete(string id);
     }
 }
