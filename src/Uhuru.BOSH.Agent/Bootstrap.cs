@@ -12,6 +12,8 @@ namespace Uhuru.BOSH.Agent
     using System.Text;
     using System.IO;
     using Uhuru.Utilities;
+    using System.Diagnostics;
+    using System.Management;
 
     /// <summary>
     /// TODO: Update summary.
@@ -20,6 +22,7 @@ namespace Uhuru.BOSH.Agent
     {
         private Platform platform;
         // private Infrastructure settings;
+        private Dictionary<string, string> settings;
 
         ////    def initialize
         ////      FileUtils.mkdir_p(File.join(base_dir, 'bosh'))
@@ -289,6 +292,18 @@ namespace Uhuru.BOSH.Agent
         ////      File.readlines('/proc/meminfo').first.split(/\s+/)[1].to_i
         ////    end
 
+        long MemTotal()
+        {
+            ObjectQuery winQuery = new ObjectQuery("SELECT * FROM Win32_LogicalMemoryConfiguration");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery);
+
+            foreach (ManagementObject item in searcher.Get())
+            {
+                return (long)item["TotalPhysicalMemory"];
+            }
+            return -1;
+        }
+
         ////    def setup_data_sys
         ////      %w{log run}.each do |dir|
         ////        path = "#{base_dir}/data/sys/#{dir}"
@@ -298,6 +313,11 @@ namespace Uhuru.BOSH.Agent
         ////      end
         ////      %x[ln -nsf #{base_dir}/data/sys #{base_dir}/sys]
         ////    end
+
+        void SetupDataSys()
+        {
+
+        }
 
         ////    def setup_tmp
         ////      # use a custom TMPDIR for agent itself
@@ -324,12 +344,21 @@ namespace Uhuru.BOSH.Agent
         ////      end
         ////    end
 
+        void SetupTemp()
+        {
+            // complate 
+        }
+
         ////    def tmp_permissions
         ////      %x[chown root:#{BOSH_APP_USER} /tmp]
         ////      %x[chmod 0770 /tmp]
         ////      %x[chmod 0700 /var/tmp]
         ////    end
 
+        void TempPermissiosn()
+        {
+            // todo: maybe not necessary for windows
+        }
 
 
         ////    def mount_persistent_disk
@@ -343,6 +372,12 @@ namespace Uhuru.BOSH.Agent
         ////        end
         ////      end
         ////    end
+
+        void MountPersistentDisk()
+        {
+            
+            // todo: implement after the settings are classes are stabilized
+        }
 
         ////    def harden_permissions
         ////      setup_cron_at_allow
@@ -393,11 +428,23 @@ namespace Uhuru.BOSH.Agent
 
         ////    end
 
+        void HardenPermissions()
+        {
+            // Most of the code doesn't apply to Windows systems.
+            // Analyze what steps are required for Windows.
+        }
+
         ////    def setup_cron_at_allow
         ////      %w{/etc/cron.allow /etc/at.allow}.each do |file|
         ////        File.open(file, 'w') { |fh| fh.puts(BOSH_APP_USER) }
         ////      end
         ////    end
+        void SetupCronToAllow()
+        {
+            // Analyze what steps are required for Windows.
+        }
+
+        // todo: use C# templateing system. Google is not aware of an ERB implementation in/for C#
 
         ////    ETC_HOST_TEMPATE = <<TEMPLATE
         ////127.0.0.1 localhost <%= agent_id %>
