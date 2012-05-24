@@ -12,10 +12,11 @@ namespace Uhuru.BOSH.Agent
     using System.Text;
     using System.Collections.ObjectModel;
     using System.IO;
-    using YamlDotNet.RepresentationModel;
     using Uhuru.BOSH.Agent.Objects;
     using Uhuru.BOSH.Agent.Errors;
     using System.Globalization;
+    using System.Yaml.Serialization;
+    using System.Yaml;
 
     /// <summary>
     /// This is a thin abstraction on top of a state.yml file that is managed by agent.
@@ -29,7 +30,8 @@ namespace Uhuru.BOSH.Agent
     public class State
     {
         private string stateFile;
-        private YamlMappingNode data = null;
+        private dynamic data = null;
+        private Job job= null;
 
         private static readonly object locker = new object();
 
@@ -41,11 +43,11 @@ namespace Uhuru.BOSH.Agent
         /// <value>
         /// The job.
         /// </value>
-        public string Job
+        public Job Job
         {
             get
             {
-                return data.GetString("job");
+                return job;
             }            
         }
 
@@ -63,6 +65,7 @@ namespace Uhuru.BOSH.Agent
         {
             this.stateFile = file;
             Read();
+            job = GetCurrentJob();
         }
 
     ////# Fetches the state from file (unless it's been already fetched)
@@ -77,7 +80,8 @@ namespace Uhuru.BOSH.Agent
         {
             lock (locker)
             {
-                return data.GetString(key);
+                return string.Empty;
+             //   return data.GetString(key);
             }
         }
 
@@ -101,16 +105,16 @@ namespace Uhuru.BOSH.Agent
         {
             Collection<string> ips = new Collection<string>();
 
-            YamlMappingNode networksNode = data.GetChild("networks");
+            //YamlMappingNode networksNode = data.GetChild("networks");
 
-            foreach (YamlMappingNode node in networksNode.AllNodes)
-            {
-                string ip = node.GetString("ip");
-                if (!string.IsNullOrEmpty(ip))
-                {
-                    ips.Add(ip);
-                }
-            }
+            //foreach (YamlMappingNode node in networksNode.AllNodes)
+            //{
+            //    string ip = node.GetString("ip");
+            //    if (!string.IsNullOrEmpty(ip))
+            //    {
+            //        ips.Add(ip);
+            //    }
+            //}
             return ips;
         }
     ////  result
@@ -142,29 +146,17 @@ namespace Uhuru.BOSH.Agent
             {
                 if (File.Exists(stateFile))
                 {
-                    YamlDotNet.RepresentationModel.YamlStream yamlStream = new YamlStream();
-
                     try
                     {
+                        
                         using (TextReader textReader = new StreamReader(stateFile))
                         {
-                            yamlStream.Load(textReader);
+                            data = YamlNode.FromYaml(textReader)[0];
                         }
                     }
                     catch (Exception ex)
                     {
                         throw new StateException(string.Format(CultureInfo.InvariantCulture, "Cannot read agent state file {0}", stateFile), ex);
-                    }
-                    
-                    
-                    //TODO Test if the yaml is in the correct format
-                    try
-                    {
-                        data = (YamlMappingNode)yamlStream.Documents[0].RootNode;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new StateException(string.Format(CultureInfo.InvariantCulture, "Malformed agent state"), ex);
                     }
                 }
                 else
@@ -194,7 +186,7 @@ namespace Uhuru.BOSH.Agent
     ////rescue SystemCallError, YAML::Error => e
     ////  raise StateError, "Cannot write agent state file `#{@state_file}': #{e}"
     ////end
-        public void Write(YamlMappingNode NewState)
+        public void Write(YamlNode NewState)
         {
 
         }
@@ -208,17 +200,32 @@ namespace Uhuru.BOSH.Agent
     ////  }
     ////end
 
-        private YamlMappingNode GetDefaultState()
+        private YamlNode GetDefaultState()
         {
-            YamlMappingNode defaultNode = new YamlMappingNode();
-            defaultNode.Add("deployment", "");
-            defaultNode.Add("networks", new YamlMappingNode());
-            defaultNode.Add("resource_pool", new YamlMappingNode());
-            return defaultNode;
+            string defaultState = @"---
+            deployment    : 
+            networks      : { }
+            resource_pool : { }";
+            return YamlNode.FromYaml(defaultState)[0];
         }
     ////def raise_format_error(state)
     ////  raise StateError, "Unexpected agent state format: expected Hash, got #{state.class}"
     ////end
+
+        private Job GetCurrentJob()
+        {
+            if (!data.ContainsKey("job"))
+                return null;
+
+            Job currentJob = new Job();
+            currentJob.Name = data["job"]["name"].Value;
+            currentJob.Version = data["job"]["version"].Value;
+            currentJob.Sha1 = data["job"]["sha1"].Value;
+            currentJob.Template = data["job"]["template"].Value;
+            currentJob.Blobstore_id = data["job"]["blobstore_id"].Value;
+
+            return currentJob;
+        }
 
         public IEnumerable<Network> Networks { get; set; }
     }
