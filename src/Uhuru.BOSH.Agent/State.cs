@@ -11,19 +11,29 @@ namespace Uhuru.BOSH.Agent
     using System.Linq;
     using System.Text;
     using System.Collections.ObjectModel;
+    using System.IO;
+    using YamlDotNet.RepresentationModel;
+    using Uhuru.BOSH.Agent.Objects;
+    using Uhuru.BOSH.Agent.Errors;
+    using System.Globalization;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// This is a thin abstraction on top of a state.yml file that is managed by agent.
+    /// It can be used for getting the whole state as a hash or for querying
+    /// particular keys. Flushing the state to a file only happens on write call.
+    /// 
+    /// It aims to be threadsafe but doesn' use file locking so as long as everyone agrees on using the same
+    /// singleton of this class to read and write state it should be fine. However two agent processes using the same state file
+    /// ould still be stepping on each other as well as two classes using different instances of this.
     /// </summary>
     public class State
     {
-        private string p;
+        private string stateFile;
+        private YamlMappingNode data = null;
 
-        public State(string p)
-        {
-            // TODO: Complete member initialization
-            this.p = p;
-        }
+        private static readonly object locker = new object();
+
+       
 
         /// <summary>
         /// Gets or sets the job.
@@ -33,27 +43,27 @@ namespace Uhuru.BOSH.Agent
         /// </value>
         public string Job
         {
-            get;
-            set;
+            get
+            {
+                return data.GetString("job");
+            }            
         }
 
-        /// <summary>
-        /// Gets or sets the ips.
-        /// </summary>
-        /// <value>
-        /// The ips.
-        /// </value>
-        public Collection<string> Ips
-        {
-            get;
-            set;
-        }
     ////def initialize(state_file)
     ////  @state_file = state_file
     ////  @lock = Mutex.new
     ////  @data = nil
     ////  read
     ////end
+        /// <summary>
+        /// Initializes a new instance of the <see cref="State"/> class.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        public State(string file)
+        {
+            this.stateFile = file;
+            Read();
+        }
 
     ////# Fetches the state from file (unless it's been already fetched)
     ////# and returns the value of a given key.
@@ -63,6 +73,13 @@ namespace Uhuru.BOSH.Agent
     ////def [](key)
     ////  @lock.synchronize { @data[key] }
     ////end
+        public string GetValue(string key)
+        {
+            lock (locker)
+            {
+                return data.GetString(key);
+            }
+        }
 
     ////def to_hash
     ////  @lock.synchronize { @data.dup }
@@ -76,7 +93,26 @@ namespace Uhuru.BOSH.Agent
     ////  networks.each_pair do |name, network |
     ////    result << network["ip"] if network["ip"]
     ////  end
+        /// <summary>
+        /// Gets the existing ips in the state file.
+        /// </summary>
+        /// <returns>Collection of ips</returns>
+        public Collection<string> GetIps()
+        {
+            Collection<string> ips = new Collection<string>();
 
+            YamlMappingNode networksNode = data.GetChild("networks");
+
+            foreach (YamlMappingNode node in networksNode.AllNodes)
+            {
+                string ip = node.GetString("ip");
+                if (!string.IsNullOrEmpty(ip))
+                {
+                    ips.Add(ip);
+                }
+            }
+            return ips;
+        }
     ////  result
     ////end
 
@@ -94,13 +130,51 @@ namespace Uhuru.BOSH.Agent
     ////      @data = default_state
     ////    end
     ////  end
+        ////  self
+        ////rescue SystemCallError => e
+        ////  raise StateError, "Cannot read agent state file `#{@state_file}': #{e}"
+        ////rescue YAML::Error
+        ////  raise StateError, "Malformed agent state: #{e}"
+        ////end
+        private void Read()
+        {
+            lock (locker)
+            {
+                if (File.Exists(stateFile))
+                {
+                    YamlDotNet.RepresentationModel.YamlStream yamlStream = new YamlStream();
 
-    ////  self
-    ////rescue SystemCallError => e
-    ////  raise StateError, "Cannot read agent state file `#{@state_file}': #{e}"
-    ////rescue YAML::Error
-    ////  raise StateError, "Malformed agent state: #{e}"
-    ////end
+                    try
+                    {
+                        using (TextReader textReader = new StreamReader(stateFile))
+                        {
+                            yamlStream.Load(textReader);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new StateException(string.Format(CultureInfo.InvariantCulture, "Cannot read agent state file {0}", stateFile), ex);
+                    }
+                    
+                    
+                    //TODO Test if the yaml is in the correct format
+                    try
+                    {
+                        data = (YamlMappingNode)yamlStream.Documents[0].RootNode;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new StateException(string.Format(CultureInfo.InvariantCulture, "Malformed agent state"), ex);
+                    }
+                }
+                else
+                {
+                    data = GetDefaultState();   
+                }
+            }
+        }
+
+   
 
     ////# Writes a new agent state into the state file.
     ////# @param   new_state  Hash  New state
@@ -120,7 +194,10 @@ namespace Uhuru.BOSH.Agent
     ////rescue SystemCallError, YAML::Error => e
     ////  raise StateError, "Cannot write agent state file `#{@state_file}': #{e}"
     ////end
+        public void Write(YamlMappingNode NewState)
+        {
 
+        }
     ////private
 
     ////def default_state
@@ -131,6 +208,14 @@ namespace Uhuru.BOSH.Agent
     ////  }
     ////end
 
+        private YamlMappingNode GetDefaultState()
+        {
+            YamlMappingNode defaultNode = new YamlMappingNode();
+            defaultNode.Add("deployment", "");
+            defaultNode.Add("networks", new YamlMappingNode());
+            defaultNode.Add("resource_pool", new YamlMappingNode());
+            return defaultNode;
+        }
     ////def raise_format_error(state)
     ////  raise StateError, "Unexpected agent state format: expected Hash, got #{state.class}"
     ////end
