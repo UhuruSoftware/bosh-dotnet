@@ -12,15 +12,24 @@ namespace Uhuru.BOSH.Agent
     using System.Text;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// TODO: stefi: analyze an alternative to Monit for Windows services/processes
+    /// This class is processing alert received from the local Monit monitoring service though SMTP.
+    /// This class con
     /// </summary>
     public class AlertProcessor
     {
-    ////def self.start(host, port, user, password)
-    ////  processor = new(host, port, user, password)
-    ////  processor.start
-    ////  processor
-    ////end
+        ////def self.start(host, port, user, password)
+        ////  processor = new(host, port, user, password)
+        ////  processor.start
+        ////  processor
+        ////end
+
+        public static AlertProcessor Start(string host, string port, string user, string password)
+        {
+            var processor = new AlertProcessor(host, port, user, password);
+            processor.Start();
+            return processor;
+        }
 
     ////def initialize(host, port, smtp_user, smtp_password)
     ////  @host          = host
@@ -30,14 +39,22 @@ namespace Uhuru.BOSH.Agent
     ////  @logger        = Config.logger
     ////end
 
-    ////def start
-    ////  unless EM.reactor_running?
-    ////    raise Error, "Cannot start SMTP server as event loop is not running"
-    ////  end
+        public AlertProcessor(string host, string port, string user, string password)
+        {
+            throw new NotImplementedException();
+        }
 
-    ////  @server = EM.start_server(@host, @port, Bosh::Agent::SmtpServer, :user => @smtp_user, :password => @smtp_password, :processor => self)
-    ////  @logger.info "Now accepting SMTP connections on address #{@host}, port #{@port}"
-    ////end
+        ////def start
+        ////  unless EM.reactor_running?
+        ////    raise Error, "Cannot start SMTP server as event loop is not running"
+        ////  end
+        ////  @server = EM.start_server(@host, @port, Bosh::Agent::SmtpServer, :user => @smtp_user, :password => @smtp_password, :processor => self)
+        ////  @logger.info "Now accepting SMTP connections on address #{@host}, port #{@port}"
+        ////end
+        public void Start()
+        {
+            throw NotImplementedException();
+        }
 
     ////def stop
     ////  if @server
