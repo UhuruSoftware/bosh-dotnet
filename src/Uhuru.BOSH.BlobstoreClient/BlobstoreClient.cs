@@ -10,11 +10,12 @@ namespace Uhuru.BOSH.BlobstoreClient
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+using Uhuru.BOSH.BlobstoreClient.Clients;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class BlolbstoreClient
+    public class BlobstoreClient
     {
 
         //class Client
@@ -37,6 +38,10 @@ namespace Uhuru.BOSH.BlobstoreClient
         //  end
         //end
 
+        public static IClient Create(string provider, string[] options)
+        {
+            return new SimpleClient();
+        }
 
     }
 }

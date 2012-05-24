@@ -14,7 +14,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Errors
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class NotFoundException : BlolbstoreException
+    public class NotFoundException : BlobstoreException
     {
     }
 }

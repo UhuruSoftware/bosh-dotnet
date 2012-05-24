@@ -14,7 +14,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public interface Client
+    public interface IClient
     {
         //class Client
         //  def create(contents)
@@ -26,5 +26,9 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
         //  def delete(id)
         //  end
         //end
+
+        public void Create(object contents);
+        public object Get(object id, object file);
+        public void Delete(string id);
     }
 }
