@@ -53,7 +53,7 @@ namespace Uhuru.BOSH.Agent
         ////end
         public void Start()
         {
-            throw NotImplementedException();
+            throw new NotImplementedException();
         }
 
     ////def stop
