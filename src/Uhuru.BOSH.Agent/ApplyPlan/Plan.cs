@@ -16,69 +16,180 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     /// </summary>
     public class Plan
     {
-      ////attr_reader :deployment
-      ////attr_reader :job
-      ////attr_reader :packages
+        ////attr_reader :deployment
+        ////attr_reader :job
+        ////attr_reader :packages
 
-      ////def initialize(spec)
-      ////  unless spec.is_a?(Hash)
-      ////    raise ArgumentError, "Invalid spec format, Hash expected, " +
-      ////                         "#{spec.class} given"
-      ////  end
+        public dynamic Deployment
+        {
+            get
+            {
+                return deployment;
+            }
+        }
 
-      ////  @spec = spec
-      ////  @deployment = spec["deployment"]
-      ////  @job = nil
-      ////  @packages = []
-      ////  @config_binding = Bosh::Agent::Util.config_binding(spec)
 
-      ////  job_spec = spec["job"]
-      ////  package_specs = spec["packages"]
+        public Job Job
+        {
+            get
+            {
+                return job;
+            }
+        }
 
-      ////  # By default stemcell VM has '' as job
-      ////  # in state.yml, handling this very special case
-      ////  if job_spec && job_spec != ""
-      ////    @job = Job.new(job_spec, @config_binding)
-      ////  end
 
-      ////  if package_specs
-      ////    unless package_specs.is_a?(Hash)
-      ////      raise ArgumentError, "Invalid package specs format " +
-      ////                           "in apply spec, Hash expected " +
-      ////                           "#{package_specs.class} given"
-      ////    end
+        public List<Package> Packages
+        {
+            get
+            {
+                return packages;
+            }
+        }
 
-      ////    package_specs.each_pair do |package_name, package_spec|
-      ////      @packages << Package.new(package_spec)
-      ////    end
-      ////  end
-      ////end
+        private dynamic deployment;
+        private Job job;
+        private List<Package> packages;
+        private dynamic spec;
+        private dynamic configBinding;
 
-      ////def has_job?
-      ////  !@job.nil?
-      ////end
 
-      ////def has_packages?
-      ////  !@packages.empty?
-      ////end
+        ////def initialize(spec)
+        ////  unless spec.is_a?(Hash)
+        ////    raise ArgumentError, "Invalid spec format, Hash expected, " +
+        ////                         "#{spec.class} given"
+        ////  end
 
-      ////# TODO: figure out why it has to be an apply marker
-      ////def configured?
-      ////  @spec.key?("configuration_hash")
-      ////end
+        ////  @spec = spec
+        ////  @deployment = spec["deployment"]
+        ////  @job = nil
+        ////  @packages = []
+        ////  @config_binding = Bosh::Agent::Util.config_binding(spec)
 
-      ////def install_job
-      ////  @job.install if has_job?
-      ////end
+        ////  job_spec = spec["job"]
+        ////  package_specs = spec["packages"]
 
-      ////def install_packages
-      ////  @packages.each do |package|
-      ////    package.install_for_job(@job)
-      ////  end
-      ////end
+        ////  # By default stemcell VM has '' as job
+        ////  # in state.yml, handling this very special case
+        ////  if job_spec && job_spec != ""
+        ////    @job = Job.new(job_spec, @config_binding)
+        ////  end
 
-      ////def configure_job
-      ////  @job.configure if has_job?
-      ////end
+        ////  if package_specs
+        ////    unless package_specs.is_a?(Hash)
+        ////      raise ArgumentError, "Invalid package specs format " +
+        ////                           "in apply spec, Hash expected " +
+        ////                           "#{package_specs.class} given"
+        ////    end
+
+        ////    package_specs.each_pair do |package_name, package_spec|
+        ////      @packages << Package.new(package_spec)
+        ////    end
+        ////  end
+        ////end
+
+        public Plan(dynamic spec)
+        {
+            // TODO: optionally: check to se if spec is a IDidctionry<any type> if it is possible
+
+            this.spec = spec;
+            this.deployment = spec["deployment"];
+            this.job = null;
+            this.packages = new List<Package>();
+            this.configBinding = Util.conigBinding(spec);
+
+            dynamic jobSpec = spec["job"];
+            dynamic packageSpecs = spec["packages"];
+
+            if (jobSpec != null && jobSpec != "")
+            {
+                this.job = new Job(jobSpec, this.configBinding);
+            }
+
+            if (packageSpecs != null)
+            {
+                // todo: assert packageSpec is a Hash
+
+                foreach (var i in packageSpecs)
+                {
+                    this.packages.Add(new Package(i.Value));
+                }
+
+            }
+        }
+
+        ////def has_job?
+        ////  !@job.nil?
+        ////end
+
+        public bool HasJob
+        {
+            get
+            {
+                return this.job != null;
+            }
+        }
+
+        ////def has_packages?
+        ////  !@packages.empty?
+        ////end
+
+        public bool HasPackages
+        {
+            get
+            {
+                return packages.Count != 0;
+            }
+        }
+
+        ////# TODO: figure out why it has to be an apply marker
+        ////def configured?
+        ////  @spec.key?("configuration_hash")
+        ////end
+
+        public bool Configured
+        {
+            get
+            {
+                return spec.ContainsKey("configuration_hash");
+            }
+        }
+
+        ////def install_job
+        ////  @job.install if has_job?
+        ////end
+
+        public void InstallJob()
+        {
+            if (this.HasJob)
+            {
+                this.job.Install();
+            }
+        }
+
+        ////def install_packages
+        ////  @packages.each do |package|
+        ////    package.install_for_job(@job)
+        ////  end
+        ////end
+
+        public void InstallPackages()
+        {
+            foreach (var i in packages)
+            {
+                i.InstallForJob(this.job);
+            }
+        }
+
+        ////def configure_job
+        ////  @job.configure if has_job?
+        ////end
+
+        public void ConfigureJob()
+        {
+            if (this.HasJob)
+            {
+                job.Configure();
+            }
+        }
     }
 }

@@ -97,6 +97,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgentRunner.cs" />
+    <Compile Include="ApplyPlan\Errors\Configuration.cs" />
+    <Compile Include="ApplyPlan\Errors\InstallationError.cs" />
     <Compile Include="Errors\BoshException.cs" />
     <Compile Include="Errors\FatalBoshException.cs" />
     <Compile Include="Errors\HeartbeatException.cs" />

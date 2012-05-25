@@ -88,6 +88,14 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
+        public void SetValue(string key, dynamic value)
+        {
+            lock (locker)
+            {
+                data[key] = value;
+            }
+        }
+
         /// <summary>
         /// Gets the existing ips in the state file.
         /// </summary>

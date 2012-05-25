@@ -22,7 +22,7 @@ namespace Uhuru.BOSH.Agent.Message
             return new State();
         }
 
-        public YamlMappingNode GetState()
+        public Agent.State GetState()
         {
             try
             {
@@ -31,17 +31,15 @@ namespace Uhuru.BOSH.Agent.Message
 
                 if (Settings != null)
                 {
-                    throw new NotImplementedException();
-                    //    response["agent_id"] = settings["agent_id"]
-                    //    response["vm"] = settings["vm"]
+                    response.SetValue("agent_id", Settings["agent_id"]);
+                    response.SetValue("vm", Settings["vm"]);
                 }
 
-                //  response["job_state"] = job_state
-                //  response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
-                //  response["ntp"] = Bosh::Agent::NTP.offset
+                response.SetValue("job_state", JobState);
+                response.SetValue("bosh_protocol", 1); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
+                response.SetValue("ntp", Ntp.Offset());
 
-                //  response
-                throw new NotImplementedException();
+                return response;
             }
             catch (StateException e)
             {

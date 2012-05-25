@@ -18,7 +18,7 @@ namespace Uhuru.BOSH.Agent.Message
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Util", Justification = "FxCop Bug")]
     public class DiskUtil
     {
-        string BaseDir
+        static string BaseDir
         {
             get
             {
@@ -26,16 +26,16 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public string MountEntry(string partition)
+        public static string MountEntry(string partition)
         {
             throw new NotImplementedException();
             ////  File.read('/proc/mounts').lines.select { |l| l.match(/#{partition}/) }.first
         }
 
-        int GUARD_RETRIES = 600;
-        int GUARD_SLEEP = 1;
+        static int GUARD_RETRIES = 600;
+        static int GUARD_SLEEP = 1;
 
-        public void UnmountGuard(string mountpoint)
+        public static void UnmountGuard(string mountpoint)
         {
             int unmountAttempts = GUARD_RETRIES;
 
@@ -61,7 +61,7 @@ namespace Uhuru.BOSH.Agent.Message
             ////  logger.info("umount_guard #{mountpoint} succeeded (#{attempts})")
         }
 
-        public bool EnsureNoPartition(string disk, string partition)
+        public static bool EnsureNoPartition(string disk, string partition)
         {
             throw new NotImplementedException();
             ////# Pay a penalty on this check the first time a persistent disk is added to a system
@@ -88,13 +88,13 @@ namespace Uhuru.BOSH.Agent.Message
         }
 
 
-        public string LookupPartition(string disk, string partition)
+        public static string LookupPartition(string disk, string partition)
         {
             throw new NotImplementedException();
             //// `sfdisk -Llq #{disk}`.lines.select { |l| l.match(%q{/\A#{partition}.*83.*Linux}) }
         }
 
-        public Dictionary<string, object> GetUsage()
+        public static Dictionary<string, object> GetUsage()
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
             result.Add("system", null);

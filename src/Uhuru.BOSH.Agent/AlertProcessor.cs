@@ -41,7 +41,7 @@ namespace Uhuru.BOSH.Agent
 
         public AlertProcessor(string host, string port, string user, string password)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("And it will never be...");
         }
 
         ////def start
