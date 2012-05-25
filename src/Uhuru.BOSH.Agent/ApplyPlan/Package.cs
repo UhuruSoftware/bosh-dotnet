@@ -10,14 +10,42 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
+    using Uhuru.BOSH.Agent.ApplyPlan.Errors;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class Package
     {
+        
       ////attr_reader :install_path
       ////attr_reader :link_path
+
+        public string InstallPath
+        {
+            get
+            {
+                return installPath;
+            }
+        }
+
+        public string LinkPath
+        {
+            get
+            {
+                return linkPath;
+            }
+        }
+
+
+        private string installPath;
+        private string linkPath;
+        private string baseDir;
+        private string name;
+        private string version;
+        private string checksum;
+        private string blobstoreId;
 
       ////def initialize(spec)
       ////  unless spec.is_a?(Hash)
@@ -42,12 +70,50 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  @link_path = File.join(@base_dir, "packages", @name)
       ////end
 
+
+        public Package(dynamic spec)
+        {
+            // TODO: check to se if any king of IDicrionty
+            // if (spec is IDictionary<,>)
+
+            var required = new string[] { "name", "version", "sha1", "blobstore_id" };
+            foreach (var requiredKey in required)
+            {
+                if (!spec.ContainsKey(requiredKey))
+                {
+                    throw new ArgumentException(String.Format("Invalid spec. {0} is missing", requiredKey));
+                }
+            }
+
+            baseDir = Config.BaseDir;
+            name = spec["name"];
+            version = spec["version"];
+            checksum = spec["checksum"];
+            blobstoreId = spec["blobstore_id"];
+            installPath = Path.Combine(baseDir, "data", "packages", name, version;
+            linkPath = Path.Combine(baseDir, "packages", name);
+
+        }
+
       ////def install_for_job(job)
       ////  fetch_package
       ////  create_symlink_in_job(job) if job
       ////rescue SystemCallError => e
       ////  install_failed("System call error: #{e.message}")
       ////end
+
+        public void InstallForJob(Job job)
+        {
+            try
+            {
+                FetchPackage();
+                if (job != null) CreateSymlinkInJob(job);
+            }
+            catch(Exception e)
+            {
+                throw new InstallationException("Install job error.", e);
+            }
+        }
 
       ////private
 
@@ -59,6 +125,15 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  Bosh::Agent::Util.create_symlink(@install_path, @link_path)
       ////end
 
+        private void FetchPackage()
+        {
+            Directory.CreateDirectory(installPath);
+            Directory.CreateDirectory(linkPath);
+
+            Util.UnpackBlob(blobstoreId, checksum, installPath);
+            Util.CreateSymLink(installPath, linkPath);
+        }
+
       ////def create_symlink_in_job(job)
       ////  symlink_path = symlink_path_in_job(job)
       ////  FileUtils.mkdir_p(File.dirname(symlink_path))
@@ -66,9 +141,22 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  Bosh::Agent::Util.create_symlink(@install_path, symlink_path)
       ////end
 
+        private void CreateSymlinkInJob(Job job)
+        {
+            string symlinkPath = SymlinkPathInJob(job);
+            Directory.CreateDirectory(new DirectoryInfo(symlinkPath).Parent.FullName);
+
+            Util.CreateSymLink(installPath, symlinkPath);
+        }
+
       ////def symlink_path_in_job(job)
       ////  File.join(job.install_path, "packages", @name)
       ////end
+
+        private string SymlinkPathInJob(Job job)
+        {
+            return Path.Combine(job.InstallPath, "packages", name);
+        }
 
       ////def install_failed(message)
       ////  raise InstallationError, "Failed to install package " +

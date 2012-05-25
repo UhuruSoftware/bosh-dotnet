@@ -198,5 +198,19 @@ namespace Uhuru.BOSH.Agent
     ////  end
 
     ////end
+        internal static dynamic conigBinding(dynamic spec)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void UnpackBlob(string blobstoreId, string checksum, string installPath)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void CreateSymLink(string installPath, string linkPath)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -88,7 +88,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             var required = new string[] { "name", "template", "version", "sha1", "blobstore_id" };
             foreach(var requiredKey in required)
             {
-                if (!spec.ContainsKey("requiredKey"))
+                if (!spec.ContainsKey(requiredKey))
                 {
                     throw new ArgumentException(String.Format("Invalid spec. {0} is missing", requiredKey));
                 }
@@ -160,7 +160,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
         private void FetchTemplate()
         {
-            throw new NotImplementedException();
+            Directory.CreateDirectory(installPath);
+            Directory.CreateDirectory(linkPath);
+
+            Util.UnpackBlob(blobstoreId, checksum, installPath);
+            Util.CreateSymLink(installPath, linkPath);
         }
 
       ////def bind_configuration
