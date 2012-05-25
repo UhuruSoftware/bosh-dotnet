@@ -20,7 +20,8 @@ namespace Uhuru.BOSH.Agent
 
     ////MAX_MESSAGE_SIZE   = 1024 * 1024 # 1M
     ////INACTIVITY_TIMEOUT = 10 # seconds
-
+        private readonly int MAX_MESSAGE_SIZE = 1024 * 1024; //1M
+        private readonly int INACTIVITY_TIMEOUT = 10; // seconds
     ////def initialize(*args)
     ////  super
 

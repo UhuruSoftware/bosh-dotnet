@@ -10,6 +10,13 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Uhuru.BOSH.BlobstoreClient.Clients;
+    using Uhuru.Utilities;
+    using Uhuru.BOSH.BlobstoreClient.Errors;
+    using Uhuru.BOSH.Agent.Errors;
+    using System.Diagnostics;
+    using System.Reflection;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -17,83 +24,119 @@ namespace Uhuru.BOSH.Agent
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix", Justification = "Keeping name similar to VMWare's code base")]
     public class RemoteException
     {
-        private string p;
+        private string message;
+        private string backtrace;
+        private string blob;
 
-        public RemoteException(string p)
+        /// <summary>
+        /// Gets the message.
+        /// </summary>
+        public string Message
         {
-            // TODO: Complete member initialization
-            this.p = p;
-        }
-    ////attr_reader :message, :backtrace, :blob
+            get
+            {
+                return message;
+            }
 
-        public RemoteException(string message, string backtrace=null, string blob=null)
-        {
-          this.Message = message;
-          this.Backtrace = backtrace == null ? Environment.StackTrace : backtrace;
-          this.Blob = blob;
-        }
-
-    ////# Stores the blob in the configured blobstore
-    ////#
-    ////# @return [String] blobstore id of the stored object, or an error
-    ////# string which can be displayed instead of the blob
-    ////def store_blob
-    ////  bsc_options  = Bosh::Agent::Config.blobstore_options
-    ////  bsc_provider = Bosh::Agent::Config.blobstore_provider
-
-    ////  blobstore = Bosh::Blobstore::Client.create(bsc_provider, bsc_options)
-
-    ////  logger.info("Uploading blob for '#{@message}' to blobstore")
-
-    ////  blobstore_id = nil
-    ////  blobstore_id = blobstore.create(@blob)
-
-    ////  blobstore_id
-    ////rescue Bosh::Blobstore::BlobstoreError => e
-    ////  logger.warn("unable to upload blob for '#{@message}'")
-    ////  "error: unable to upload blob to blobstore: #{e.message}"
-    ////end
-
-    ////# Returns a hash of the [RemoteException] suitable to convert to json
-    ////#
-    ////# @return [Hash] [RemoteException] represented as a [Hash]
-    ////def to_hash
-    ////  hash = {:message => @message}
-    ////  hash[:backtrace] = @backtrace
-    ////  hash[:blobstore_id] = store_blob if @blob
-    ////  {:exception => hash}
-    ////end
-
-    ////def logger
-    ////  Bosh::Agent::Config.logger
-    ////end
-
-    ////# Helper class method that creates a [Bosh::Agent::RemoteException]
-    ////# from an [Exception]
-    ////#
-    ////# @return [Bosh::Agent::RemoteException]
-    ////def self.from(exception)
-    ////  blob = nil
-    ////  if exception.instance_of?(Bosh::Agent::MessageHandlerError)
-    ////    blob = exception.blob
-    ////  end
-    ////  self.new(exception.message, exception.backtrace, blob)
-    ////end
-
-        internal Dictionary<string, object> ToHash()
-        {
-            throw new NotImplementedException();
         }
 
-        internal static RemoteException From(AgentException ex)
+        /// <summary>
+        /// Gets the backtrace.
+        /// </summary>
+        public string Backtrace
         {
-            throw new NotImplementedException();
+            get
+            {
+                return backtrace;
+            }
         }
 
-        public string Message { get; set; }
+        /// <summary>
+        /// Gets the BLOB.
+        /// </summary>
+        public string Blob
+        {
+            get
+            {
+                return blob;
+            }
+        }
 
-        public string Backtrace { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteException"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="backtrace">The backtrace.</param>
+        /// <param name="blob">The BLOB.</param>
+        public RemoteException(string message, string backtrace, string blob)
+        {
+            this.message = message;
+            this.backtrace = backtrace;
+            this.blob = blob;
+            
+            if (string.IsNullOrEmpty(backtrace))
+            {
+                StackTrace stackTrace = new System.Diagnostics.StackTrace();
+                StackFrame[] stackFrames = stackTrace.GetFrames();
+                foreach (StackFrame stackFrame in stackFrames)
+                {
+                    MethodBase method = stackFrame.GetMethod();
+                    this.backtrace = this.backtrace + string.Format(CultureInfo.InvariantCulture, "{0}.{1}", method.DeclaringType.FullName, method.Name) + Environment.NewLine;
+                }
+                
+            }
+        }
 
-        public string Blob { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RemoteException"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public RemoteException(string message) : this(message, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Stores the BLOB.
+        /// </summary>
+        /// <returns></returns>
+        public string StoreBlob()
+        {
+            string[] bscOptions = Config.BlobstoreOptions.ToArray();
+            string bscProvider = Config.BlobstoreProvider;
+
+            IClient blobStore = BlobstoreClient.BlobstoreClient.Create(bscProvider, bscOptions);
+
+            Logger.Info(string.Format("Uploading blob for {0} to blobstore", message));
+
+            string blobStoreId = null;
+            try
+            {
+                blobStoreId = blobStore.Create(blob);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning(string.Format("unable to upload blob for {0}", message));
+                throw new BlobstoreException(string.Format("error: unable to upload blob to blobstore."),ex);
+            }
+
+            return blobStoreId;
+        }
+
+        /// <summary>
+        /// Gets the remote exception.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <returns></returns>
+        public static RemoteException CreateRemoteException(Exception exception)
+        {
+            string blob = null;
+            if (exception.GetType() == typeof(MessageHandlerException))
+            {
+                blob = (exception as MessageHandlerException).Blob;
+            }
+
+            return new RemoteException(exception.Message, exception.StackTrace, blob);
+        }
+
     }
 }

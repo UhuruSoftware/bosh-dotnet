@@ -83,7 +83,7 @@ namespace Uhuru.BOSH.Agent
                 Logger.Warning("Unable to send alert: unknown agent state");
                 return;
             }
-            if (String.IsNullOrEmpty(Config.State.Job))
+            if (Config.State.Job == null)
             {
                 Logger.Warning("No job, ignoring alert");
                 return;

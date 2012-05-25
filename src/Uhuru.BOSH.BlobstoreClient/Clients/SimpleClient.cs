@@ -14,7 +14,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class SimpleClient
+    public class SimpleClient : IClient
     {
 
       //  class SimpleBlobstoreClient < BaseClient
@@ -65,5 +65,19 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
       //  end
       //end
 
+        public string Create(object contents)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object Get(object id, object file)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(string id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

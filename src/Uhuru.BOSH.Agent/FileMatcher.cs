@@ -59,4 +59,14 @@ namespace Uhuru.BOSH.Agent
 
         public IEnumerable<string> Globs { get; set; }
     }
+
+    class JobLogMatcher : FileMatcher
+    {
+
+    }
+
+    class AgentLogMatcher : FileMatcher
+    {
+
+    }
 }
