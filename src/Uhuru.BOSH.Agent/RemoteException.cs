@@ -17,13 +17,21 @@ namespace Uhuru.BOSH.Agent
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix", Justification = "Keeping name similar to VMWare's code base")]
     public class RemoteException
     {
+        private string p;
+
+        public RemoteException(string p)
+        {
+            // TODO: Complete member initialization
+            this.p = p;
+        }
     ////attr_reader :message, :backtrace, :blob
 
-    ////def initialize(message, backtrace=nil, blob=nil)
-    ////  @message = message
-    ////  @backtrace = backtrace.nil? ? caller : backtrace
-    ////  @blob = blob
-    ////end
+        public RemoteException(string message, string backtrace=null, string blob=null)
+        {
+          this.Message = message;
+          this.Backtrace = backtrace == null ? Environment.StackTrace : backtrace;
+          this.Blob = blob;
+        }
 
     ////# Stores the blob in the configured blobstore
     ////#
@@ -71,5 +79,21 @@ namespace Uhuru.BOSH.Agent
     ////  end
     ////  self.new(exception.message, exception.backtrace, blob)
     ////end
+
+        internal Dictionary<string, object> ToHash()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static RemoteException From(AgentException ex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string Message { get; set; }
+
+        public string Backtrace { get; set; }
+
+        public string Blob { get; set; }
     }
 }

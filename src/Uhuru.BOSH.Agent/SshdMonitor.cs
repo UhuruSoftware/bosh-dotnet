@@ -65,5 +65,9 @@ namespace Uhuru.BOSH.Agent
       ////    EventMachine.defer { stop_sshd } if SshdMonitor.ok_to_stop?
       ////  end
       ////end
+        internal static void Enable(int interval, int p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

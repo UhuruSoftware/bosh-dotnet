@@ -53,5 +53,9 @@ namespace Uhuru.BOSH.Agent
     ////  Config.logger.warn(e.backtrace.join("\n"))
     ////  raise e if @pending > MAX_OUTSTANDING_HEARTBEATS
     ////end
+        internal void Enable(int interval)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

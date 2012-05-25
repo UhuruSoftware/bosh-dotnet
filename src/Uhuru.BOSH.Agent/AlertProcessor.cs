@@ -98,5 +98,9 @@ namespace Uhuru.BOSH.Agent
     ////  @logger.debug("Extracted email alert data: #{attrs}")
     ////  Alert.new(attrs)
     ////end
+        internal static AlertProcessor Start(string p, string p_2, string p_3, string p_4)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

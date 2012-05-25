@@ -97,7 +97,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static string ProcessAlerts
+        public static bool? ProcessAlerts
         {
             get;
             set;
@@ -217,7 +217,7 @@ namespace Uhuru.BOSH.Agent
 
             Config.SystemRoot = root.GetString("root_dir") ?? "/";
 
-            Config.ProcessAlerts = root.GetString("process_alerts");
+            Config.ProcessAlerts = root.GetBool("process_alerts");
             Config.SmtpPort = root.GetString("smtp_port");
             Config.SmtpUser = "vcap";
             Config.SmtpPassword = RandomPassword(8);
