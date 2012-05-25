@@ -21,6 +21,11 @@ namespace Uhuru.BOSH.Agent
     ////FILE_MISSING = "file missing"
     ////BAD_CONTENTS = "bad file contents"
 
+        public static dynamic Offset()
+        {
+            throw new NotImplementedException();
+        }
+
     ////def self.offset(ntpdate="#{Config.base_dir}/bosh/log/ntpdate.out")
     ////  result = {}
     ////  if File.exist?(ntpdate)
