@@ -76,6 +76,16 @@ namespace Uhuru.BOSH.Agent
         }
 
         /// <summary>
+        /// Gets the NTP offset using the default time server.
+        /// </summary>
+        /// <returns></returns>
+        public static Ntp GetNtpOffset()
+        {
+            //TODO detect timeserver
+            return GetNtpOffset("time.windows.com");
+        }
+
+        /// <summary>
         /// Gets the NTP offset from a specified time server.
         /// </summary>
         /// <param name="timeServer">The time server.</param>

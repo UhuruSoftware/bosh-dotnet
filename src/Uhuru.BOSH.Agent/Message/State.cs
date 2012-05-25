@@ -37,7 +37,7 @@ namespace Uhuru.BOSH.Agent.Message
 
                 response.SetValue("job_state", JobState);
                 response.SetValue("bosh_protocol", 1); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
-                response.SetValue("ntp", Ntp.Offset());
+                response.SetValue("ntp", Ntp.GetNtpOffset());
 
                 return response;
             }
