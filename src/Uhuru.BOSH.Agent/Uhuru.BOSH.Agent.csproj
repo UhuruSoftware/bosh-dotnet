@@ -111,6 +111,7 @@
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="NTPClient.cs" />
     <Compile Include="Objects\Job.cs" />
     <Compile Include="Platforms\WindowsPlatform.cs" />
     <Compile Include="Providers\IInfrastructure.cs" />
