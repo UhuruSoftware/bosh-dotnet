@@ -90,7 +90,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             version = spec["version"];
             checksum = spec["checksum"];
             blobstoreId = spec["blobstore_id"];
-            installPath = Path.Combine(baseDir, "data", "packages", name, version;
+            installPath = Path.Combine(baseDir, "data", "packages", name, version);
             linkPath = Path.Combine(baseDir, "packages", name);
 
         }

@@ -38,7 +38,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         }
 
 
-        public Package[] Packages
+        public List<Package> Packages
         {
             get
             {
@@ -87,7 +87,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         ////  end
         ////end
 
-        void Plan(dynamic spec)
+        public Plan(dynamic spec)
         {
             // TODO: optionally: check to se if spec is a IDidctionry<any type> if it is possible
 
