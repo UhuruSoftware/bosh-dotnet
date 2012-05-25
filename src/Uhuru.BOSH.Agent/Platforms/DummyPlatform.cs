@@ -31,8 +31,9 @@ namespace Uhuru.BOSH.Agent.Platforms
             throw new NotImplementedException();
         }
 
-        public void LookupDiskByCid(string cid)
+        public string LookupDiskByCid(string cid)
         {
+            throw new NotImplementedException();
         }
 
         public string GetDataDiskDeviceName()
