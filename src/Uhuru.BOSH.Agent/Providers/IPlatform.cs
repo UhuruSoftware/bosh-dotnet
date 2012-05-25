@@ -16,7 +16,7 @@ namespace Uhuru.BOSH.Agent.Providers
 
         void UpdatePasswords(List<string> settings);
 
-        void LookupDiskByCid(string cid);
+        string LookupDiskByCid(string cid);
 
         string GetDataDiskDeviceName();
 

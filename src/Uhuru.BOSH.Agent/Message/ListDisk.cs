@@ -15,13 +15,16 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class ListDisk
+    public class ListDisk : Base
     {
-        public static string[] Process(string[] args = null)
+        public static ICollection<string> Process(string[] args = null)
         {
-            string[] diskInfo = new string[] { };
+            List<string> diskInfo = new List<string>();
 
-            ////  settings = Bosh::Agent::Config.settings
+            dynamic settings = Config.Settings;
+            dynamic cids;
+
+            // TODO: check for hash
 
             ////  # TODO abstraction for settings
             ////  if settings["disks"].kind_of?(Hash) && settings["disks"]["persistent"].kind_of?(Hash)
@@ -30,14 +33,18 @@ namespace Uhuru.BOSH.Agent.Message
             ////    cids = {}
             ////  end
 
-            ////  cids.each_key do |cid|
-            ////    disk = Bosh::Agent::Config.platform.lookup_disk_by_cid(cid)
-            ////    partition = "#{disk}1"
-            ////    disk_info << cid unless DiskUtil.mount_entry(partition).nil?
-            ////  end
-            ////  disk_info
+            cids = settings["disk"]["persistent"] ?? new string[] {};
 
-            throw new NotImplementedException();
+            foreach (var cid in cids)
+            {
+                string disk = Config.Platform.LookupDiskByCid(cid);
+                if (!(DiskUtil.MountEntry(disk) == null))
+                {
+                    diskInfo.Add(cid);
+                }
+            }
+
+            return diskInfo;
         }
     }
 }
