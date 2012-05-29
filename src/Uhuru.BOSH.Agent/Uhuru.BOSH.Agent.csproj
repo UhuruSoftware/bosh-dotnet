@@ -78,6 +78,8 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -96,7 +98,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AgentException.cs" />
     <Compile Include="AgentRunner.cs" />
+    <Compile Include="EncryptionHandler.cs" />
     <Compile Include="ApplyPlan\Errors\Configuration.cs" />
     <Compile Include="ApplyPlan\Errors\InstallationError.cs" />
     <Compile Include="Errors\BoshException.cs" />

@@ -10,378 +10,601 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Uhuru.NatsClient;
+    using System.Threading;
+    using Uhuru.Utilities;
+    using System.Diagnostics;
+    using System.IO;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class Handler
     {
-    ////attr_accessor :nats
-    ////attr_reader :processors
+        public Reactor Nats
+        {
+            get;
+            set;
+        }
 
-    ////def self.start
-    ////  new.start
-    ////end
+        public Dictionary<string, string> Processors
+        {
+            get;
+            set;
+        }
 
-    ////MAX_NATS_RETRIES = 10
-    ////NATS_RECONNECT_SLEEP = 0.5
+        public static void Start()
+        {
+            new Handler().StartHandler();
+        }
 
-    ////# Seconds after an unexpected error until we kill the agent so it can be
-    ////# restarted.
-    ////KILL_AGENT_THREAD_TIMEOUT = 15
+        const int MAX_NATS_RETRIES = 10;
 
-    ////def initialize
-    ////  @agent_id  = Config.agent_id
-    ////  @logger    = Config.logger
-    ////  @nats_uri  = Config.mbus
-    ////  @base_dir  = Config.base_dir
+        const int NATS_RECONNECT_SLEEP = 500;
 
-    ////  # Alert processing
-    ////  @process_alerts = Config.process_alerts
-    ////  @smtp_user      = Config.smtp_user
-    ////  @smtp_password  = Config.smtp_password
-    ////  @smtp_port      = Config.smtp_port
+        // Seconds after an unexpected error until we kill the agent so it can be
+        // restarted.
+        const int KILL_AGENT_THREAD_TIMEOUT = 15;
 
-    ////  @hbp = Bosh::Agent::HeartbeatProcessor.new
+        public Handler()
+        {
+            this.AgentId = Config.AgentId;
+            this.NatsUri = Config.MessageBus;
+            this.BaseDir = Config.BaseDir;
 
-    ////  @lock = Mutex.new
+            // Alert processing
+            this.ProcessAlerts = (bool)Config.ProcessAlerts;
+            this.SmtpUser = Config.SmtpUser;
+            this.SmtpPassword = Config.SmtpPassword;
+            this.SmtpPort = Config.SmtpPort;
 
-    ////  @results = []
-    ////  @long_running_agent_task = []
-    ////  @restarting_agent = false
+            this.HeartBeatProcessor = new HeartbeatProcessor();
 
-    ////  @nats_fail_count = 0
+            this.Lock = new Mutex();
 
-    ////  @credentials = Config.credentials
-    ////  @sessions = {}
-    ////  @session_reply_map = {}
+            this.Results = new List<dynamic>();
+            this.LongRunningAgentTask = new object[0];
+            this.RestartingAgent = false;
 
-    ////  find_message_processors
-    ////end
+            this.NatsFailCount = 0;
 
-    ////# TODO: add runtime loading of messag handlers
-    ////def find_message_processors
-    ////  message_consts = Bosh::Agent::Message.constants
-    ////  @processors = {}
-    ////  message_consts.each do |c|
-    ////    klazz = Bosh::Agent::Message.const_get(c)
-    ////    if klazz.respond_to?(:process)
-    ////      # CamelCase -> under_score -> downcased
-    ////      processor_key = c.to_s.gsub(/(.)([A-Z])/,'\1_\2').downcase
-    ////      @processors[processor_key] = klazz
-    ////    end
-    ////  end
-    ////  @logger.info("Message processors: #{@processors.inspect}")
-    ////end
+            this.Credentials = Config.Credentials;
+            this.Sessions = new Dictionary<string, object>();
+            this.SessionReplyMap = new Dictionary<string, object>();
 
-    ////def lookup(method)
-    ////  @processors[method]
-    ////end
+            this.FindMessageProcessors();
+        }
 
-    ////def start
-    ////  ['TERM', 'INT', 'QUIT'].each { |s| trap(s) { shutdown } }
+        private void FindMessageProcessors()
+        {
+            throw new NotImplementedException();
+            //messageConsts = Message.
+            //@processors = {}
+            //message_consts.each do |c|
+            //klazz = Bosh::Agent::Message.const_get(c)
+            //if klazz.respond_to?(:process)
+            //    # CamelCase -> under_score -> downcased
+            //    processor_key = c.to_s.gsub(/(.)([A-Z])/,'\1_\2').downcase
+            //    @processors[processor_key] = klazz
+            //end
+            //end
+            //@logger.info("Message processors: #{@processors.inspect}")
+        }
 
-    ////  EM.run do
-    ////    begin
-    ////      @nats = NATS.connect(:uri => @nats_uri, :autostart => false) { on_connect }
-    ////      Config.nats = @nats
-    ////    rescue Errno::ENETUNREACH, Timeout::Error => e
-    ////      @logger.info("Unable to talk to nats - retry (#{e.inspect})")
-    ////      sleep 0.1
-    ////      retry
-    ////    end
+        public string Lookup(string method)
+        {
+            return this.Processors[method];
+        }
 
-    ////    setup_heartbeats
-    ////    setup_sshd_monitor
+        private void Trap(string s, Action action)
+        {
+            throw new NotImplementedException();
+        }
 
-    ////    if @process_alerts
-    ////      if (@smtp_port.nil? || @smtp_user.nil? || @smtp_password.nil?)
-    ////        @logger.error "Cannot start alert processor without having SMTP port, user and password configured"
-    ////        @logger.error "Agent will be running but alerts will NOT be properly processed"
-    ////      else
-    ////        @logger.debug("SMTP: #{@smtp_password}")
-    ////        @processor = Bosh::Agent::AlertProcessor.start("127.0.0.1", @smtp_port, @smtp_user, @smtp_password)
-    ////      end
-    ////    end
-    ////  end
-    ////rescue NATS::ConnectError => e
-    ////  @nats_fail_count += 1
-    ////  @logger.error("NATS connection error: #{e.message}")
-    ////  sleep NATS_RECONNECT_SLEEP
-    ////  # only retry a few times and then exit which lets the agent recover if we change credentials
-    ////  retry if @nats_fail_count < MAX_NATS_RETRIES
-    ////  @logger.fatal("Unable to reconnect to NATS after #{MAX_NATS_RETRIES} retries, exiting...")
-    ////end
+        public void StartHandler()
+        {
+            foreach (string s in new string[] { "TERM", "INT", "QUIT" })
+            {
+                Trap(s, () => Shutdown());
+            }
 
-    ////def shutdown
-    ////  @logger.info("Exit")
-    ////  NATS.stop { EM.stop; exit }
-    ////end
+            ThreadPool.QueueUserWorkItem((data) =>
+                {
+                    try
+                    {
+                        this.Nats = new Reactor();
+                        this.Nats.Start(this.NatsUri);
+                        this.Nats.OnConnect += new EventHandler<ReactorErrorEventArgs>(Nats_OnConnect);
 
-    ////def on_connect
-    ////  subscription = "agent.#{@agent_id}"
-    ////  @nats.subscribe(subscription) { |raw_msg| handle_message(raw_msg) }
-    ////  @nats_fail_count = 0
-    ////end
+                        this.SetupHeartbeats();
+                        this.SetupSshdMonitor();
 
-    ////def setup_heartbeats
-    ////  interval = Config.heartbeat_interval.to_i
-    ////  if interval > 0
-    ////    @hbp.enable(interval)
-    ////    @logger.info("Heartbeats are enabled and will be sent every #{interval} seconds")
-    ////  else
-    ////    @logger.warn("Heartbeats are disabled")
-    ////  end
-    ////end
+                        if (this.ProcessAlerts)
+                        {
+                            if (string.IsNullOrEmpty(this.SmtpPort) || string.IsNullOrEmpty(this.SmtpUser) || string.IsNullOrEmpty(this.SmtpPassword))
+                            {
+                                Logger.Error("Cannot start alert processor without having SMTP port, user and password configured");
+                                Logger.Error("Agent will be running but alerts will NOT be properly processed");
+                            }
+                            else
+                            {
+                                Logger.Debug(string.Format("SMTP: {0}", this.SmtpPassword));
+                                this.Processor = AlertProcessor.Start("127.0.0.1", this.SmtpPort, this.SmtpUser, this.SmtpPassword);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.NatsFailCount += 1;
+                        Logger.Error("NATS connection error: {0}", ex.ToString());
+                        Thread.Sleep(NATS_RECONNECT_SLEEP);
+                        // only retry a few times and then exit which lets the agent recover if we change credentials
+                        if (this.NatsFailCount < MAX_NATS_RETRIES)
+                        {
+                            this.Retry();
+                        }
+                        Logger.Fatal(string.Format("Unable to reconnect to NATS after {0} retries, exiting...", MAX_NATS_RETRIES));
+                    }
+                });
+        }
 
-    ////def setup_sshd_monitor
-    ////  interval = Config.sshd_monitor_interval.to_i
-    ////  if interval > 0
-    ////    Bosh::Agent::SshdMonitor.enable(interval, Config.sshd_start_delay)
-    ////    @logger.info("sshd monitor is enabled, interval of #{interval} and start " +
-    ////                 "delay of #{Config.sshd_start_delay} seconds")
-    ////  else
-    ////    @logger.warn("SSH is disabled")
-    ////  end
-    ////end
+        private void Retry()
+        {
+            throw new NotImplementedException();
+        }
 
-    ////def handle_message(json)
-    ////  msg = Yajl::Parser.new.parse(json)
+        public void Shutdown()
+        {
+            Logger.Info("Exit");
+            this.Nats.Close();
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
+        }
 
-    ////  unless msg["reply_to"]
-    ////    @logger.info("Missing reply_to in: #{msg}")
-    ////    return
-    ////  end
+        public void Nats_OnConnect(object sender, EventArgs e)
+        {
+            string subscription = string.Format("agent.{0}", this.AgentId);
 
-    ////  @logger.info("Message: #{msg.inspect}")
+            this.Nats.Subscribe(subscription, (string msg, string reply, string subject) =>
+                {
+                    this.HandleMessage(msg);
+                });
 
-    ////  if @credentials
-    ////    msg = decrypt(msg)
-    ////    return if msg.nil?
-    ////  end
+            this.NatsFailCount = 0;
+        }
 
-    ////  reply_to = msg['reply_to']
-    ////  method = msg['method']
-    ////  args = msg['arguments']
+        public void SetupHeartbeats()
+        {
+            int interval = Convert.ToInt32(Config.HeartbeatInterval);
+            if (interval > 0)
+            {
+                this.HeartBeatProcessor.Enable(interval);
+                Logger.Info(string.Format("Heartbeats are enabled and will be sent every {0} seconds", interval));
+            }
+            else
+            {
+                Logger.Warning("Heartbeats are disabled");
+            }
+        }
 
-    ////  if method == "get_state"
-    ////    method = "state"
-    ////  end
+        public void SetupSshdMonitor()
+        {
+            int interval = Convert.ToInt32(Config.SshdMonitorInterval);
+            if (interval > 0)
+            {
+                SshdMonitor.Enable(interval, Config.SshdStartDelay);
+                Logger.Info(string.Format("sshd monitor is enabled, interval of {0} and start delay of {0} seconds", interval, Config.SshdStartDelay));
+            }
+            else
+            {
+                Logger.Warning("SSH is disabled");
+            }
+        }
 
-    ////  processor = lookup(method)
-    ////  if processor
-    ////    Thread.new { process_in_thread(processor, reply_to, method, args) }
-    ////  elsif method == "get_task"
-    ////    handle_get_task(reply_to, args.first)
-    ////  elsif method == "shutdown"
-    ////    handle_shutdown(reply_to)
-    ////  else
-    ////    re = RemoteException.new("unknown message #{msg.inspect}")
-    ////    publish(reply_to, re.to_hash)
-    ////  end
-    ////rescue Yajl::ParseError => e
-    ////  @logger.info("Failed to parse message: #{json}: #{e.inspect}: #{e.backtrace}")
-    ////end
+        public void HandleMessage(string json)
+        {
+            try
+            {
+                dynamic msg = json;
 
-    ////def process_in_thread(processor, reply_to, method, args)
-    ////  if processor.respond_to?(:long_running?)
-    ////    if @restarting_agent
-    ////      exception = RemoteException.new("restarting agent")
-    ////      publish(reply_to, exception.to_hash)
-    ////    else
-    ////      @lock.synchronize do
-    ////        if @long_running_agent_task.empty?
-    ////          process_long_running(reply_to, processor, args)
-    ////        else
-    ////          exception = RemoteException.new("already running long running task")
-    ////          publish(reply_to, exception.to_hash)
-    ////        end
-    ////      end
-    ////    end
-    ////  else
-    ////    payload = process(processor, args)
+                if (msg["reply_to"] == null)
+                {
+                    Logger.Info("Missing reply_to in: {0}", json);
+                    return;
+                }
 
-    ////    if Config.configure && method == 'prepare_network_change'
-    ////      publish(reply_to, payload) {
-    ////        post_prepare_network_change
-    ////      }
-    ////    else
-    ////      publish(reply_to, payload)
-    ////    end
+                Logger.Info("Message: {0}", json);
 
-    ////  end
-    ////rescue => e
-    ////  # since this is running in a thread we're going to be nice and
-    ////  # log an error as this would otherwise be lost
-    ////  @logger.error("#{processor.to_s}: #{e.message}\n#{e.backtrace.join("\n")}")
-    ////end
+                if (this.Credentials != null)
+                {
+                    msg = Decrypt(msg);
+                    if (msg == null)
+                    {
+                        return;
+                    }
+                }
 
-    ////def handle_get_task(reply_to, agent_task_id)
-    ////  if @long_running_agent_task == [agent_task_id]
-    ////    publish(reply_to, {"value" => {"state" => "running", "agent_task_id" => agent_task_id}})
-    ////  else
-    ////    rs = @results.find { |time, task_id, result| task_id == agent_task_id }
-    ////    if rs
-    ////      time, task_id, result = rs
-    ////      publish(reply_to, result)
-    ////    else
-    ////      publish(reply_to, {"exception" => "unknown agent_task_id" })
-    ////    end
-    ////  end
-    ////end
+                string replyTo = msg["reply_to"];
+                string method = msg["method"];
+                dynamic args = msg["arguments"];
 
-    ////# TODO once we upgrade to nats 0.4.22 we can use
-    ////# NATS.server_info[:max_payload] instead of NATS_MAX_PAYLOAD_SIZE
-    ////NATS_MAX_PAYLOAD_SIZE = 1024 * 1024
+                if (method == "get_state")
+                {
+                    method = "state";
+                }
 
-    ////def publish(reply_to, payload, &blk)
-    ////  @logger.info("reply_to: #{reply_to}: payload: #{payload.inspect}")
+                object processor = this.Lookup(method);
 
-    ////  if @credentials
-    ////    unencrypted = payload
-    ////    payload = encrypt(reply_to, payload)
-    ////  end
+                if (processor != null)
+                {
+                    ThreadPool.QueueUserWorkItem((data) =>
+                        {
+                            ProcessInThread(processor, replyTo, method, args);
+                        });
+                }
+                else if (method == "get_task")
+                {
+                    HandleGetTask(replyTo, args.first);
+                }
+                else if (method == "shutdown")
+                {
+                    HandleShutdown(replyTo);
+                }
+                else
+                {
+                    RemoteException re = new RemoteException(string.Format("Unknown message {0}", json));
+                    // todo: vlad: fix the hash here
+                    this.Publish(replyTo, re.ToHash().ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning("Failed to parse message: {0}: {1}", json, ex.ToString());
+            }
+        }
 
-    ////  json = Yajl::Encoder.encode(payload)
+        private void ProcessInThread(object processor, string replyTo, string method, string args)
+        {
+            try
+            {
+                // TODO: vladi: implement the long running part
+                if (processor.GetType().GetMethod(method) != null)
+                {
+                    if (this.RestartingAgent)
+                    {
+                        RemoteException exception = new RemoteException("restarting agent");
+                        // todo: vlad: fix the hash here
+                        this.Publish(replyTo, exception.ToHash().ToString());
+                    }
+                    else
+                    {
+                        this.Lock.WaitOne();
+                        try
+                        {
+                            if (this.LongRunningAgentTask == null)
+                            {
+                                this.ProcessLongRunning(replyTo, processor, args);
+                            }
+                            else
+                            {
+                                RemoteException exception = new RemoteException("already running long running task");
+                                // todo: vlad: fix the hash here
+                                this.Publish(replyTo, exception.ToHash().ToString());
+                            }
+                        }
+                        finally
+                        {
+                            this.Lock.ReleaseMutex();
+                        }
+                    }
+                }
+                else
+                {
+                    Dictionary<string, object> payload = this.Process(processor, args);
 
-    ////  # TODO figure out if we want to try to scale down the message instead
-    ////  # of generating an exception
-    ////  if json.bytesize < NATS_MAX_PAYLOAD_SIZE
-    ////    @nats.publish(reply_to, json, blk)
-    ////  else
-    ////    msg = "message > NATS_MAX_PAYLOAD, stored in blobstore"
-    ////    original = @credentials ? payload : unencrypted
-    ////    exception = RemoteException.new(msg, nil, original)
-    ////    @logger.fatal(msg)
-    ////    @nats.publish(reply_to, exception.to_hash, blk)
-    ////  end
-    ////end
+                    if (Config.Configure != null && (method == "prepare_network_change"))
+                    {
+                        // todo: vladi: fix payload
+                        this.Publish(replyTo, payload.ToString(), () => this.PostPrepareNetworkChange());
+                    }
+                    else
+                    {
+                        // todo: vladi: fix payload
+                        this.Publish(replyTo, payload.ToString());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // since this is running in a thread we're going to be nice and
+                // log an error as this would otherwise be lost
+                Logger.Error("{0}: {1)", processor.ToString(), ex.ToString());
+            }
+        }
 
-    ////def process_long_running(reply_to, processor, args)
-    ////  agent_task_id = generate_agent_task_id
+        public void HandleGetTask(string replyTo, string agentTaskId)
+        {
+            if (this.LongRunningAgentTask[0] == agentTaskId)
+            {
+                this.Publish(replyTo, "{\"value\" => {\"state\" => \"running\", \"agent_task_id\" => agent_task_id}}");
+            }
+            else
+            {
+                dynamic rs = this.Results.FirstOrDefault(r => r.TaskId == agentTaskId);
+                if (rs != null)
+                {
+                    DateTime time = rs.Time;
+                    DateTime taskId = rs.TaskId;
+                    DateTime result = rs.Result;
+                    // todo: vladi: fix result serialization
+                    this.Publish(replyTo, result.ToString());
+                }
+                else
+                {
+                    // todo: vladi: implement payload class
+                    this.Publish(replyTo, @"{""exception"" => ""unknown agent_task_id"" }");
+                }
+            }
+        }
 
-    ////  @long_running_agent_task = [agent_task_id]
 
-    ////  payload = {:value => {:state => "running", :agent_task_id => agent_task_id}}
-    ////  publish(reply_to, payload)
+        // TODO once we upgrade to nats 0.4.22 we can use
+        // NATS.server_info[:max_payload] instead of NATS_MAX_PAYLOAD_SIZE
+        const int NATS_MAX_PAYLOAD_SIZE = 1024 * 1024;
 
-    ////  result = process(processor, args)
-    ////  @results << [Time.now.to_i, agent_task_id, result]
-    ////  @long_running_agent_task = []
-    ////end
+        public void Publish(string replyTo, string payload)
+        {
+            this.Publish(replyTo, payload,
+                () =>
+                {
+                    return;
+                });
+        }
 
-    ////def kill_main_thread_in(seconds)
-    ////  @restarting_agent = true
-    ////  Thread.new do
-    ////    sleep(seconds)
-    ////    Thread.main.terminate
-    ////  end
-    ////end
+        public void Publish(string replyTo, string payload, SimpleCallback block)
+        {
+            Logger.Info("reply_to: {0}: payload: {1}", replyTo, payload);
 
-    ////def process(processor, args)
-    ////  begin
-    ////    result = processor.process(args)
-    ////    return {:value => result}
-    ////  rescue Bosh::Agent::Error => e
-    ////    @logger.info("#{e.inspect}: #{e.backtrace}")
-    ////    return RemoteException.from(e).to_hash
-    ////  rescue Exception => e
-    ////    kill_main_thread_in(KILL_AGENT_THREAD_TIMEOUT)
-    ////    @logger.error("#{e.inspect}: #{e.backtrace}")
-    ////    return {:exception => "#{e.inspect}: #{e.backtrace}"}
-    ////  end
-    ////end
+            string unencrypted = string.Empty;
+            if (this.Credentials != null)
+            {
+                unencrypted = payload;
+                payload = this.Encrypt(replyTo, payload);
+            }
 
-    ////def generate_agent_task_id
-    ////  UUIDTools::UUID.random_create.to_s
-    ////end
+            //todo: vladi: encode JSON;
+            dynamic json = payload;
 
-    ////def post_prepare_network_change
-    ////  if Bosh::Agent::Config.configure
-    ////    udev_file = '/etc/udev/rules.d/70-persistent-net.rules'
-    ////    if File.exist?(udev_file)
-    ////      @logger.info("deleting 70-persistent-net.rules - again")
-    ////      `rm #{udev_file}`
-    ////    end
-    ////    @logger.info("Removing settings.json")
-    ////    settings_file = Bosh::Agent::Config.settings_file
-    ////    `rm #{settings_file}`
-    ////  end
+            // TODO figure out if we want to try to scale down the message instead
+            // of generating an exception
+            if (json.Bytesize < NATS_MAX_PAYLOAD_SIZE)
+            {
+                this.Nats.Publish(replyTo, block, json);
+            }
+            else
+            {
+                string msg = "message > NATS_MAX_PAYLOAD, stored in blobstore";
+                string original = this.Credentials != null ? payload : unencrypted;
+                RemoteException exception = new RemoteException(msg, null, original);
+                Logger.Fatal(msg);
+                // todo: vladi: fix exception serialization
+                this.Nats.Publish(replyTo, block, exception.ToHash().ToString());
+            }
+        }
 
-    ////  @logger.info("Halt after networking change")
-    ////  `/sbin/halt`
-    ////end
+        public void ProcessLongRunning(string replyTo, dynamic processor, dynamic args)
+        {
+            string agentTaskId = GenerateAgentTaskId();
 
-    ////def handle_shutdown(reply_to)
-    ////  @logger.info("Shutting down #{URI.parse(Config.mbus).scheme.upcase} connection")
-    ////  payload = {:value => "shutdown"}
+            this.LongRunningAgentTask = new object[] { agentTaskId };
 
-    ////  if Bosh::Agent::Config.configure
-    ////    # We should never come back up again
-    ////    at_exit { `sv stop agent` }
-    ////  end
+            Dictionary<string, object> payload = new Dictionary<string, object>()
+            {
+                    {   "value", new Dictionary<string, string>()
+                        { 
+                            {"state", "running"} , 
+                            {"agent_task_id", "agent_task_id"}
+                        }
+                    }
+            };
 
-    ////  publish(reply_to, payload) {
-    ////    shutdown
-    ////  }
-    ////end
+            // todo: vladi: fix payload serialization
+            this.Publish(replyTo, payload.ToString());
 
-    ////def lookup_encryption_handler(arg)
-    ////  if arg[:session_id]
-    ////    message_session_id = arg[:session_id]
-    ////    @sessions[message_session_id] ||= Bosh::EncryptionHandler.new(@agent_id, @credentials)
-    ////    encryption_handler = @sessions[message_session_id]
-    ////    return encryption_handler
-    ////  elsif arg[:reply_to]
-    ////    reply_to = arg[:reply_to]
-    ////    @session_reply_map[reply_to]
-    ////  end
-    ////end
+            string result = this.Process(processor, args);
 
-    ////def decrypt(msg)
-    ////  [ "session_id", "encrypted_data" ].each do |key|
-    ////    unless msg.key?(key)
-    ////      @logger.info("Missing #{key} in #{msg}")
-    ////      return
-    ////    end
-    ////  end
+            // todo: vladi: create a proper object
+            dynamic resultsItem = new object();
+            resultsItem.Time = DateTime.Now;
+            resultsItem.AgentTaskId = agentTaskId;
+            resultsItem.Result = result;
 
-    ////  message_session_id = msg["session_id"]
-    ////  reply_to = msg["reply_to"]
+            this.Results.Add(resultsItem);
+            this.LongRunningAgentTask = new object[0];
+        }
 
-    ////  encryption_handler = lookup_encryption_handler(:session_id => message_session_id)
+        public void KillMainThreadIn(int seconds)
+        {
+            this.RestartingAgent = true;
+            ThreadPool.QueueUserWorkItem((data) =>
+                {
+                    Thread.Sleep(seconds * 1000);
+                    System.Diagnostics.Process.GetCurrentProcess().Kill();
+                });
+        }
 
-    ////  # save message handler for the reply
-    ////  @session_reply_map[reply_to] = encryption_handler
+        public Dictionary<string, object> Process(dynamic processor, dynamic args)
+        {
+            try
+            {
+                string result = processor.Process(args);
+                return new Dictionary<string, object>() { { "value", result } };
+            }
+            catch (AgentException aex)
+            {
+                Logger.Info("{0}", aex);
+                return RemoteException.From(aex).ToHash();
+            }
+            catch (Exception ex)
+            {
+                KillMainThreadIn(KILL_AGENT_THREAD_TIMEOUT);
+                Logger.Error("{0}", ex);
+                return new Dictionary<string, object>() { { "exception", ex.ToString() } };
+            }
+        }
 
-    ////  # Log exceptions from the EncryptionHandler, but stay quiet on the wire.
-    ////  begin
-    ////    msg = encryption_handler.decrypt(msg["encrypted_data"])
-    ////  rescue Bosh::EncryptionHandler::CryptError => e
-    ////    log_encryption_error(e)
-    ////    return
-    ////  end
+        public string GenerateAgentTaskId()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
 
-    ////  msg["reply_to"] = reply_to
+        public void PostPrepareNetworkChange()
+        {
+            if (Config.Configure != null)
+            {
+                string udevFile = "/etc/udev/rules.d/70-persistent-net.rules";
 
-    ////  @logger.info("Decrypted Message: #{msg}")
-    ////  msg
-    ////end
+                if (File.Exists(udevFile))
+                {
+                    Logger.Info("deleting 70-persistent-net.rules - again");
+                    File.Delete(udevFile);
+                }
 
-    ////def log_encryption_error(e)
-    ////  @logger.info("Encrypton Error: #{e.inspect} #{e.backtrace.join('\n')}")
-    ////end
+                Logger.Info("Removing settings.json");
+                string settingsFile = Config.SettingsFile;
+                File.Delete(settingsFile);
+            }
 
-    ////def encrypt(reply_to, payload)
-    ////  encryption_handler = lookup_encryption_handler(:reply_to => reply_to)
-    ////  session_id = encryption_handler.session_id
+            Logger.Info("Halt after networking change");
+            // todo: vladi: implement halt/restart?
+        }
 
-    ////  payload = {
-    ////    "session_id" => session_id,
-    ////    "encrypted_data" => encryption_handler.encrypt(payload)
-    ////  }
 
-    ////  payload
-    ////end
+        public void HandleShutdown(string replyTo)
+        {
+            Logger.Info("Shutting down {0} connection", Config.MessageBus.ToUpper());
+            string payload = "{:value => \"shutdown\"}";
+
+            if (Config.Configure != null)
+            {
+                //todo: vladi We should never come back up again
+                //at_exit { `sv stop agent` }
+            }
+
+            this.Publish(replyTo, payload, () => this.Shutdown());
+        }
+
+        public EncryptionHandler LookupEncryptionHandler(dynamic arg)
+        {
+            if (arg.SessionId != null)
+            {
+                string messageSessionId = arg.SessionId;
+                this.Sessions[messageSessionId] = new EncryptionHandler(this.AgentId, this.Credentials);
+                EncryptionHandler encryptionHandler = this.Sessions[messageSessionId] as EncryptionHandler;
+                return encryptionHandler;
+            }
+            else if (arg.ReplyTo != null)
+            {
+                string replyTo = arg.ReplyTo;
+                return this.SessionReplyMap[replyTo] as EncryptionHandler;
+            }
+
+            return null;
+        }
+
+        public Dictionary<string, object> Decrypt(Dictionary<string, object> msg)
+        {
+            if (!msg.ContainsKey("session_id"))
+            {
+                Logger.Info("Missing session_id in {0}", msg.ToString());
+                return null;
+            }
+
+            if (!msg.ContainsKey("encrypted_data"))
+            {
+                Logger.Info("Missing encrypted_data in {0}", msg.ToString());
+                return null;
+            }
+
+            string messageSessionId = msg["session_id"] as string;
+            string replyTo = msg["reply_to"] as string;
+
+            EncryptionHandler encryptionHandler = LookupEncryptionHandler(new Dictionary<string, string>() { { "session_id", messageSessionId } });
+
+            // save message handler for the reply
+            this.SessionReplyMap[replyTo] = encryptionHandler;
+
+            // Log exceptions from the EncryptionHandler, but stay quiet on the wire.
+            try
+            {
+                msg = encryptionHandler.Decrypt(msg["encrypted_data"]);
+            }
+            catch (Exception ex)
+            {
+                LogEncryptionError(ex);
+                return null;
+            }
+
+            msg["reply_to"] = replyTo;
+
+            Logger.Info("Decrypted Message: #{msg}");
+            return msg;
+        }
+
+        public void LogEncryptionError(Exception ex)
+        {
+            Logger.Info("Encryption Error: {0}", ex);
+        }
+
+        public string Encrypt(string replyTo, string payload)
+        {
+            // todo: vladi fix arg's class
+            dynamic arg = new object();
+            arg.ReplyTo = replyTo;
+            EncryptionHandler encryptionHandler = LookupEncryptionHandler(arg);
+            string sessionId = encryptionHandler.SessionId;
+
+            // todo: vladi: fix payload;
+            payload = @"{
+                ""session_id"" => session_id,
+                ""encrypted_data"" => encryption_handler.encrypt(payload)""}";
+
+            return payload;
+        }
+
+        public Dictionary<string, object> SessionReplyMap { get; set; }
+
+        public Dictionary<string, object> Sessions { get; set; }
+
+        public string Credentials { get; set; }
+
+        public int NatsFailCount { get; set; }
+
+        public bool RestartingAgent { get; set; }
+
+        public object[] LongRunningAgentTask { get; set; }
+
+        public List<dynamic> Results { get; set; }
+
+        public Mutex Lock { get; set; }
+
+        public HeartbeatProcessor HeartBeat { get; set; }
+
+        public string SmtpPort { get; set; }
+
+        public string SmtpPassword { get; set; }
+
+        public string SmtpUser { get; set; }
+
+        public bool ProcessAlerts { get; set; }
+
+        public string BaseDir { get; set; }
+
+        public string NatsUri { get; set; }
+
+        public string AgentId { get; set; }
+
+        public AlertProcessor Processor { get; set; }
+
+        public HeartbeatProcessor HeartBeatProcessor { get; set; }
     }
 }

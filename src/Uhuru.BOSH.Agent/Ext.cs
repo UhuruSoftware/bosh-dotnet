@@ -31,7 +31,27 @@ namespace Uhuru.BOSH.Agent
         public static int? GetInt(this YamlMappingNode yamlNode, string nodeName)
         {
             YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
-            return node == null ? 0 : Convert.ToInt32(node.ToString());
+            if (node == null)
+            {
+                return null;
+            }
+            else
+            {
+                return Convert.ToInt32(node.ToString());
+            }
+        }
+
+        public static bool? GetBool(this YamlMappingNode yamlNode, string nodeName)
+        {
+            YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
+            if (node == null)
+            {
+                return null;
+            }
+            else
+            {
+                return Convert.ToBoolean(node.ToString());
+            }
         }
 
         ////class Object

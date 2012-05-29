@@ -138,5 +138,15 @@ namespace Uhuru.BOSH.Agent
             return new RemoteException(exception.Message, exception.StackTrace, blob);
         }
 
+
+        internal Dictionary<string, object> ToHash()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static RemoteException From(AgentException aex)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
