@@ -112,6 +112,7 @@
     <Compile Include="NTPClient.cs" />
     <Compile Include="Objects\Job.cs" />
     <Compile Include="Platforms\WindowsPlatform.cs" />
+    <Compile Include="Platforms\Windows\WindowsNetwork.cs" />
     <Compile Include="Providers\IInfrastructure.cs" />
     <Compile Include="Infrastructures\AWSInfrastructure.cs" />
     <Compile Include="ApplyPlan\Job.cs" />
@@ -188,7 +189,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Platforms\Dummy\Templates\" />
-    <Folder Include="Platforms\Windows\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="key.snk" />

@@ -94,6 +94,7 @@
     <Compile Include="Unit\NtpTest.cs" />
     <Compile Include="Unit\RemoteExceptionTest.cs" />
     <Compile Include="Unit\StateTest.cs" />
+    <Compile Include="Unit\WindowsNetworkTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="uhuruTest.config">
