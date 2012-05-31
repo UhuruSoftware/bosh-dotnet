@@ -43,7 +43,7 @@ namespace Uhuru.BOSH.Agent.Platforms
 
         public void SettupNetworking()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Uhuru.BOSH.Agent.Message
         {
             try
             {
-                if (!string.IsNullOrEmpty(Config.Configure))
+                if (Config.Configure)
                 {
                     throw new NotImplementedException(); //TODO: florind Bosh::Agent::Monit.start_services
                 }

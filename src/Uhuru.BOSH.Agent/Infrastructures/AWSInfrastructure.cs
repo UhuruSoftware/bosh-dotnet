@@ -28,7 +28,7 @@ namespace Uhuru.BOSH.Agent.Infrastructures
         /// <summary>
         /// Loads the settings.
         /// </summary>
-        public void LoadSettings()
+        public dynamic LoadSettings()
         {
             throw new NotImplementedException();
         }
