@@ -100,7 +100,6 @@
   <ItemGroup>
     <Compile Include="AgentException.cs" />
     <Compile Include="AgentRunner.cs" />
-    <Compile Include="DiskUtils.cs" />
     <Compile Include="EncryptionHandler.cs" />
     <Compile Include="ApplyPlan\Errors\Configuration.cs" />
     <Compile Include="ApplyPlan\Errors\InstallationError.cs" />
