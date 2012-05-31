@@ -8,9 +8,10 @@ namespace Uhuru.BOSH.Agent.Message
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    using System.Diagnostics;
     using System.IO;
+    using System.Management;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// TODO: Update summary.
@@ -100,36 +101,192 @@ namespace Uhuru.BOSH.Agent.Message
             result.Add("system", null);
             result.Add("ephemeral", null);
 
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
+            string dataDir = Path.Combine(BaseDir, "data").TrimEnd(new char[] { '\\' }).ToLower();
+            string storeDir = Path.Combine(BaseDir, "store").TrimEnd(new char[] { '\\' }).ToLower();
 
-            throw new NotImplementedException();
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Volume");
 
-            ////  disk_usage = `#{disk_usage_command}`
+            foreach (ManagementObject queryObj in searcher.Get())
+            {
+                string caption = queryObj["Caption"].ToString().TrimEnd(new char[] { '\\' }).ToLower();
+                if (caption == "c:")
+                {
+                    result["system"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString()));
+                    continue;
+                }
+                else if (caption == dataDir)
+                {
+                    result["ephemeral"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString()));
+                    continue;
+                }
+                else if (caption == storeDir)
+                {
+                    result.Add("persistent", CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString())));
+                    continue;
+                }
 
-            ////  if $?.to_i != 0
-            ////    logger.error("Failed to get disk usage data, df exit code = #{$?.to_i}")
-            ////    return result
-            ////  end
+            }
 
-            ////  disk_usage.split("\n")[1..-1].each do |line|
-            ////    usage, mountpoint = line.split(/\s+/)
-            ////    usage.gsub!(/%$/, '')
+            return result;
+        }
 
-            ////    case mountpoint
-            ////    when "/"
-            ////      result["system"]["percent"] = usage
-            ////    when File.join("#{base_dir}", "data")
-            ////      result["ephemeral"]["percent"] = usage
-            ////    when File.join("#{base_dir}", "store")
-            ////      # Only include persistent disk data if
-            ////      # persistent disk is there
-            ////      result["persistent"] = { }
-            ////      result["persistent"]["percent"] = usage
-            ////    end
-            ////  end
+        public static int CreatePrimaryPartition(int diskIndex, string label)
+        {
+            string script = String.Format(@"SELECT Disk {0}
+CREATE PARTITION PRIMARY
+SELECT PARTITION 1
+FORMAT FS=NTFS LABEL={1} QUICK
+EXIT", diskIndex, label);
 
-            ////  result
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, script);
 
+            ProcessStartInfo info = new ProcessStartInfo();
+            info.FileName = "diskpart.exe";
+            info.Arguments = String.Format("/s {0}", fileName);
+
+            Process p = new Process();
+            p.Start();
+            p.WaitForExit(60000);
+            if (!p.HasExited)
+            {
+                p.Kill();
+                return -1;
+            }
+            else
+            {
+                return p.ExitCode;
+            }
+        }
+
+        public static bool DiskHasPartition(int diskIndex)
+        {
+            using (ManagementObjectSearcher search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskDrive "))
+            {
+                foreach (ManagementObject queryObj in search.Get())
+                {
+                    if (int.Parse(queryObj["Index"].ToString()) == diskIndex)
+                    {
+                        if (int.Parse(queryObj["Partitions"].ToString()) > 0)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            throw new Exception("Disk not found");
+        }
+
+        public static int MountPartition(int diskIndex, string mountPath)
+        {
+            string script = String.Format(@"SELECT Disk {0}
+SELECT PARTITION 1
+ASSIGN MOUNT={0}", mountPath);
+
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, script);
+
+            ProcessStartInfo info = new ProcessStartInfo();
+            info.FileName = "diskpart.exe";
+            info.Arguments = String.Format("/s {0}", fileName);
+
+            Process p = new Process();
+            p.Start();
+            p.WaitForExit(60000);
+            if (!p.HasExited)
+            {
+                p.Kill();
+                return -1;
+            }
+            else
+            {
+                return p.ExitCode;
+            }
+        }
+
+        public static bool IsMountPoint(string path)
+        {
+            char[] trimChars = { '\\' };
+
+            using (ManagementObjectSearcher search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Volume "))
+            {
+                foreach (ManagementObject queryObj in search.Get())
+                {
+                    if (queryObj["Caption"].ToString().TrimEnd(trimChars) == path.TrimEnd(trimChars))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static int CalculateDiskUsage(UInt64 capacity, UInt64 freeSpace)
+        {
+            return (int)((capacity - freeSpace) / capacity * 100);
+        }
+
+        public static int GetDiskIdForMountPoint(string mountPoint)
+        {
+            string volumeId = GetVolumeDeviceId(mountPoint).TrimEnd(new char[] { '\\' });
+
+            IntPtr file = NativeMethods.CreateFile(volumeId, NativeMethods.GENERIC_READ, NativeMethods.FILE_SHARE_READ | NativeMethods.FILE_SHARE_WRITE, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
+
+            int size = 0x400;
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            int bytesReturned = 0;
+
+            try
+            {
+                NativeMethods.DeviceIoControl(file, NativeMethods.IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, IntPtr.Zero, 0, buffer, size, out bytesReturned, IntPtr.Zero);
+            }
+            finally
+            {
+                NativeMethods.CloseHandle(file);
+            }
+
+            int diskId = -1;
+
+            if (bytesReturned > 0)
+            {
+                int numberOfDiskExtents = (int)Marshal.PtrToStructure(buffer, typeof(int));
+                for (int i = 0; i < numberOfDiskExtents; i++)
+                {
+                    IntPtr extentPtr = new IntPtr(buffer.ToInt32() + Marshal.SizeOf(typeof(long)) + i * Marshal.SizeOf(typeof(NativeMethods.DISK_EXTENT)));
+                    NativeMethods.DISK_EXTENT extent = (NativeMethods.DISK_EXTENT)Marshal.PtrToStructure(extentPtr, typeof(NativeMethods.DISK_EXTENT));
+
+                    diskId = extent.DiskNumber;
+                }
+            }
+
+            if (diskId == -1)
+            {
+                throw new Exception("Could not get disk id.");
+            }
+            else
+            {
+                return diskId;
+            }
+        }
+
+        public static string GetVolumeDeviceId(string mountPoint)
+        {
+            using (ManagementClass volume = new ManagementClass("Win32_Volume"))
+            { 
+                ManagementObjectCollection moc = volume.GetInstances();
+                foreach (ManagementObject mo in moc)
+                {
+                    if (mo["Caption"].ToString() == mountPoint)
+                    {
+                        return mo["DeviceID"].ToString();
+                    }
+                }
+            }
+            return string.Empty;
         }
     }
 }

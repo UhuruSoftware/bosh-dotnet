@@ -11,24 +11,16 @@ namespace Uhuru.BOSH.BlobstoreClient.Errors
     using System.Linq;
     using System.Text;
 
-    /// <summary>
-    /// TODO: Update summary.
-    /// </summary>
-    public class BlobstoreException : Exception 
+
+    [Serializable]
+    public class BlobstoreException : Exception
     {
-
-        public BlobstoreException() : base()
-        {
-
-        }
-
-        public BlobstoreException(string message, Exception innerException) : base(message,innerException)
-        {
-        
-        }
-            //class BlobstoreError < StandardError; end
-            //class NotFound < BlobstoreError; end
-
-
+        public BlobstoreException() { }
+        public BlobstoreException(string message) : base(message) { }
+        public BlobstoreException(string message, Exception inner) : base(message, inner) { }
+        protected BlobstoreException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
     }
 }

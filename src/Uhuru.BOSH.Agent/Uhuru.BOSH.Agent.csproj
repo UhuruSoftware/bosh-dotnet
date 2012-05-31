@@ -77,6 +77,7 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Management" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
@@ -100,7 +101,6 @@
   <ItemGroup>
     <Compile Include="AgentException.cs" />
     <Compile Include="AgentRunner.cs" />
-    <Compile Include="DiskUtils.cs" />
     <Compile Include="EncryptionHandler.cs" />
     <Compile Include="ApplyPlan\Errors\Configuration.cs" />
     <Compile Include="ApplyPlan\Errors\InstallationError.cs" />
@@ -114,6 +114,7 @@
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Message\NativeMethods.cs" />
     <Compile Include="NTPClient.cs" />
     <Compile Include="Objects\HandlerResult.cs" />
     <Compile Include="Objects\Job.cs" />
