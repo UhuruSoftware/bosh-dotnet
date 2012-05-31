@@ -10,6 +10,9 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+using System.Yaml;
+using System.IO;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
@@ -17,12 +20,16 @@ namespace Uhuru.BOSH.Agent
     public class AgentRunner
     {
 ////  BOSH_APP = BOSH_APP_USER = BOSH_APP_GROUP = "vcap"
-
+        string BOSH_APP  = "vcap";
+        string BOSH_APP_USER = "vcap";
+        string BOSH_APP_GROUP = "vcap";
+        private string configFile = @"c:\vcap\bosh\settings.json";
 ////  class << self
 ////    def run(options = {})
 ////      Runner.new(options).start
 ////    end
 ////  end
+       
 
 ////  class Runner < Struct.new(:config)
 
@@ -30,6 +37,33 @@ namespace Uhuru.BOSH.Agent
 ////      self.config = Bosh::Agent::Config.setup(options)
 ////      @logger     = Bosh::Agent::Config.logger
 ////    end
+
+        public AgentRunner()
+        {
+            
+            Logger.Info("Starting agent");
+            YamlNode root = null;
+            if (File.Exists(configFile))
+            {
+                using (TextReader textReader = new StreamReader(configFile))
+                {
+                    YamlNode[] nodes = YamlNode.FromYaml(textReader);
+                    root = nodes[0];
+                }
+                Logger.Info("Configuring agent");
+                Config.Setup(root, false);
+            }
+            else
+            {
+                Logger.Info("Configuring agent for first run");
+                Config.Setup(new YamlMapping(), true);
+
+                Bootstrap bootStrap = new Bootstrap();
+                bootStrap.Configure();
+            }
+            
+            
+        }
 
 ////    def start
 ////      $stdout.sync = true

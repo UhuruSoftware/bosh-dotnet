@@ -13,7 +13,8 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Providers;
     using Uhuru.NatsClient;
     using Uhuru.Utilities;
-    using YamlDotNet.RepresentationModel;
+    using System.Yaml.Serialization;
+    using System.Yaml;
     using Uhuru.BOSH.Agent.Objects;
     using System.Collections.ObjectModel;
 
@@ -22,7 +23,7 @@ namespace Uhuru.BOSH.Agent
     /// </summary>
     public static class Config
     {
-        const string DEFAULT_BASE_DIR = "/var/vcap";
+        const string DEFAULT_BASE_DIR = @"c:\vcap";
         const int DEFAULT_SSHD_MONITOR_INTERVAL = 30;
         const int DEFAULT_SSHD_START_DELAY = 30;
 
@@ -50,7 +51,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static string Configure
+        public static bool Configure
         {
             get;
             set;
@@ -122,7 +123,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static string HeartbeatInterval
+        public static int HeartbeatInterval
         {
             get;
             set;
@@ -134,7 +135,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static Dictionary<string, string> Settings
+        public static dynamic Settings
         {
             get;
             set;
@@ -158,7 +159,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static string SshdMonitorEnabled
+        public static bool SshdMonitorEnabled
         {
             get;
             set;
@@ -176,7 +177,7 @@ namespace Uhuru.BOSH.Agent
             Config.BaseDir = null;
             Config.MessageBus = null;
             Config.AgentId = null;
-            Config.Configure = null;
+            Config.Configure = false;
             Config.Blobstore = null;
             Config.BlobstoreProvider = null;
             Config.BlobstoreOptions = null;
@@ -188,59 +189,110 @@ namespace Uhuru.BOSH.Agent
             Config.SmtpPort = null;
             Config.SmtpUser = null;
             Config.SmtpPassword = null;
-            Config.HeartbeatInterval = null;
+            Config.HeartbeatInterval = 0;
             Config.SettingsFile = null;
             Config.Settings = null;
             Config.State = null;
             Config.SshdMonitorInterval = 0;
             Config.SshdStartDelay = 0;
-            Config.SshdMonitorEnabled = null;
+            Config.SshdMonitorEnabled = false;
             Config.Credentials = null;
         }
 
 
-        public static void Setup(YamlStream config)
+        public static void Setup(dynamic config, bool firstDeployment)
         {
-            YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
+            //YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
+            Config.SystemRoot = @"c:\"; //TODO system root
 
-            Config.Configure = root.GetString("configure");
+            Config.Configure =firstDeployment;
+            //Config.Configure = config["configure"] == null ? true : config["configure"];
+            //Config.Configure = root.GetString("configure");
+
             
-            Config.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
-            Config.AgentId = root.GetString("agent_id");
+            //Config.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
+            if (!Config.Configure)
+            {
+                Config.BaseDir = config.ContainsKey("base_dir") ? config["base_dir"].Value : DEFAULT_BASE_DIR;
+                Config.AgentId = config["agent_id"].Value;
+                Config.MessageBus = config["mbus"].Value;
+                Config.BlobstoreOptions = config.ContainsKey("blobstore_options") ? config["blobstore_options"].Value : null;
+            }
+            else
+            {
+                Config.BaseDir = DEFAULT_BASE_DIR;
+                Config.AgentId = "not_configured";
+                Config.MessageBus = "nats://localhost:4222";
+                Config.BlobstoreOptions = null;
+            }
+            //Config.AgentId = root.GetString("agent_id");
 
-            Config.MessageBus = root.GetString("mbus");
+            
+            //Config.MessageBus = root.GetString("mbus");
 
-            Config.BlobstoreOptions = new Collection<string>(){root.GetString("blobstore_options")};
-            Config.BlobstoreProvider = root.GetString("blobstore_provider");
+            
+            //Config.BlobstoreOptions = new Collection<string>(){root.GetString("blobstore_options")};
 
-            Config.InfrastructureName = root.GetString("infrastructure_name");
-            Config.PlatformName = root.GetString("platform_name");
+            Config.BlobstoreProvider = config.ContainsKey("blobstore_provider") ? config["blobstore_provider"] : null;
+            //Config.BlobstoreProvider = root.GetString("blobstore_provider");
 
-            Config.SystemRoot = root.GetString("root_dir") ?? "/";
+            Config.InfrastructureName = "Windows"; //TODO Always windows, from unity
+            
+            //Config.InfrastructureName = root.GetString("infrastructure_name");
 
-            Config.ProcessAlerts = root.GetBool("process_alerts");
-            Config.SmtpPort = root.GetString("smtp_port");
+            Config.PlatformName = "vcap"; //TODO From unity
+            //Config.PlatformName = root.GetString("platform_name");
+
+           
+            //Config.SystemRoot = root.GetString("root_dir") ?? "/";
+
+            Config.ProcessAlerts = true; //TODO from commandline
+            //Config.ProcessAlerts = root.GetBool("process_alerts");
+
+            Config.SmtpPort = "2852"; //TODO from commandline
+            //Config.SmtpPort = root.GetString("smtp_port");
             Config.SmtpUser = "vcap";
             Config.SmtpPassword = RandomPassword(8);
 
-            Config.HeartbeatInterval = root.GetString("heartbeat_interval");
+            Config.HeartbeatInterval = 60; //TODO from commandline
+            //root.GetString("heartbeat_interval");
 
-            Config.SshdMonitorInterval = root.GetInt("sshd_monitor_interval") ?? DEFAULT_SSHD_MONITOR_INTERVAL;
-            Config.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
-            Config.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
+            Config.SshdMonitorInterval = config.ContainsKey("sshd_monitor_interval") ? config["sshd_monitor_interval"] : DEFAULT_SSHD_MONITOR_INTERVAL;
 
-            if (!string.IsNullOrEmpty(Config.Configure))
-            {
-                Logger.Info(string.Format("Configuring Agent with: {0}", root.ToString()));
-            }
+            Config.SshdStartDelay = config.ContainsKey("sshd_start_delay") ? config["sshd_start_delay"] : DEFAULT_SSHD_START_DELAY;
+
+            //Config.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
+
+            Config.SshdMonitorEnabled = config.ContainsKey("sshd_monitor_enabled") ? config["sshd_monitor_enabled"] : false;
+            //Config.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
+
+            //if (!string.IsNullOrEmpty(Config.Configure))
+            //{
+            //    Logger.Info(string.Format("Configuring Agent with: {0}", root.ToString()));
+            //}
 
             Config.SettingsFile = Path.Combine(Config.BaseDir, "bosh", "settings.json");
 
-            Config.Credentials = root.GetString("credentials");
+            //Config.Credentials = root.GetString("credentials");
 
-            Config.Settings = new Dictionary<string, string>();
+            Config.Settings = GetSettings(Config.SettingsFile);
 
             Config.State = new State(Path.Combine(Config.BaseDir, "bosh", "state.yml"));
+            Logger.Info("Configuration done!");
+        }
+
+        private static YamlNode GetSettings(string settingsFile)
+        {
+            YamlNode root = null;
+            if (!File.Exists(settingsFile))
+                return null;
+
+            using (TextReader textReader = new StreamReader(settingsFile))
+            {
+                YamlNode[] nodes = YamlNode.FromYaml(textReader);
+                root = nodes[0];
+            }
+            return root;
         }
 
         /// <summary>

@@ -32,6 +32,7 @@ namespace Uhuru.BOSH.Agent
 
         public Bootstrap()
         {
+            Logger.Info("Starting bootstrap");
             Directory.CreateDirectory(Path.Combine(this.BaseDir, "bosh"));
             this.platform = Config.Platform;
         }
@@ -99,6 +100,20 @@ namespace Uhuru.BOSH.Agent
             LoadSettings();
             // Logger.Info("Loaded settings: {0}", this.settings.ToString());
 
+            if (Config.Settings != null)
+            {
+                UpdateIptables();
+                UpdatePasswords();
+                UpdateAgentId();
+                UpdateCredentials();
+                UpdateHostname();
+                UpdateMbus();
+                UpdateBlobStore();
+                SetupNetwork(); //TODO
+                UpdateTime();
+                SetupDiskData();
+                SetupTemp();
+            }
             //if (this.settings != null)
             //{
             //    UpdateIptables();
@@ -112,6 +127,56 @@ namespace Uhuru.BOSH.Agent
             return ret;
         }
 
+        private void SetupDiskData()
+        {
+            Logger.Warning("TODO Settup disk data");
+        }
+
+        private void UpdateTime()
+        {
+            Logger.Info("Updating time");
+            if (!Config.Settings.ContainsKey("ntp"))
+            {
+                Logger.Warning("no ntp-servers configured");
+                return;
+            }
+
+            foreach (dynamic ntpServer in Config.Settings["ntp"])
+            {
+                Ntp ntp = Ntp.GetNtpOffset(ntpServer.Value);
+                Logger.Info("Current time offset is :" + ntp.Offset + " to time server " + ntpServer); //TODO update time
+            }
+            
+             
+        }
+
+        private void SetupNetwork()
+        {
+            Config.Platform.SettupNetworking();
+        }
+
+        private void UpdateBlobStore()
+        {
+            Logger.Info("Setting blob store provider");
+            Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
+            Logger.Info("Set blob store provider to : " + Config.BlobstoreProvider);
+
+            Logger.Warning("TODO Set blobstore options");
+        }
+
+        private void UpdateMbus()
+        {
+            Config.MessageBus = Config.Settings["mbus"].Value;
+            Logger.Info("Setting message bus endpoint to to " + Config.MessageBus);
+        }
+
+        private void UpdateHostname()
+        {
+            Logger.Info("Updateing hostname to :" + Config.AgentId);
+
+            Logger.Warning("TODO This is not implemented");
+        }
+
         ////    def load_settings
         ////      @settings = Bosh::Agent::Config.infrastructure.load_settings
         ////      Bosh::Agent::Config.settings = @settings
@@ -119,9 +184,11 @@ namespace Uhuru.BOSH.Agent
 
         public void LoadSettings()
         {
-            // this.settings = Config.Infrastructure
-            // Config.Settings = settings;
-            throw new NotImplementedException();
+            Logger.Info("Loading settings");
+
+            Config.Settings = Config.Infrastructure.LoadSettings();
+
+            Logger.Info("Loaded settings :" + Config.Settings.ToString());
         }
 
         ////    def iptables(cmd)
@@ -164,7 +231,11 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateIptables()
         {
-            // rules = settings["iptables"];
+            if (!Config.Settings.ContainsKey("iptables"))
+            {
+                Logger.Info("No Ip table found in the config, skipping ip tables update");
+                return;
+            }
 
             throw new NotImplementedException();
         }
@@ -176,7 +247,15 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdatePasswords()
         {
-            throw new NotImplementedException();
+            if (Config.Settings.ContainsKey("env") && Config.Settings["env"].Count > 0)
+            {
+                throw new NotImplementedException();
+            }
+            else 
+            {
+                Logger.Info("No env settings detects, skipping password update process");
+            }
+            
         }
 
         ////    def update_agent_id
@@ -185,8 +264,10 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateAgentId()
         {
-            // Config.AgentId = settings["agent_id"];
-            throw new NotImplementedException();
+
+            Logger.Info("Updating agent Id");
+            Config.AgentId = Config.Settings["agent_id"].Value;
+            Logger.Info("New agent id is :" + Config.AgentId);
         }
 
         ////    def update_credentials
@@ -200,7 +281,14 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateCredentials()
         {
-            throw new NotImplementedException();
+            if (Config.Settings.ContainsKey("env") && Config.Settings["env"].Count > 0)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                Logger.Info("No env settings detects, skipping credential update process");
+            }
         }
 
         ////    def update_hostname
@@ -347,6 +435,7 @@ namespace Uhuru.BOSH.Agent
 
         void SetupTemp()
         {
+            Logger.Warning("TODO Not Implemented");
             // complate 
         }
 

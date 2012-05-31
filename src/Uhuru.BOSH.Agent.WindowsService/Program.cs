@@ -39,12 +39,12 @@ namespace Uhuru.BOSH.Agent.WindowsService
             }
             else
             {
-                using (BoshAgentWindowsService deaService = new BoshAgentWindowsService())
+                using (BoshAgentWindowsService boshAgentService = new BoshAgentWindowsService())
                 {
-                    deaService.Start();
+                    boshAgentService.Start();
                     Console.WriteLine(Strings.PressEnterToStopConsoleMessage);
                     Console.ReadLine();
-                    deaService.Stop();
+                    boshAgentService.Stop();
                 }
             }
         }
