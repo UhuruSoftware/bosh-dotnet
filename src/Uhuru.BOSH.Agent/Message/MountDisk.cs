@@ -21,16 +21,27 @@ namespace Uhuru.BOSH.Agent.Message
     {
         int cid;
 
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
         public static void Process(dynamic[] args)
         {
             new MountDisk(args).Mount();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MountDisk"/> class.
+        /// </summary>
+        /// <param name="args">The args.</param>
         public MountDisk(dynamic[] args)
         {
             cid = args[0];
         }
 
+        /// <summary>
+        /// Mounts this instance.
+        /// </summary>
         public void Mount()
         {
             if (Config.Configure)
@@ -42,18 +53,19 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
+        /// <summary>
+        /// Updates the settings.
+        /// </summary>
         public void UpdateSettings()
         {
-            // TODO: Bosh::Agent::Config.settings = Bosh::Agent::Config.infrastructure.load_settings
+            Config.Settings = Config.Infrastructure.LoadSettings();
             Logger.Info(String.Format("Settings: {0}", Settings.ToString()));
             throw new NotImplementedException();
         }
 
-      ////def update_settings
-      ////  Bosh::Agent::Config.settings = Bosh::Agent::Config.infrastructure.load_settings
-      ////  logger.info("Settings: #{settings}")
-      ////end
-
+        /// <summary>
+        /// Setups the disk.
+        /// </summary>
         public void SetupDisk()
         {
             Logger.Info(String.Format("Setup disk settings: {0}", Settings.ToString()));
@@ -75,6 +87,10 @@ namespace Uhuru.BOSH.Agent.Message
             MountPersistentDisk(cid);
         }
 
+        /// <summary>
+        /// Mounts the persistent disk.
+        /// </summary>
+        /// <param name="diskIndex">Index of the disk.</param>
         public void MountPersistentDisk(int diskIndex)
         {
             string storeMountPoint = Path.Combine(BaseDir, "store");
@@ -107,6 +123,12 @@ namespace Uhuru.BOSH.Agent.Message
 
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [long running].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [long running]; otherwise, <c>false</c>.
+        /// </value>
         public static bool LongRunning { get { return true; } }
     }
 }

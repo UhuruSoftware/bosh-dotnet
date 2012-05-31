@@ -27,6 +27,11 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
+        /// <summary>
+        /// Mounts the entry.
+        /// </summary>
+        /// <param name="partition">The partition.</param>
+        /// <returns></returns>
         public static string MountEntry(string partition)
         {
             throw new NotImplementedException();
@@ -36,6 +41,10 @@ namespace Uhuru.BOSH.Agent.Message
         static int GUARD_RETRIES = 600;
         static int GUARD_SLEEP = 1;
 
+        /// <summary>
+        /// Unmounts the guard.
+        /// </summary>
+        /// <param name="mountpoint">The mountpoint.</param>
         public static void UnmountGuard(string mountpoint)
         {
             int unmountAttempts = GUARD_RETRIES;
@@ -62,6 +71,12 @@ namespace Uhuru.BOSH.Agent.Message
             ////  logger.info("umount_guard #{mountpoint} succeeded (#{attempts})")
         }
 
+        /// <summary>
+        /// Ensures the no partition.
+        /// </summary>
+        /// <param name="disk">The disk.</param>
+        /// <param name="partition">The partition.</param>
+        /// <returns></returns>
         public static bool EnsureNoPartition(string disk, string partition)
         {
             throw new NotImplementedException();
@@ -89,12 +104,22 @@ namespace Uhuru.BOSH.Agent.Message
         }
 
 
+        /// <summary>
+        /// Lookups the partition.
+        /// </summary>
+        /// <param name="disk">The disk.</param>
+        /// <param name="partition">The partition.</param>
+        /// <returns></returns>
         public static string LookupPartition(string disk, string partition)
         {
             throw new NotImplementedException();
             //// `sfdisk -Llq #{disk}`.lines.select { |l| l.match(%q{/\A#{partition}.*83.*Linux}) }
         }
 
+        /// <summary>
+        /// Gets the usage.
+        /// </summary>
+        /// <returns></returns>
         public static Dictionary<string, object> GetUsage()
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
@@ -130,6 +155,12 @@ namespace Uhuru.BOSH.Agent.Message
             return result;
         }
 
+        /// <summary>
+        /// Creates the primary partition.
+        /// </summary>
+        /// <param name="diskIndex">Index of the disk.</param>
+        /// <param name="label">The label.</param>
+        /// <returns></returns>
         public static int CreatePrimaryPartition(int diskIndex, string label)
         {
             string script = String.Format(@"SELECT Disk {0}
@@ -159,6 +190,11 @@ EXIT", diskIndex, label);
             }
         }
 
+        /// <summary>
+        /// Disks the has partition.
+        /// </summary>
+        /// <param name="diskIndex">Index of the disk.</param>
+        /// <returns></returns>
         public static bool DiskHasPartition(int diskIndex)
         {
             using (ManagementObjectSearcher search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskDrive "))
@@ -181,6 +217,12 @@ EXIT", diskIndex, label);
             throw new Exception("Disk not found");
         }
 
+        /// <summary>
+        /// Mounts the partition.
+        /// </summary>
+        /// <param name="diskIndex">Index of the disk.</param>
+        /// <param name="mountPath">The mount path.</param>
+        /// <returns></returns>
         public static int MountPartition(int diskIndex, string mountPath)
         {
             string script = String.Format(@"SELECT Disk {0}
@@ -208,6 +250,13 @@ ASSIGN MOUNT={0}", mountPath);
             }
         }
 
+        /// <summary>
+        /// Determines whether [is mount point] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>
+        ///   <c>true</c> if [is mount point] [the specified path]; otherwise, <c>false</c>.
+        /// </returns>
         public static bool IsMountPoint(string path)
         {
             char[] trimChars = { '\\' };
@@ -230,6 +279,11 @@ ASSIGN MOUNT={0}", mountPath);
             return (int)((capacity - freeSpace) / capacity * 100);
         }
 
+        /// <summary>
+        /// Gets the disk id for mount point.
+        /// </summary>
+        /// <param name="mountPoint">The mount point.</param>
+        /// <returns></returns>
         public static int GetDiskIdForMountPoint(string mountPoint)
         {
             string volumeId = GetVolumeDeviceId(mountPoint).TrimEnd(new char[] { '\\' });
@@ -271,8 +325,14 @@ ASSIGN MOUNT={0}", mountPath);
             {
                 return diskId;
             }
+
         }
 
+        /// <summary>
+        /// Gets the volume device id.
+        /// </summary>
+        /// <param name="mountPoint">The mount point.</param>
+        /// <returns></returns>
         public static string GetVolumeDeviceId(string mountPoint)
         {
             using (ManagementClass volume = new ManagementClass("Win32_Volume"))

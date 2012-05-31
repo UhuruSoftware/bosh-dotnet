@@ -10,18 +10,31 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Unmount", Justification = "FxCop Bug")]
-    public class UnmountDisk
+    public class UnmountDisk : Base
     {
-      ////def self.long_running?; true; end
+        /// <summary>
+        /// Gets a value indicating whether [long running].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [long running]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LongRunning { get { return true; } }
 
-      ////def self.process(args)
-      ////  self.new.unmount(args)
-      ////end
+        public static void Process(dynamic args)
+        {
+            new UnmountDisk().Unmount(args);
+        }
+
+        public void Unmount(dynamic args)
+        {
+            throw new NotImplementedException();
+        }
 
       ////def unmount(args)
       ////  cid = args.first
