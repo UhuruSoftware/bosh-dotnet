@@ -8,11 +8,10 @@ namespace Uhuru.BOSH.Agent.Message
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.IO;
     using System.Diagnostics;
+    using System.IO;
     using System.Management;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// TODO: Update summary.
@@ -229,6 +228,65 @@ ASSIGN MOUNT={0}", mountPath);
         private static int CalculateDiskUsage(UInt64 capacity, UInt64 freeSpace)
         {
             return (int)((capacity - freeSpace) / capacity * 100);
+        }
+
+        public static int GetDiskIdForMountPoint(string mountPoint)
+        {
+            string volumeId = GetVolumeDeviceId(mountPoint).TrimEnd(new char[] { '\\' });
+
+            IntPtr file = NativeMethods.CreateFile(volumeId, NativeMethods.GENERIC_READ, NativeMethods.FILE_SHARE_READ | NativeMethods.FILE_SHARE_WRITE, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
+
+            int size = 0x400;
+            IntPtr buffer = Marshal.AllocHGlobal(size);
+            int bytesReturned = 0;
+
+            try
+            {
+                NativeMethods.DeviceIoControl(file, NativeMethods.IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, IntPtr.Zero, 0, buffer, size, out bytesReturned, IntPtr.Zero);
+            }
+            finally
+            {
+                NativeMethods.CloseHandle(file);
+            }
+
+            int diskId = -1;
+
+            if (bytesReturned > 0)
+            {
+                int numberOfDiskExtents = (int)Marshal.PtrToStructure(buffer, typeof(int));
+                for (int i = 0; i < numberOfDiskExtents; i++)
+                {
+                    IntPtr extentPtr = new IntPtr(buffer.ToInt32() + Marshal.SizeOf(typeof(long)) + i * Marshal.SizeOf(typeof(NativeMethods.DISK_EXTENT)));
+                    NativeMethods.DISK_EXTENT extent = (NativeMethods.DISK_EXTENT)Marshal.PtrToStructure(extentPtr, typeof(NativeMethods.DISK_EXTENT));
+
+                    diskId = extent.DiskNumber;
+                }
+            }
+
+            if (diskId == -1)
+            {
+                throw new Exception("Could not get disk id.");
+            }
+            else
+            {
+                return diskId;
+            }
+        }
+
+        public static string GetVolumeDeviceId(string mountPoint)
+        {
+            using (ManagementClass volume = new ManagementClass("Win32_Volume"))
+            { 
+                ManagementObjectCollection moc = volume.GetInstances();
+                foreach (ManagementObject mo in moc)
+                {
+                    if (mo["Caption"].ToString() == mountPoint)
+                    {
+                        return mo["DeviceID"].ToString();
+                    }
+                }
+            }
+            return string.Empty;
         }
     }
 }
