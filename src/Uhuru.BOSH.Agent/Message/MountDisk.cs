@@ -33,7 +33,7 @@ namespace Uhuru.BOSH.Agent.Message
 
         public void Mount()
         {
-            if (!string.IsNullOrEmpty(Config.Configure))
+            if (Config.Configure)
             {
                 UpdateSettings();
                 Logger.Info("MountDisk: {0} - {1}", cid, Settings["disk"].ToString());
