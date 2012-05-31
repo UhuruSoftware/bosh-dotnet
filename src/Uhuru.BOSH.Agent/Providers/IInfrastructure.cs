@@ -13,7 +13,7 @@ namespace Uhuru.BOSH.Agent.Providers
         /// <summary>
         /// Loads the settings.
         /// </summary>
-        void LoadSettings();
+        dynamic LoadSettings();
 
 
         /// <summary>

@@ -21,8 +21,9 @@ namespace Uhuru.BOSH.Agent.Infrastructures
         /// <summary>
         /// Loads the settings.
         /// </summary>
-        public void LoadSettings()
+        public dynamic LoadSettings()
         {
+            return null;
         }
         /// <summary>
         /// Gets the network settings.

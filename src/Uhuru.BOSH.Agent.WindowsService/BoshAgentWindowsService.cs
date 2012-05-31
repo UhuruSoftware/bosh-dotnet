@@ -27,6 +27,8 @@ namespace Uhuru.BOSH.Agent.WindowsService
         internal void Start()
         {
             this.AutoLog = true;
+            AgentRunner agentRunner = new AgentRunner();
+            agentRunner.ToString();
         }
 
         /// <summary>

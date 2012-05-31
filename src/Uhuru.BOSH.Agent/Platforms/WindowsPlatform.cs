@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Uhuru.BOSH.Agent.Providers;
+using Uhuru.BOSH.Agent.Platforms.Windows;
 
 namespace Uhuru.BOSH.Agent.Platforms
 {
@@ -35,7 +36,8 @@ namespace Uhuru.BOSH.Agent.Platforms
 
         public void SettupNetworking()
         {
-            throw new NotImplementedException();
+            WindowsNetwork windowsNetwork = new WindowsNetwork();
+            windowsNetwork.SetupNetwork();
         }
     }
 }
