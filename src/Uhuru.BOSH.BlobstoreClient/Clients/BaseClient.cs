@@ -14,8 +14,10 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class BaseClient
+    public class BaseClient : IClient
     {
+
+
       //  class BaseClient < Client
 
       //    def initialize(options)
@@ -92,6 +94,32 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
 
       //  end
       //end
+
+
+        public BaseClient(object options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual string Create(object contents)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual object Get(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void Get(string id, string filePath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void Delete(string id)
+        {
+            throw new NotImplementedException();
+        }
 
     }
 }

@@ -10,7 +10,7 @@ namespace Uhuru.BOSH.BlobstoreClient
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-using Uhuru.BOSH.BlobstoreClient.Clients;
+    using Uhuru.BOSH.BlobstoreClient.Clients;
 
     /// <summary>
     /// TODO: Update summary.
@@ -18,29 +18,31 @@ using Uhuru.BOSH.BlobstoreClient.Clients;
     public class BlobstoreClient
     {
 
-        //class Client
-
-        //  PROVIDER_MAP = {
-        //    "simple" => SimpleBlobstoreClient,
-        //    "s3" => S3BlobstoreClient,
-        //    "atmos" => AtmosBlobstoreClient,
-        //    "local" => LocalClient
-        //  }
-
-        //  def self.create(provider, options = {})
-        //    p = PROVIDER_MAP[provider]
-        //    if p
-        //      p.new(options)
-        //    else
-        //      providers = PROVIDER_MAP.keys.sort.join(", ")
-        //      raise "Invalid client provider, available providers are: #{providers}"
-        //    end
-        //  end
-        //end
-
-        public static IClient Create(string provider, string[] options)
+        public static IClient Create(string provider, dynamic options)
         {
-            return new SimpleClient();
+            switch (provider)
+            {
+                case "simple":
+                    return new SimpleClient(options);
+                    break;
+
+                case "local":
+                    return new LocalClient(options);
+                    break;
+
+                case "s3":
+                    return new AmazonS3Client(options);
+                    break;
+
+                case "atmos":
+                    return new AtmosClient(options);
+                    break;
+
+                default:
+                    throw new ArgumentException("privider", "Invalid client provider");
+            }
+
+            
         }
 
     }
