@@ -102,36 +102,33 @@ namespace Uhuru.BOSH.Agent.Message
             result.Add("system", null);
             result.Add("ephemeral", null);
 
-            DriveInfo[] allDrives = DriveInfo.GetDrives();
+            string dataDir = Path.Combine(BaseDir, "data").TrimEnd(new char[] { '\\' }).ToLower();
+            string storeDir = Path.Combine(BaseDir, "store").TrimEnd(new char[] { '\\' }).ToLower();
 
-            throw new NotImplementedException();
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Volume");
 
-            ////  disk_usage = `#{disk_usage_command}`
+            foreach (ManagementObject queryObj in searcher.Get())
+            {
+                string caption = queryObj["Caption"].ToString().TrimEnd(new char[] { '\\' }).ToLower();
+                if (caption == "c:")
+                {
+                    result["system"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString()));
+                    continue;
+                }
+                else if (caption == dataDir)
+                {
+                    result["ephemeral"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString()));
+                    continue;
+                }
+                else if (caption == storeDir)
+                {
+                    result.Add("persistent", CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString())));
+                    continue;
+                }
 
-            ////  if $?.to_i != 0
-            ////    logger.error("Failed to get disk usage data, df exit code = #{$?.to_i}")
-            ////    return result
-            ////  end
+            }
 
-            ////  disk_usage.split("\n")[1..-1].each do |line|
-            ////    usage, mountpoint = line.split(/\s+/)
-            ////    usage.gsub!(/%$/, '')
-
-            ////    case mountpoint
-            ////    when "/"
-            ////      result["system"]["percent"] = usage
-            ////    when File.join("#{base_dir}", "data")
-            ////      result["ephemeral"]["percent"] = usage
-            ////    when File.join("#{base_dir}", "store")
-            ////      # Only include persistent disk data if
-            ////      # persistent disk is there
-            ////      result["persistent"] = { }
-            ////      result["persistent"]["percent"] = usage
-            ////    end
-            ////  end
-
-            ////  result
-
+            return result;
         }
 
         public static int CreatePrimaryPartition(int diskIndex, string label)
@@ -227,6 +224,11 @@ ASSIGN MOUNT={0}", mountPath);
                 }
             }
             return false;
+        }
+
+        private static int CalculateDiskUsage(UInt64 capacity, UInt64 freeSpace)
+        {
+            return (int)((capacity - freeSpace) / capacity * 100);
         }
     }
 }
