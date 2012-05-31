@@ -92,6 +92,7 @@
     <Compile Include="TestUtil.cs" />
     <Compile Include="Unit\ConfigTest.cs" />
     <Compile Include="Unit\EncryptionHandlerTest.cs" />
+    <Compile Include="Integration\HandlerTests.cs" />
     <Compile Include="Unit\NtpTest.cs" />
     <Compile Include="Unit\RemoteExceptionTest.cs" />
     <Compile Include="Unit\StateTest.cs" />
@@ -108,10 +109,12 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Assets\apply_spec.yml" />
+    <None Include="log4net_test.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\settings.json" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Integration\" />
     <Folder Include="Performance\" />
     <Folder Include="SystemTests\" />
     <Folder Include="Test References\" />

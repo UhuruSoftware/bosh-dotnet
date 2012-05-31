@@ -115,6 +115,7 @@
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="NTPClient.cs" />
+    <Compile Include="Objects\HandlerResult.cs" />
     <Compile Include="Objects\Job.cs" />
     <Compile Include="Platforms\WindowsPlatform.cs" />
     <Compile Include="Platforms\Windows\WindowsNetwork.cs" />

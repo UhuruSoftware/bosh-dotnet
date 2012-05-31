@@ -109,7 +109,7 @@ namespace Uhuru.BOSH.Agent
                 UpdateHostname();
                 UpdateMbus();
                 UpdateBlobStore();
-                SetupNetwork(); //TODO
+                SetupNetwork(); 
                 UpdateTime();
                 SetupDiskData();
                 SetupTemp();

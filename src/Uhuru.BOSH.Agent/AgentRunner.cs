@@ -61,6 +61,7 @@ using System.IO;
                 Bootstrap bootStrap = new Bootstrap();
                 bootStrap.Configure();
             }
+            Handler.Start();
             
             
         }
