@@ -24,22 +24,18 @@ namespace Uhuru.BOSH.BlobstoreClient
             {
                 case "simple":
                     return new SimpleClient(options);
-                    break;
 
                 case "local":
                     return new LocalClient(options);
-                    break;
 
                 case "s3":
                     return new AmazonS3Client(options);
-                    break;
 
                 case "atmos":
                     return new AtmosClient(options);
-                    break;
 
                 default:
-                    throw new ArgumentException("privider", "Invalid client provider");
+                    throw new ArgumentException("provider", "Invalid client provider");
             }
 
             

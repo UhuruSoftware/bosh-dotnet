@@ -129,7 +129,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
         //      end
         //    end
 
-        //  end
+        //  end 
         //end
 
         public AmazonS3Client(object options)
