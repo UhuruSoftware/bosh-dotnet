@@ -11,84 +11,108 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     using System.Linq;
     using System.Text;
     using System.IO;
+    using System.Net;
+    using Uhuru.BOSH.BlobstoreClient.Errors;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class SimpleClient : BaseClient
     {
+        protected string endpoint;
+        protected WebHeaderCollection headers;
 
-      //  class SimpleBlobstoreClient < BaseClient
-
-      //    def initialize(options)
-      //      super(options)
-      //      @client = HTTPClient.new
-      //      @endpoint = @options[:endpoint]
-      //      @headers = {}
-      //      user = @options[:user]
-      //      password = @options[:password]
-      //      if user && password
-      //        @headers["Authorization"] = "Basic " +
-      //          Base64.encode64("#{user}:#{password}").strip
-      //      end
-      //    end
-
-      //    def url(id=nil)
-      //      ["#{@endpoint}/resources", id].compact.join("/")
-      //    end
-
-      //    def create_file(file)
-      //      response = @client.post(url, {:content => file}, @headers)
-      //      if response.status != 200
-      //        raise BlobstoreError,
-      //          "Could not create object, #{response.status}/#{response.content}"
-      //      end
-      //      response.content
-      //    end
-
-      //    def get_file(id, file)
-      //      response = @client.get(url(id), {}, @headers) do |block|
-      //        file.write(block)
-      //      end
-
-      //      if response.status != 200
-      //        raise BlobstoreError,
-      //          "Could not fetch object, #{response.status}/#{response.content}"
-      //      end
-      //    end
-
-      //    def delete(id)
-      //      response = @client.delete(url(id), @headers)
-      //      if response.status != 204
-      //        raise "Could not delete object, #{response.status}/#{response.content}"
-      //      end
-      //    end
-      //  end
-      //end
-
-        public SimpleClient(object options)
-            : base(options)
+        public SimpleClient(dynamic options)
+            : base((object)options)
         {
+            this.headers = new WebHeaderCollection();
+
+            endpoint = options["enpoint"];
+
+            string user = options["user"];
+            string password = options["password"];
+
+            if (user != null && password != null)
+            {
+                headers[HttpRequestHeader.Authorization] = "Basic " +
+                    Convert.ToBase64String(Encoding.ASCII.GetBytes(user + ":" + password)).Trim();
+            }
         }
 
-        public override string Create(string contents)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string Get(string id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Get(string id, FileInfo filePath)
-        {
-            throw new NotImplementedException();
-        }
 
         public override void Delete(string id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var request = HttpWebRequest.Create(url(id));
+                request.Method = "DELETE";
+                request.Headers = this.headers;
+
+                using (var reponse = request.GetResponse())
+                {
+                    if ((reponse as HttpWebResponse).StatusCode != HttpStatusCode.OK)
+                    {
+                        throw new BlobstoreException("Could not delete object");
+                    }
+                }
+            }
+            catch (BlobstoreException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new BlobstoreException("Could not delete object", e);
+            }
         }
+
+
+        protected string url(string id)
+        {
+            string ret = endpoint + "/resources";
+            if (id != null)
+            {
+                return ret;
+            }
+            else
+            {
+                return ret + "/" + id;
+            }
+        }
+
+        public override string CreateFile(FileInfo contentsFilePath)
+        {
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    client.Headers = this.headers;
+
+                    var response = client.UploadFile(url(null), "POST", contentsFilePath.FullName);
+                    return Encoding.ASCII.GetString(response);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new BlobstoreException("Could not create object", e);
+            }
+        }
+
+        public override void GetFile(string id, FileInfo outpuFile)
+        {
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    client.Headers = this.headers;
+                    client.DownloadFile(url(id), outpuFile.FullName);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new BlobstoreException("Could not fetch object", e);
+            }
+        }
+
     }
 }
