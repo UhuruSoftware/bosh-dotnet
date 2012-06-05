@@ -10,6 +10,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
 
     /// <summary>
     /// TODO: Update summary.
@@ -70,17 +71,17 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
         {
         }
 
-        public override string Create(object contents)
+        public override string Create(string contents)
         {
             throw new NotImplementedException();
         }
 
-        public override object Get(string id)
+        public override string Get(string id)
         {
             throw new NotImplementedException();
         }
 
-        public override void Get(string id, string filePath)
+        public override void Get(string id, FileInfo filePath)
         {
             throw new NotImplementedException();
         }

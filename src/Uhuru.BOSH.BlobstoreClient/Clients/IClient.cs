@@ -21,12 +21,19 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
 
         //IClient(object options);
 
-        string Create(object contents);
+        // Create a new blob and returns the blob ID
+        string Create(string contents);
+        
+        // Creates a new blob from file and returns the blob ID
+        string Create(FileInfo contentsFilePath);
 
-        object Get(string id);
+        // Gets the blob content
+        string Get(string id);
 
-        void Get(string id, string outpuFile);
+        // Get the blob from the ID and writes the output to a file
+        void Get(string id, FileInfo outputFile);
 
+        // Deletes a blob
         void Delete(string id);
     }
 }

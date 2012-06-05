@@ -10,6 +10,8 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
+    using Uhuru.BOSH.BlobstoreClient.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -17,108 +19,91 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     public class BaseClient : IClient
     {
 
+        protected object options;
 
-      //  class BaseClient < Client
-
-      //    def initialize(options)
-      //      @options = symbolize_keys(options)
-      //    end
-
-      //    def symbolize_keys(hash)
-      //      hash.inject({}) do |h, (key, value)|
-      //        h[key.to_sym] = value
-      //        h
-      //      end
-      //    end
-
-      //    def create_file(file)
-
-      //    end
-
-      //    def get_file(id, file)
-
-      //    end
-
-      //    def create(contents)
-      //      if contents.kind_of?(File)
-      //        create_file(contents)
-      //      else
-      //        temp_path do |path|
-      //          begin
-      //            File.open(path, "w") do |file|
-      //              file.write(contents)
-      //            end
-      //            create_file(File.open(path, "r"))
-      //          rescue BlobstoreError => e
-      //            raise e
-      //          rescue Exception => e
-      //            raise BlobstoreError,
-      //              "Failed to create object, underlying error: %s %s" %
-      //              [e.message, e.backtrace.join("\n")]
-      //          end
-      //        end
-      //      end
-      //    end
-
-      //    def get(id, file = nil)
-      //      if file
-      //        get_file(id, file)
-      //      else
-      //        result = nil
-      //        temp_path do |path|
-      //          begin
-      //            File.open(path, "w") { |file| get_file(id, file) }
-      //            result = File.open(path, "r") { |file| file.read }
-      //          rescue BlobstoreError => e
-      //            raise e
-      //          rescue Exception => e
-      //            raise BlobstoreError,
-      //              "Failed to create object, underlying error: %s %s" %
-      //              [e.message, e.backtrace.join("\n")]
-      //          end
-      //        end
-      //        result
-      //      end
-      //    end
-
-      //    protected
-
-      //    def temp_path
-      //      path = File.join(Dir::tmpdir, "temp-path-#{UUIDTools::UUID.random_create}")
-      //      begin
-      //        yield path
-      //      ensure
-      //        FileUtils.rm_f(path)
-      //      end
-      //    end
-
-      //  end
-      //end
-
-
-        public BaseClient(object options)
+        protected BaseClient(object options)
         {
-            throw new NotImplementedException();
+            this.options = options;
         }
 
-        public virtual string Create(object contents)
+        public virtual string Create(string contents)
         {
-            throw new NotImplementedException();
+            try
+            {
+                string tempFile = TempPath();
+
+                File.WriteAllText(tempFile, contents);
+
+                return CreateFile(new FileInfo(tempFile));
+            }
+            catch (BlobstoreException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new BlobstoreException("Failed to create object", e);
+            }
         }
 
-        public virtual object Get(string id)
+        public virtual string Create(FileInfo contentsFilePath)
         {
-            throw new NotImplementedException();
+            return CreateFile(contentsFilePath);
         }
 
-        public virtual void Get(string id, string filePath)
+        public virtual string Get(string id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                string tempFile = TempPath();
+
+                GetFile(id, new FileInfo(tempFile));
+
+                return File.ReadAllText(tempFile);
+            }
+            catch (BlobstoreException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new BlobstoreException("Failed to create object", e);
+            }
+        }
+
+        public virtual void Get(string id, FileInfo outpuFile)
+        {
+            GetFile(id, outpuFile);         
         }
 
         public virtual void Delete(string id)
         {
             throw new NotImplementedException();
+        }
+
+
+        // Creates the blob from a file.
+        public virtual string CreateFile(FileInfo contentsFilePath)
+        {
+            throw new NotImplementedException();
+        }
+
+        // Gets the blob from a file.
+        public virtual void GetFile(string id, FileInfo outpuFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected string TempPath()
+        {
+            string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            try
+            {
+                File.Delete(path);
+            }
+            catch{}
+
+            return path;
         }
 
     }

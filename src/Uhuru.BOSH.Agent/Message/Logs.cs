@@ -121,10 +121,8 @@ using YamlDotNet.RepresentationModel;
                 IClient blobstore = BlobstoreClient.Create(bscProvider,  bscOptions );
                 Logger.Info("Uploading tarball to blobstore");
 
-                using (StreamReader reader = new StreamReader(path))
-                {
-                    blobstoreId = blobstore.Create(reader);
-                }
+                
+                blobstoreId = blobstore.Create(new FileInfo(path));
             }
             catch (Exception e)
             {
