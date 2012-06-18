@@ -1,0 +1,1 @@
+xsd MonitSpec.xsd /c /n:MonitSpec.Base

@@ -16,22 +16,27 @@ namespace Uhuru.BOSH.Agent.Message
     /// TODO: Update summary.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Keeping the name so it's the same as VMWare's")]
-    public class Stop
+    public class Stop: IMessage
     {
-        public static string Process(string[] args)
+        public string Process(dynamic args)
         {
             try
             {
                 if (!Config.Configure)
                 {
-                    throw new NotImplementedException(); //TODO: florind Bosh::Agent::Monit.stop_services
+                    //TODO: florind Bosh::Agent::Monit.stop_services
                 }
-                return "stopped";
+                return "\"stopped\"";
             }
             catch (Exception e)
             {
                 throw new MessageHandlerException(String.Format("Cannot stop job: {0}", e.ToString()));
             }
+        }
+
+        public bool IsLongRunning()
+        {
+            return true;
         }
     }
 }

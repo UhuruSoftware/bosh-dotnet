@@ -21,7 +21,7 @@ namespace Uhuru.BOSH.Agent.Providers
         /// </summary>
         /// <param name="networkName">Name of the network.</param>
         /// <param name="properties">The properties.</param>
-        void GetNetworkSettings(string networkName, Dictionary<string,string> properties);
+        dynamic GetNetworkSettings(string networkName, dynamic properties);
     
     }
 }

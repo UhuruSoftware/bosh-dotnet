@@ -88,6 +88,11 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
+        public dynamic ToHash()
+        {
+            return data;
+        }
+
         public void SetValue(string key, dynamic value)
         {
             lock (locker)
@@ -165,7 +170,9 @@ namespace Uhuru.BOSH.Agent
 
             //This is because we do not support multiple documents in the same yaml
             data = newState;
-            
+            job = GetCurrentJob();
+            networks = GetCurrentNetworks();
+            File.WriteAllText(stateFile, data.ToString());
         }
 
 
@@ -186,7 +193,7 @@ namespace Uhuru.BOSH.Agent
         {
             if (!data.ContainsKey("job"))
                 return null;
-
+            
             Job currentJob = new Job();
             currentJob.Name = data["job"]["name"].Value;
             currentJob.Version = data["job"]["version"].Value;

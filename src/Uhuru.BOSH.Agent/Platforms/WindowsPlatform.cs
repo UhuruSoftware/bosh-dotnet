@@ -11,7 +11,7 @@ namespace Uhuru.BOSH.Agent.Platforms
     {
         public void MountPersistentDisk(string cid)
         {
-            throw new NotImplementedException();
+            new Disk().MountPersistentDisk(cid);
         }
 
         public void UpdateLogging()
@@ -26,12 +26,12 @@ namespace Uhuru.BOSH.Agent.Platforms
 
         public string LookupDiskByCid(string cid)
         {
-            throw new NotImplementedException();
+            return new Disk().LookupDiskByCid(cid);
         }
 
         public string GetDataDiskDeviceName()
         {
-            throw new NotImplementedException();
+            return new Disk().GetDataDiskDeviceName(); 
         }
 
         public void SettupNetworking()

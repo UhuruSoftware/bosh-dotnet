@@ -10,6 +10,12 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+using System.Threading;
+    using System.IO;
+    using System.ServiceProcess;
+    using System.Xml.Serialization;
+    using Uhuru.Utilities;
+    using System.Diagnostics;
 
     /// <summary>
     /// TODO: Update summary.
@@ -19,7 +25,52 @@ namespace Uhuru.BOSH.Agent
     {
    //// BUFSIZE = (32 * 1024)
    //// NUM_RETRY_MONIT_INCARNATION = 60
+        int poolTime = 6000;
+        static string jobDefDirectory = @"c:\vcap\jobs";
+        MonitPerformance monitPerformance = null;
 
+        private List<MonitSpec.Base.Job> specifiedJobs = new List<MonitSpec.Base.Job>();
+        private Dictionary<string, ServiceControllerStatus> serviceControllers = new Dictionary<string, ServiceControllerStatus>();
+        private static readonly object locker = new object();
+
+        private static volatile Monit instance;
+        private bool enabled = false;
+        
+        private Monit() {
+
+            //MonitorServices();
+            monitPerformance = new MonitPerformance();
+        }
+
+
+        /// <summary>
+        /// Gets the instance.
+        /// </summary>
+        /// <returns></returns>
+        public static Monit GetInstance(string jobDefinitionDirectory)
+        {
+            if (instance == null)
+            {
+                lock (locker)
+                {
+                    if (jobDefinitionDirectory != string.Empty)
+                    {
+                        jobDefDirectory = jobDefinitionDirectory;
+                    }
+                    if (instance == null)
+                    {
+                        instance = new Monit();
+                             
+                    }
+                }
+            }
+            return instance;
+        }
+
+        public static Monit GetInstance()
+        {
+            return GetInstance(string.Empty);
+        }
    //// class << self
    ////   attr_accessor :enabled
 
@@ -29,11 +80,58 @@ namespace Uhuru.BOSH.Agent
    ////   def enable
    ////     @enabled     = true
    ////   end
-
+        public void Enable()
+        {
+            enabled = true;
+        }
    ////   def start
    ////     new.run
    ////   end
+        public void Start()
+        {
+            Logger.Info("Starting monit");
+            Utilities.TimerHelper.RecurringLongCall(poolTime, new Utilities.TimerCallback(Run));
+            //Utilities.TimerHelper.RecurringCall
+        }
 
+        public void Run()
+        {
+            ServiceController[] allServices = ServiceController.GetServices();
+            lock (locker)
+            {
+                MonitorServices();
+                foreach (MonitSpec.Base.Job currentServiceSpec in specifiedJobs)
+                {
+                    foreach (MonitSpec.Base.JobService service in currentServiceSpec.Service)
+                    {
+                        foreach (ServiceController serviceController in allServices)
+                        {
+                            if (serviceController.DisplayName == service.Name)
+                            {
+                                if (!serviceControllers.ContainsKey(serviceController.DisplayName))
+                                {
+                                    Logger.Info("Monitoring service :" + serviceController.DisplayName);
+                                    serviceControllers.Add(serviceController.DisplayName, serviceController.Status);
+                                }
+                                else
+                                {
+                                    if (serviceControllers[serviceController.DisplayName] != serviceController.Status)
+                                    {
+                                        Logger.Info("Status changed for service :" + service.Name);
+                                        //Reise event
+                                        serviceControllers[serviceController.DisplayName] = serviceController.Status;
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        }
    ////   def base_dir
    ////     Bosh::Agent::Config.base_dir
    ////   end
@@ -162,24 +260,117 @@ namespace Uhuru.BOSH.Agent
    ////       client.unmonitor(:group => BOSH_APP_GROUP)
    ////     end
    ////   end
+        /// <summary>
+        /// The system no longer monitors the described services.
+        /// </summary>
+        public void UnmonitorServices()
+        {
+            lock (locker)
+            {
+                specifiedJobs.Clear();
+                serviceControllers.Clear();
+            }
+        }
+
 
    ////   def monitor_services(attempts=10)
    ////     retry_monit_request(attempts) do |client|
    ////       client.monitor(:group => BOSH_APP_GROUP)
    ////     end
    ////   end
+        /// <summary>
+        /// Monitors the all the services.
+        /// </summary>
+         private void MonitorServices()
+        {
+            if (!Directory.Exists(jobDefDirectory))
+            {
+                Logger.Warning("Job directory was not created");
+                return;
+            }
+            specifiedJobs.Clear();
+            foreach (string jobDefFile in Directory.GetFiles(jobDefDirectory, "*.xml", SearchOption.AllDirectories))
+            {
+
+                if (jobDefFile.EndsWith(".xml"))
+                {
+                    //MonitSpec.Base.Job currentServiceSpec = null;
+                    XmlSerializer serializer = new XmlSerializer(typeof(MonitSpec.Base.Job));
+
+                    using (FileStream fileStream = File.OpenRead(jobDefFile))
+                    {
+                        //currentServiceSpec = ;
+                        specifiedJobs.Add((MonitSpec.Base.Job)serializer.Deserialize(fileStream));
+                    }
+                }
+            }
+        }
+             
 
    ////   def start_services(attempts=20)
    ////     retry_monit_request(attempts) do |client|
    ////       client.start(:group => BOSH_APP_GROUP)
    ////     end
    ////   end
+         /// <summary>
+         /// Starts all the services from all the described jobs.
+         /// </summary>
+        public void StartServices()
+         {
+             lock (locker)
+             {
+                 
+                 Logger.Info("Starting all the services");
+                 ServiceController[] allServices = ServiceController.GetServices();
+                 foreach (string serviceName in serviceControllers.Keys)
+                 {
+                     Logger.Info("Starting service :" + serviceName);
+                     ServiceController serviceController = (from entity in allServices
+                                                            where entity.DisplayName == serviceName
+                                                            select entity).First();
+                     try
+                     {
+                         serviceController.Start();
+                     }
+                     catch (Exception ex)
+                     {
+                         Logger.Error("Error while starting " + ex.ToString());
+                     }
+                 }
+             }
+         }
 
    ////   def stop_services(attempts=20)
    ////     retry_monit_request(attempts) do |client|
    ////       client.stop(:group => BOSH_APP_GROUP)
    ////     end
    ////   end
+        /// <summary>
+        /// Stops the all the services from the described jobs.
+        /// </summary>
+        public void StopServices()
+        {
+            lock (locker)
+            {
+                Logger.Info("Stopping services");
+                ServiceController[] allServices = ServiceController.GetServices();
+                foreach (string serviceName in serviceControllers.Keys)
+                {
+                    Logger.Info("Stopping service " + serviceName );
+                    ServiceController serviceController = (from entity in allServices
+                                                           where entity.DisplayName == serviceName
+                                                           select entity).First();
+                    try
+                    {
+                        serviceController.Stop();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("Cannot stop service " + serviceController.DisplayName + " " + ex.ToString());
+                    }
+                }
+            }
+        }
 
    ////   def retry_monit_request(attempts=10)
    ////     # HACK: Monit becomes unresponsive after reload
@@ -226,6 +417,7 @@ namespace Uhuru.BOSH.Agent
    ////       client.status(:group => BOSH_APP_GROUP)
    ////     end
    ////   end
+       
 
    ////   def get_system_status(num_retries=10)
    ////     return {} unless @enabled
@@ -235,6 +427,7 @@ namespace Uhuru.BOSH.Agent
    ////       system_status.values.first
    ////     end
    ////   end
+       
 
    ////   def get_vitals(num_retries=10)
    ////     return {} unless @enabled
@@ -255,6 +448,10 @@ namespace Uhuru.BOSH.Agent
    ////       "swap" => { "percent" => swap["percent"], "kb" => swap["kilobyte"] }
    ////     }
    ////   end
+        public Vitals GetVitals()
+        {
+            return monitPerformance.GetVitals();
+        }
 
    ////   def service_group_state(num_retries=10)
    ////     # FIXME: state should be unknown if monit is disabled
@@ -275,6 +472,24 @@ namespace Uhuru.BOSH.Agent
    ////     logger.info("Unable to determine job state: #{e}")
    ////     "unknown"
    ////   end
+        public string GetServiceGourpState()
+        {
+            if (!enabled) return "running";
+
+            foreach (KeyValuePair<string, ServiceControllerStatus> service in serviceControllers )
+            {
+                if (service.Value == ServiceControllerStatus.StartPending)
+                {
+                    return "starting";
+                }
+                else if (service.Value != ServiceControllerStatus.Running)
+                {
+                    return "failing";
+                }
+            }
+
+            return "running";
+        }
 
    //// end
 

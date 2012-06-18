@@ -86,10 +86,10 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
 
             baseDir = Config.BaseDir;
-            name = spec["name"];
-            version = spec["version"];
-            checksum = spec["checksum"];
-            blobstoreId = spec["blobstore_id"];
+            name = spec["name"].Value;
+            version = spec["version"].Value;
+            checksum = spec.ContainsKey("checksum") ? spec["checksum"].Value : null; 
+            blobstoreId = spec["blobstore_id"].Value;
             installPath = Path.Combine(baseDir, "data", "packages", name, version);
             linkPath = Path.Combine(baseDir, "packages", name);
 

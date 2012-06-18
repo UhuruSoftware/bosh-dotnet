@@ -1,0 +1,10 @@
+﻿<Job>
+  <Service Name="hudson">
+    <PreStart>dir</PreStart>
+    <PreStop>ipconfig</PreStop>
+  </Service>
+  <Service Name="DNS Client">
+    <PreStart>cmd</PreStart>
+    <PreStop>ping yahoo.com</PreStop>
+  </Service>
+</Job>

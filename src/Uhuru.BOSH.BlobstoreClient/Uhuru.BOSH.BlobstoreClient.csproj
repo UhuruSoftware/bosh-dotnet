@@ -40,7 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlobstoreClient.cs" />
+    <Compile Include="Blobstore.cs" />
     <Compile Include="Clients\AmazonS3Client.cs" />
     <Compile Include="Clients\AtmosClient.cs" />
     <Compile Include="Clients\BaseClient.cs" />

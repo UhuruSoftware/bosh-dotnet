@@ -11,13 +11,14 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Linq;
     using System.Text;
     using System.Security.Policy;
+    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class ListDisk : Base
+    public class ListDisk : Base, IMessage
     {
-        public static ICollection<string> Process(string[] args = null)
+        public string Process(dynamic args)
         {
             List<string> diskInfo = new List<string>();
 
@@ -33,18 +34,29 @@ namespace Uhuru.BOSH.Agent.Message
             ////    cids = {}
             ////  end
 
-            cids = settings["disk"]["persistent"] ?? new string[] {};
+            cids = settings["disks"]["persistent"] ?? new string[] {};
+
+            if (cids.Count == 0)
+                return cids.ToString();
 
             foreach (var cid in cids)
             {
-                string disk = Config.Platform.LookupDiskByCid(cid);
-                if (!(DiskUtil.MountEntry(disk) == null))
+                string diskId = Config.Platform.LookupDiskByCid(cid.Value);
+                if (!(DiskUtil.MountEntry(diskId) == null))
                 {
                     diskInfo.Add(cid);
                 }
             }
 
-            return diskInfo;
+            JObject obj = JObject.FromObject(diskInfo);
+
+            return obj.ToString();
         }
+
+        public bool IsLongRunning()
+        {
+            return false;
+        }
+
     }
 }

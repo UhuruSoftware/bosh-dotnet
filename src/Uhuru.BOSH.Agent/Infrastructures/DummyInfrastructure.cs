@@ -30,7 +30,7 @@ namespace Uhuru.BOSH.Agent.Infrastructures
         /// </summary>
         /// <param name="networkName">Name of the network.</param>
         /// <param name="properties">The properties.</param>
-        public void GetNetworkSettings(string networkName, Dictionary<string, string> properties)
+        public dynamic GetNetworkSettings(string networkName, dynamic properties)
         {
             throw new NotImplementedException();
         }

@@ -10,6 +10,10 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Uhuru.Utilities;
+    using Uhuru.BOSH.Agent.Errors;
+    using Uhuru.BOSH.Agent.Objects;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// TODO: Update summary.
@@ -63,7 +67,31 @@ namespace Uhuru.BOSH.Agent
     ////#       "timestamp": "14 Oct 11:13:19"
     ////#   }
     ////# }
+        public void SendViaMbus()
+        {
+            if (Config.State == null)
+            {
+                Logger.Error("Unable to send heartbeat: agent state unknown");
+                return;
+            }
 
+            if (Config.Nats == null)
+            {
+                throw new HeartbeatException("NATS should be initialized in order to send heartbeats");
+            }
+            string subject = "hm.agent.heartbeat." + Config.AgentId;
+            string message = GetHearbeatPayload();
+
+            Config.Nats.Publish(subject, MessageDelivered, message);
+
+            Logger.Info("Heartbeat sent");
+        }
+
+        void MessageDelivered()
+        {
+            Logger.Debug("Heartbeat delivered");
+            HeartbeatProcessor.pending--;
+        }
     ////def heartbeat_payload
     ////  job_state = Bosh::Agent::Monit.service_group_state
     ////  monit_vitals = Bosh::Agent::Monit.get_vitals
@@ -82,5 +110,24 @@ namespace Uhuru.BOSH.Agent
     ////                       "vitals" => vitals,
     ////                       "ntp" => Bosh::Agent::NTP.offset)
     ////end
+        private string GetHearbeatPayload()
+        {
+            HeartbeatMessage heartBeatMessage = new HeartbeatMessage();
+            
+            Vitals systemVitals = Monit.GetInstance().GetVitals();
+            
+            heartBeatMessage.Job = Config.State.Job.Name;
+            heartBeatMessage.Index = int.Parse(Config.State.ToHash()["index"].Value);
+            heartBeatMessage.JobState = Monit.GetInstance().GetServiceGourpState();
+            heartBeatMessage.Vitals = systemVitals;
+            heartBeatMessage.NtpMsg = new HeartbeatMessage.NtpMessage();
+            Ntp ntp = Ntp.GetNtpOffset();
+            heartBeatMessage.NtpMsg.Offset = ntp.Offset.ToString();
+            heartBeatMessage.NtpMsg.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss");
+
+            string result = JsonConvert.SerializeObject(heartBeatMessage);
+            
+            return result;
+        }
     }
 }

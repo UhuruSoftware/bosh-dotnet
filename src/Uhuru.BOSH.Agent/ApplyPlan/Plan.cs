@@ -95,12 +95,12 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             this.deployment = spec["deployment"];
             this.job = null;
             this.packages = new List<Package>();
-            this.configBinding = Util.conigBinding(spec);
+            //this.configBinding = Util.conigBinding(spec);
 
-            dynamic jobSpec = spec["job"];
-            dynamic packageSpecs = spec["packages"];
+            dynamic jobSpec = spec.ContainsKey("job") ? spec["job"] : null;
+            dynamic packageSpecs = spec.ContainsKey("packages") ? spec["packages"] : null;
 
-            if (jobSpec != null && jobSpec != "")
+            if (jobSpec != null && jobSpec.ToString() != "")
             {
                 this.job = new Job(jobSpec, this.configBinding);
             }

@@ -69,7 +69,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static Collection<string> BlobstoreOptions
+        public static dynamic BlobstoreOptions
         {
             get;
             set;

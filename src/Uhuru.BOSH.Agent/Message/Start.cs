@@ -15,22 +15,28 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class Start
+    public class Start : IMessage
     {
-        public static string Process(string[] args)
+        public string Process(dynamic args)
         {
             try
             {
                 if (Config.Configure)
                 {
-                    throw new NotImplementedException(); //TODO: florind Bosh::Agent::Monit.start_services
+                    
+                    Monit.GetInstance().StartServices();
                 }
-                return "started";
+                return "\"started\"";
             }
             catch (Exception e)
             {
                 throw new MessageHandlerException(String.Format("Cannot start job: {0}", e.ToString()));
             }
+        }
+
+        public bool IsLongRunning()
+        {
+            return false;
         }
     }
 }

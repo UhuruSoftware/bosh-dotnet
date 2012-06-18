@@ -10,6 +10,13 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Uhuru.BOSH.BlobstoreClient;
+    using Uhuru.BOSH.BlobstoreClient.Clients;
+    using System.IO;
+    using Uhuru.Utilities;
+    using System.Security.Cryptography;
+    using Uhuru.BOSH.Agent.Errors;
+    using System.Diagnostics;
 
     /// <summary>
     /// TODO: Update summary.
@@ -205,12 +212,56 @@ namespace Uhuru.BOSH.Agent
 
         internal static void UnpackBlob(string blobstoreId, string checksum, string installPath)
         {
-            throw new NotImplementedException();
+            IClient blobstoreClient = Blobstore.CreateClient(Config.BlobstoreProvider, Config.BlobstoreOptions);
+
+            Logger.Info("Retrieving blob: ", blobstoreId);
+
+            FileInfo fileInfo = new FileInfo(Path.Combine(Config.BaseDir, "data", "tmp", blobstoreId + ".tgz"));
+
+            try
+            {
+                blobstoreClient.Get(blobstoreId, fileInfo);
+
+                string blobDataFile = fileInfo.FullName;
+
+                Logger.Info("Done retrieving blob");
+
+                if (!Directory.Exists(installPath))
+                {
+                    Logger.Info("Creating ", installPath);
+                    Directory.CreateDirectory(installPath);
+                }
+
+                string blobSHA1;
+                using (FileStream fs = fileInfo.Open(FileMode.Open))
+                {
+                    SHA1 sha = new SHA1CryptoServiceProvider();
+                    blobSHA1 = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-","");
+                }
+                if (String.Compare(blobSHA1,checksum, true) != 0)
+                {
+                    throw new MessageHandlerException(String.Format("Expected sha1: {0}, Downloaded sha1: {1}", checksum, blobSHA1));
+                }
+
+                string tarFile = Path.ChangeExtension(blobDataFile, "tar");
+                FileArchive.UnzipFile(fileInfo.DirectoryName, blobDataFile);
+                FileArchive.UnzipFile(installPath, tarFile);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Failure unpacking blob.", ex.ToString());
+                throw ex;
+            }
         }
 
         internal static void CreateSymLink(string installPath, string linkPath)
         {
-            throw new NotImplementedException();
+            Process p = Process.Start("cmd.exe", String.Format("/c mklink /D {0} {1}", linkPath, installPath));
+            p.WaitForExit();
+            if (p.ExitCode != 0)
+            {
+                Logger.Error(String.Format("Failed creating symbolic link between {0} and {1}", installPath, linkPath));
+            }
         }
     }
 }

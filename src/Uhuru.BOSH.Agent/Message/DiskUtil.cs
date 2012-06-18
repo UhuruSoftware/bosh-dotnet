@@ -12,6 +12,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.IO;
     using System.Management;
     using System.Runtime.InteropServices;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
@@ -164,6 +165,10 @@ namespace Uhuru.BOSH.Agent.Message
         public static int CreatePrimaryPartition(int diskIndex, string label)
         {
             string script = String.Format(@"SELECT Disk {0}
+ATTRIBUTE DISK CLEAR READONLY
+SELECT Disk {0}
+ONLINE DISK
+SELECT Disk {0}
 CREATE PARTITION PRIMARY
 SELECT PARTITION 1
 FORMAT FS=NTFS LABEL={1} QUICK
@@ -175,8 +180,11 @@ EXIT", diskIndex, label);
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "diskpart.exe";
             info.Arguments = String.Format("/s {0}", fileName);
+            info.RedirectStandardOutput = true;
+            info.UseShellExecute = false;
 
             Process p = new Process();
+            p.StartInfo = info;
             p.Start();
             p.WaitForExit(60000);
             if (!p.HasExited)
@@ -186,6 +194,7 @@ EXIT", diskIndex, label);
             }
             else
             {
+                Logger.Warning(p.StandardOutput.ReadToEnd());
                 return p.ExitCode;
             }
         }
@@ -227,7 +236,8 @@ EXIT", diskIndex, label);
         {
             string script = String.Format(@"SELECT Disk {0}
 SELECT PARTITION 1
-ASSIGN MOUNT={0}", mountPath);
+ASSIGN MOUNT={1}
+EXIT", diskIndex, mountPath);
 
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName, script);
@@ -235,8 +245,11 @@ ASSIGN MOUNT={0}", mountPath);
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "diskpart.exe";
             info.Arguments = String.Format("/s {0}", fileName);
+            info.RedirectStandardOutput = true;
+            info.UseShellExecute = false;
 
             Process p = new Process();
+            p.StartInfo = info;
             p.Start();
             p.WaitForExit(60000);
             if (!p.HasExited)
@@ -246,6 +259,7 @@ ASSIGN MOUNT={0}", mountPath);
             }
             else
             {
+                Logger.Warning(p.StandardOutput.ReadToEnd());
                 return p.ExitCode;
             }
         }

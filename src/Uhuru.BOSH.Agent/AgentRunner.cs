@@ -13,6 +13,7 @@ namespace Uhuru.BOSH.Agent
 using System.Yaml;
 using System.IO;
     using Uhuru.Utilities;
+    using System.Diagnostics;
 
     /// <summary>
     /// TODO: Update summary.
@@ -52,6 +53,8 @@ using System.IO;
                 }
                 Logger.Info("Configuring agent");
                 Config.Setup(root, false);
+                Monit.GetInstance().Start();
+                Monit.GetInstance().StartServices();               
             }
             else
             {
@@ -60,6 +63,12 @@ using System.IO;
 
                 Bootstrap bootStrap = new Bootstrap();
                 bootStrap.Configure();
+                Monit.GetInstance().Start();
+                Monit.GetInstance().StartServices();
+
+                //Logger.Info("Restarting...");
+                //Process.Start("shutdown", "/r /t 0");
+                //Environment.Exit(0);
             }
             Handler.Start();
             

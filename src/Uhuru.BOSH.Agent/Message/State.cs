@@ -14,15 +14,15 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class State : Base
+    public class State : Base , IMessage
     {
 
-        public static State Process(string[] args)
-        {
-            return new State();
-        }
+        //public static State Process(string[] args)
+        //{
+        //    return new State();
+        //}
 
-        public Agent.State GetState()
+        public string GetState()
         {
             try
             {
@@ -36,10 +36,10 @@ namespace Uhuru.BOSH.Agent.Message
                 }
 
                 response.SetValue("job_state", JobState);
-                response.SetValue("bosh_protocol", 1); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
-                response.SetValue("ntp", Ntp.GetNtpOffset());
+                response.SetValue("bosh_protocol", "1"); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
+                response.SetValue("ntp", Ntp.GetNtpOffset().Offset.ToString());
 
-                return response;
+                return response.ToHash().ToString();
             }
             catch (StateException e)
             {
@@ -47,13 +47,25 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public YamlMappingNode JobState
+        public string JobState
         {
             get
             {
-                throw new NotImplementedException();
+                //TODO afte we implement monit
+                return "running";
+                //throw new NotImplementedException();
                 //  Bosh::Agent::Monit.service_group_state
             }
+        }
+
+        public bool IsLongRunning()
+        {
+            return false;
+        }
+
+        public string Process(dynamic args)
+        {
+            return GetState();
         }
     }
 }

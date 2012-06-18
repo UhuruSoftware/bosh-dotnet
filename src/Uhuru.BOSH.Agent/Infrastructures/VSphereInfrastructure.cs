@@ -43,9 +43,9 @@ namespace Uhuru.BOSH.Agent.Infrastructures
         /// </summary>
         /// <param name="networkName">Name of the network.</param>
         /// <param name="properties">The properties.</param>
-        public void GetNetworkSettings(string networkName, Dictionary<string, string> properties)
+        public dynamic GetNetworkSettings(string networkName, dynamic properties)
         {
-            throw new NotImplementedException();
+            return string.Empty;
         }
 
         private void LoadCdromSettings()
@@ -60,7 +60,15 @@ namespace Uhuru.BOSH.Agent.Infrastructures
                     if (File.Exists(driveInfo.Name + "ENV"))
                     {
                         Logger.Info("Found ENV file in " + driveInfo.Name);
-                        File.Copy(driveInfo.Name + "ENV", Config.SettingsFile);
+                        if (File.Exists(Config.SettingsFile))
+                        {
+                            File.Delete(Config.SettingsFile);
+                        }
+                        File.Copy(driveInfo.Name + "ENV", Config.SettingsFile, true);
+                        
+                        File.SetAttributes(Config.SettingsFile, FileAttributes.Normal);
+
+
                     }
                 }
             }

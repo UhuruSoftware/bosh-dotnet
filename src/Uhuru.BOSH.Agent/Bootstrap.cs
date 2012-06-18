@@ -15,6 +15,8 @@ namespace Uhuru.BOSH.Agent
     using System.Diagnostics;
     using System.Management;
     using Uhuru.BOSH.Agent.Providers;
+    using Uhuru.BOSH.Agent.Message;
+    using Uhuru.BOSH.Agent.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -113,6 +115,12 @@ namespace Uhuru.BOSH.Agent
                 UpdateTime();
                 SetupDiskData();
                 SetupTemp();
+
+        ////Bosh::Agent::Monit.setup_monit_user
+        ////Bosh::Agent::Monit.setup_alerts
+
+                MountPersistentDisk();
+                HardenPermissions();
             }
             //if (this.settings != null)
             //{
@@ -128,8 +136,27 @@ namespace Uhuru.BOSH.Agent
         }
 
         private void SetupDiskData()
-        {
-            Logger.Warning("TODO Settup disk data");
+        {   
+            int dataDisk = int.Parse(Config.Platform.GetDataDiskDeviceName());
+
+            Logger.Info("Creating partition on drive " + dataDisk);
+
+            if (DiskUtil.CreatePrimaryPartition(dataDisk, "data") != 0)
+            {
+                Logger.Error("Could not create partition on drive " + dataDisk);
+            }
+            string dataDir = Path.Combine(BaseDir, "data");
+            if (!Directory.Exists(dataDir))
+            {
+                Directory.CreateDirectory(dataDir);
+            }
+
+            if (DiskUtil.MountPartition(dataDisk, dataDir) != 0)
+            {
+                Logger.Error("Could not mount disk " + dataDisk + " to " + dataDir);
+            }
+
+            SetupDataSys();
         }
 
         private void UpdateTime()
@@ -161,7 +188,8 @@ namespace Uhuru.BOSH.Agent
             Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
             Logger.Info("Set blob store provider to : " + Config.BlobstoreProvider);
 
-            Logger.Warning("TODO Set blobstore options");
+            // TODO: analyze if a merge is necessary
+            Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
         }
 
         private void UpdateMbus()
@@ -172,9 +200,25 @@ namespace Uhuru.BOSH.Agent
 
         private void UpdateHostname()
         {
-            Logger.Info("Updateing hostname to :" + Config.AgentId);
+            string newHostName = Config.AgentId;
 
-            Logger.Warning("TODO This is not implemented");
+            if (Environment.MachineName != newHostName)
+            {
+                Logger.Info("Updating hostname to :" + Config.AgentId);
+
+                string w32comp = "Win32_ComputerSystem.Name='" + System.Environment.MachineName + "'";
+                using (ManagementObject computer = new ManagementObject(new ManagementPath(w32comp)))
+                {
+                    ManagementBaseObject param = computer.GetMethodParameters("Rename");
+                    param["Name"] = newHostName;
+                    ManagementBaseObject outParam = computer.InvokeMethod("Rename", param, null);
+                    int returnCode = (int)(uint)outParam.Properties["returnValue"].Value;
+                    if (returnCode != 0)
+                    {
+                        Logger.Error("Could not update hostname " + returnCode);
+                    }
+                }
+            }
         }
 
         ////    def load_settings
@@ -393,19 +437,28 @@ namespace Uhuru.BOSH.Agent
             return -1;
         }
 
-        ////    def setup_data_sys
-        ////      %w{log run}.each do |dir|
-        ////        path = "#{base_dir}/data/sys/#{dir}"
-        ////        %x[mkdir -p #{path}]
-        ////        %x[chown root:vcap #{path}]
-        ////        %x[chmod 0750 #{path}]
-        ////      end
-        ////      %x[ln -nsf #{base_dir}/data/sys #{base_dir}/sys]
-        ////    end
-
         void SetupDataSys()
         {
-
+            string dataSysDirectory = Path.Combine(BaseDir, "data", "sys");
+            if(!Directory.Exists(dataSysDirectory))
+            {
+                Directory.CreateDirectory(dataSysDirectory);
+            }
+            foreach (string dir in new string[] { "log", "run" })
+            {
+                string path = Path.Combine(BaseDir, "data", "sys", dir);
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+            }
+            string sysDirectory = Path.Combine(BaseDir, "sys");
+            Process p = Process.Start("cmd.exe", String.Format("/c mklink /D {0} {1}", sysDirectory, dataSysDirectory));
+            p.WaitForExit();
+            if (p.ExitCode != 0)
+            {
+                Logger.Error(String.Format("Failed creating symbolic link between {0} and {1}", sysDirectory, dataSysDirectory));
+            }
         }
 
         ////    def setup_tmp
@@ -435,6 +488,12 @@ namespace Uhuru.BOSH.Agent
 
         void SetupTemp()
         {
+            string agentTmpDir = Path.Combine(BaseDir, "data", "tmp");
+            if (!Directory.Exists(agentTmpDir))
+            {
+                Directory.CreateDirectory(agentTmpDir);
+            }
+
             Logger.Warning("TODO Not Implemented");
             // complate 
         }
@@ -465,6 +524,21 @@ namespace Uhuru.BOSH.Agent
 
         void MountPersistentDisk()
         {
+            if (Config.Settings["disks"]["persistent"].Count > 0)
+            {
+                if (Config.Settings["disks"]["persistent"].Count > 1)
+                {
+                    throw new FatalBoshException("Fatal: more than one persistent disk on boot");
+                }
+                else
+                {
+                    string storeDisk = Config.Settings["disks"]["persistent"][0].Value;
+                    if (!string.IsNullOrEmpty(storeDisk))
+                    {
+                        Config.Platform.MountPersistentDisk(storeDisk);
+                    }
+                }
+            }
             
             // todo: implement after the settings are classes are stabilized
         }

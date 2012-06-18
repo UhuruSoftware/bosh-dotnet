@@ -16,7 +16,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// </summary>
     public class Base
     {
-        public string BaseDir { get; set; }
+        public string BaseDir { get { return Config.BaseDir; } }
 
         public string LogsDir
         {
@@ -26,7 +26,7 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public Dictionary<string, string> Settings
+        public System.Yaml.YamlMapping Settings
         {
             get
             {

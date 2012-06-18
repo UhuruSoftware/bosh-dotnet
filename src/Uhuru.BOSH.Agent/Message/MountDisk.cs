@@ -17,40 +17,41 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class MountDisk : Base
+    public class MountDisk : Base, IMessage
     {
-        int cid;
+        string cid;
 
         /// <summary>
         /// Processes the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
-        public static void Process(dynamic[] args)
+        public string Process(dynamic args)
         {
-            new MountDisk(args).Mount();
+            if (args.Count == 0)
+                return string.Empty;
+            cid = args[0].ToString();
+            return new MountDisk().Mount();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MountDisk"/> class.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        public MountDisk(dynamic[] args)
+        public MountDisk()
         {
-            cid = args[0];
+
         }
 
         /// <summary>
         /// Mounts this instance.
         /// </summary>
-        public void Mount()
+        public string Mount()
         {
             if (Config.Configure)
             {
                 UpdateSettings();
                 Logger.Info("MountDisk: {0} - {1}", cid, Settings["disk"].ToString());
 
-                SetupDisk();
+                return SetupDisk();
             }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -59,21 +60,22 @@ namespace Uhuru.BOSH.Agent.Message
         public void UpdateSettings()
         {
             Config.Settings = Config.Infrastructure.LoadSettings();
-            Logger.Info(String.Format("Settings: {0}", Settings.ToString()));
-            throw new NotImplementedException();
+            Logger.Info("Settings :" + Config.Settings.ToString());
         }
 
         /// <summary>
         /// Setups the disk.
         /// </summary>
-        public void SetupDisk()
+        public string SetupDisk()
         {
-            Logger.Info(String.Format("Setup disk settings: {0}", Settings.ToString()));
 
-            if (!DiskUtil.DiskHasPartition(cid))
+            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
+            Logger.Info("Setup disk settings: " + Settings.ToString());
+
+            if (!DiskUtil.DiskHasPartition(diskId))
             {
-                Logger.Info(String.Format("Found blank disk ", cid));
-                int returnCode = DiskUtil.CreatePrimaryPartition(cid, "store");
+                Logger.Info("Found blank disk "+ diskId.ToString());
+                int returnCode = DiskUtil.CreatePrimaryPartition(diskId, "store");
                 if (returnCode != 0)
                 {
                     throw new MessageHandlerException(String.Format("Unable to create partition. Exit code: {0}", returnCode));
@@ -84,7 +86,9 @@ namespace Uhuru.BOSH.Agent.Message
                 Logger.Info(String.Format("Disk has partition"));
             }
 
-            MountPersistentDisk(cid);
+            MountPersistentDisk(diskId);
+
+            return "{}";
         }
 
         /// <summary>
@@ -123,12 +127,9 @@ namespace Uhuru.BOSH.Agent.Message
 
         }
 
-        /// <summary>
-        /// Gets a value indicating whether [long running].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [long running]; otherwise, <c>false</c>.
-        /// </value>
-        public static bool LongRunning { get { return true; } }
+        public bool IsLongRunning()
+        {
+            return true;
+        }
     }
 }

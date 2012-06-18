@@ -71,6 +71,7 @@
     <Reference Include="Microsoft.Practices.Unity.Configuration, Version=2.1.505.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Microsoft.Practices.Unity.Configuration.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Newtonsoft.Json, Version=4.0.3.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -81,6 +82,7 @@
     <Reference Include="System.Management" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -93,9 +95,6 @@
     </Reference>
     <Reference Include="YamlDotNet.RepresentationModel">
       <HintPath>..\..\lib\YamlDotNet.RepresentationModel.dll</HintPath>
-    </Reference>
-    <Reference Include="YamlSerializer">
-      <HintPath>..\..\lib\YamlSerializer.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -114,11 +113,19 @@
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Message\IMessage.cs" />
     <Compile Include="Message\NativeMethods.cs" />
+    <Compile Include="MonitPerformance.cs" />
+    <Compile Include="MonitSpec\MonitSpec.cs">
+      <DependentUpon>MonitSpec.xsd</DependentUpon>
+    </Compile>
     <Compile Include="NTPClient.cs" />
     <Compile Include="Objects\HandlerResult.cs" />
+    <Compile Include="Objects\HeartbeatMessage.cs" />
     <Compile Include="Objects\Job.cs" />
+    <Compile Include="Objects\SystemStatus.cs" />
     <Compile Include="Platforms\WindowsPlatform.cs" />
+    <Compile Include="Platforms\Windows\Disk.cs" />
     <Compile Include="Platforms\Windows\WindowsNetwork.cs" />
     <Compile Include="Providers\IInfrastructure.cs" />
     <Compile Include="Infrastructures\AWSInfrastructure.cs" />
@@ -202,6 +209,10 @@
     <None Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="MonitSpec\MonitSpec.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="MonitSpec\regen_cs_from_xsd.bat" />
     <None Include="unity.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -210,6 +221,10 @@
     <ProjectReference Include="..\Uhuru.BOSH.BlobstoreClient\Uhuru.BOSH.BlobstoreClient.csproj">
       <Project>{D90250E7-149D-422C-A116-B1D7AC75CEA3}</Project>
       <Name>Uhuru.BOSH.BlobstoreClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\YamlSerializer\YamlSerializer.csproj">
+      <Project>{AD9F3A60-C492-4823-8F24-6F4854E7CBF5}</Project>
+      <Name>YamlSerializer</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

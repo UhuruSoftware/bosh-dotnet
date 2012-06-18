@@ -17,6 +17,8 @@ namespace Uhuru.BOSH.Agent
     using System.IO;
     using System.Yaml;
     using Uhuru.BOSH.Agent.Objects;
+    using System.Globalization;
+    using Uhuru.BOSH.Agent.Message;
 
     /// <summary>
     /// TODO: Update summary.
@@ -94,16 +96,31 @@ namespace Uhuru.BOSH.Agent
             //@logger.info("Message processors: #{@processors.inspect}")
         }
 
-        public object Lookup(string method)
+        public IMessage Lookup(string method)
         {
             //TODO 
+            Logger.Info("Processing :" + method);
             switch (method.ToLower())
             {
                 case "ping":
                     return new Ping();
-                    //TODO For the rest
+                case "apply":
+                    return new Apply();
+                case "state":
+                    return new Message.State();
+                case "start":
+                    return new Start();
+                case "drain":
+                    return new Drain();
+                case "stop":
+                    return new Stop();
+                case "mount_disk":
+                    return new MountDisk();
+                case "list_disk":
+                    return new ListDisk();
+
             }
-            return string.Empty;
+            return null;
          //   return this.Processors[method];
         }
 
@@ -125,8 +142,30 @@ namespace Uhuru.BOSH.Agent
                     {
                         this.Nats = new Reactor();
                         this.Nats.OnConnect += new EventHandler<ReactorErrorEventArgs>(Nats_OnConnect);
-                        this.Nats.Start(this.NatsUri);
+                        Config.Nats = this.Nats;
 
+                        int retries = MAX_NATS_RETRIES;
+                        do
+                        {
+                            try
+                            {
+                                this.Nats.Start(this.NatsUri);
+                                break;
+                            }
+                            catch (ReactorException ex)
+                            {
+                                if (retries <= 0)
+                                {
+                                    throw ex;
+                                }
+                                else
+                                {
+                                    Thread.Sleep(NATS_RECONNECT_SLEEP);
+                                }
+                            }
+                        } while (retries-- > 0);
+
+                        this.HeartBeatProcessor.Enable(Config.HeartbeatInterval * 1000);
                         //this.SetupHeartbeats();
                         //this.SetupSshdMonitor();
 
@@ -215,8 +254,12 @@ namespace Uhuru.BOSH.Agent
         {
             try
             {
-                dynamic msg = YamlMapping.FromYaml(json)[0];
+                 dynamic msg = YamlMapping.FromYaml(json)[0];
 
+                //TODO Improve this functionality. This hack is needed for removing !!int values
+                string aux = msg.ToString();
+                msg = YamlMapping.FromYaml(aux.Replace(" !!int", string.Empty))[0];
+                
                 if (!msg.ContainsKey("reply_to"))
                 {
                     Logger.Info("Missing reply_to in: {0}", json);
@@ -243,7 +286,7 @@ namespace Uhuru.BOSH.Agent
                     method = "state";
                 }
 
-                object processor = this.Lookup(method);
+                IMessage processor = this.Lookup(method);
 
                 if (processor != null)
                 {
@@ -254,7 +297,7 @@ namespace Uhuru.BOSH.Agent
                 }
                 else if (method == "get_task")
                 {
-                    HandleGetTask(replyTo, args.first);
+                    HandleGetTask(replyTo, ((args as YamlSequence).First() as YamlScalar).Value);
                 }
                 else if (method == "shutdown")
                 {
@@ -273,7 +316,7 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        private void ProcessInThread(object processor, string replyTo, string method, object args)
+        private void ProcessInThread(IMessage processor, string replyTo, string method, object args)
         {
             try
             {
@@ -281,49 +324,53 @@ namespace Uhuru.BOSH.Agent
                 //if (processor.GetType().GetMethod(method) != null)
                 if (processor != null)
                 {
-                    if (this.RestartingAgent)
+                    if (processor.IsLongRunning())
                     {
-                        RemoteException exception = new RemoteException("restarting agent");
-                        // todo: vlad: fix the hash here
-                        this.Publish(replyTo, exception.ToHash().ToString());
+                        if (this.RestartingAgent)
+                        {
+                            RemoteException exception = new RemoteException("restarting agent");
+                            // todo: vlad: fix the hash here
+                            this.Publish(replyTo, exception.ToHash().ToString());
+                        }
+                        else
+                        {
+                            this.Lock.WaitOne();
+                            try
+                            {
+                                if (this.LongRunningAgentTask.Length == 0)
+                                {
+                                    this.ProcessLongRunning(replyTo, processor, args);
+                                }
+                                else
+                                {
+                                    RemoteException exception = new RemoteException("already running long running task");
+                                    // todo: vlad: fix the hash here
+                                    this.Publish(replyTo, exception.ToHash().ToString());
+                                }
+                            }
+                            finally
+                            {
+                                this.Lock.ReleaseMutex();
+                            }
+                        }
                     }
                     else
                     {
-                        this.Lock.WaitOne();
-                        try
-                        {
-                            if (this.LongRunningAgentTask.Length == 0)
-                            {
-                                this.ProcessLongRunning(replyTo, processor, args);
-                            }
-                            else
-                            {
-                                RemoteException exception = new RemoteException("already running long running task");
-                                // todo: vlad: fix the hash here
-                                this.Publish(replyTo, exception.ToHash().ToString());
-                            }
-                        }
-                        finally
-                        {
-                            this.Lock.ReleaseMutex();
-                        }
-                    }
-                }
-                else
-                {
-                    Dictionary<string, object> payload = this.Process(processor, args);
+                        string payload = this.Process(processor, args);
 
-                    if (Config.Configure != null && (method == "prepare_network_change"))
-                    {
-                        // todo: vladi: fix payload
-                        this.Publish(replyTo, payload.ToString(), () => this.PostPrepareNetworkChange());
-                    }
-                    else
-                    {
-                        // todo: vladi: fix payload
-                        this.Publish(replyTo, payload.ToString());
+                        if (Config.Configure != null && (method == "prepare_network_change"))
+                        {
+                            // todo: vladi: fix payload
+                            this.Publish(replyTo, payload, () => this.PostPrepareNetworkChange());
+                        }
+                        else
+                        {
+                            // todo: vladi: fix payload
+                            this.Publish(replyTo, payload.ToString());
+                        }
                     }
                 }
+              
             }
             catch (Exception ex)
             {
@@ -335,18 +382,18 @@ namespace Uhuru.BOSH.Agent
 
         public void HandleGetTask(string replyTo, string agentTaskId)
         {
-            if (this.LongRunningAgentTask[0] == agentTaskId)
+            if (this.LongRunningAgentTask.Contains(agentTaskId))
             {
-                this.Publish(replyTo, "{\"value\" => {\"state\" => \"running\", \"agent_task_id\" => agent_task_id}}");
+                this.Publish(replyTo, "{\"value\" : {\"state\" : \"running\", \"agent_task_id\" : "+agentTaskId +"}}");
             }
             else
             {
-                dynamic rs = this.Results.FirstOrDefault(r => r.TaskId == agentTaskId);
+                dynamic rs = this.Results.FirstOrDefault(r => r.AgentTaskId == agentTaskId);
                 if (rs != null)
                 {
                     DateTime time = rs.Time;
-                    DateTime taskId = rs.TaskId;
-                    DateTime result = rs.Result;
+                    string taskId = rs.AgentTaskId;
+                    string result = rs.Result;
                     // todo: vladi: fix result serialization
                     this.Publish(replyTo, result.ToString());
                 }
@@ -448,23 +495,28 @@ namespace Uhuru.BOSH.Agent
                 });
         }
 
-        public Dictionary<string, object> Process(dynamic processor, dynamic args)
+        public string Process(dynamic processor, dynamic args)
         {
             try
             {
+                Logger.Info("Processing :" + args.ToString() +" using processor " + processor.ToString());
                 string result = processor.Process(args);
-                return new Dictionary<string, object>() { { "value", result } };
+                return string.Format("{{ \"value\": {0} }}", result);
+                //return new Dictionary<string, object>() { { "value", result } };
             }
             catch (AgentException aex)
             {
                 Logger.Info("{0}", aex);
-                return RemoteException.From(aex).ToHash();
+                //TODO
+                return null;
+               // return RemoteException.From(aex).ToHash();
             }
             catch (Exception ex)
             {
                 KillMainThreadIn(KILL_AGENT_THREAD_TIMEOUT);
-                Logger.Error("{0}", ex);
-                return new Dictionary<string, object>() { { "exception", ex.ToString() } };
+                Logger.Error("{0}", ex.ToString());
+                return "{ \"exception\": \"" + ex.Message.ToString() + "\" }";
+                //return new Dictionary<string, object>() { { "exception", ex.ToString() } };
             }
         }
 
@@ -587,13 +639,8 @@ namespace Uhuru.BOSH.Agent
             return payload;
         }
 
-        class Ping
-        {
-            internal string Process(dynamic args)
-            {
-                return "pong";
-            }
-        }
+        
+        
 
         public Dictionary<string, object> SessionReplyMap { get; set; }
 
@@ -629,6 +676,32 @@ namespace Uhuru.BOSH.Agent
 
         public AlertProcessor Processor { get; set; }
 
-        public HeartbeatProcessor HeartBeatProcessor { get; set; }
+        public HeartbeatProcessor HeartBeatProcessor;
+
+        class Ping : IMessage
+        {
+            public string Process(dynamic args)
+            {
+                return "\"pong\"";
+            }
+
+            public bool IsLongRunning()
+            {
+                return false;
+            }
+        }
+
+        class Noop :IMessage
+        {
+            public string Process(dynamic args)
+            {
+                return "\"nope\"";
+            }
+            public bool IsLongRunning()
+            {
+                return false;
+            }
+        }
+
     }
 }

@@ -12,6 +12,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.Text;
     using System.IO;
     using Uhuru.BOSH.Agent.ApplyPlan.Errors;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
@@ -95,14 +96,20 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
 
             baseDir = Config.BaseDir;
-            name = spec["name"];
-            template = spec["template"];
-            version = spec["version"];
-            checksum = spec["checksum"];
-            blobstoreId = spec["blobstore_id"];
-            configBinding = spec["config_binding"];
+            name = spec["name"].Value;
+            template = spec["template"].Value;
+            version = spec["version"].Value;
+            checksum = spec.ContainsKey("sha1") ? spec["sha1"].Value : null;
+            blobstoreId = spec["blobstore_id"].Value;
+            configBinding = spec.ContainsKey("config_binding") ? spec["config_binding"].Value : null;
             installPath = Path.Combine(baseDir, "data", "jobs", template, version);
             linkPath = Path.Combine(baseDir, "jobs", template);
+
+            string jobsPath = Path.Combine(baseDir, "jobs");
+            if (!Directory.Exists(jobsPath))
+            {
+                Directory.CreateDirectory(jobsPath);
+            }
         }
 
       ////def install
@@ -140,7 +147,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             try
             {
                 RunPostInstallHook();
-                ConfigureMonit();
+                //ConfigureMonit();
             }
             catch (Exception e)
             {
@@ -161,7 +168,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private void FetchTemplate()
         {
             Directory.CreateDirectory(installPath);
-            Directory.CreateDirectory(linkPath);
+            //Directory.CreateDirectory(linkPath);
 
             Util.UnpackBlob(blobstoreId, checksum, installPath);
             Util.CreateSymLink(installPath, linkPath);
@@ -233,7 +240,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         {
             // TODO: determine if ERB templateing engine is a requirement.
             // if not, chose an appropriate one for C#/.NET
-            throw new NotImplementedException();
+            Logger.Error("Not Implemented: BindConfiguration");
         }
 
       ////def harden_permissions
@@ -257,7 +264,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private void HardenPermissions()
         {
             // TODO: first determine the security level the bosh agent is running on 
-            throw new NotImplementedException();
+            Logger.Error("Not implemented: HardenPermissions");
         }
 
       ////# TODO: move from util here? (not being used anywhere else)
@@ -268,7 +275,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private void RunPostInstallHook()
         {
             // TODO: maybe this is just a Process start helper function
-            throw new NotImplementedException();
+            Logger.Error("Not implemented: RunPostInstallHook");
         }
 
       ////def configure_monit
@@ -283,10 +290,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  end
       ////end
 
-        public void ConfigureMonit()
-        {
-            throw new NotSupportedException("Monit specific");
-        }
+        //public void ConfigureMonit()
+        //{
+        //    Logger.Info("Configuring Uhuru monit");
+        //    //Logger.Error("Not implemented: ConfigureMonit");
+        //}
 
       ////def install_job_monitrc(template_path, label)
       ////  if @config_binding.nil?
@@ -320,7 +328,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
         private void InstallJobMonitrc()
         {
-            throw new NotSupportedException("Monit specific");
+            Logger.Error("Not implemented: InstallJobMonitrc");
         }
 
       ////# HACK
@@ -359,9 +367,9 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  result.strip
       ////end
 
-        private void AddMods()
+        private void AddModes()
         {
-            throw new NotSupportedException("Monit specific");
+            Logger.Error("Not implemented: AddModes");
         }
 
       ////def install_failed(message)

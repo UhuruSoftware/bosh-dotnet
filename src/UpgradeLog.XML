@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="bosh-dotnet">
+</Property><Property Name="Solution File" Value="E:\_work\bosh-dotnet\src\bosh-dotnet.sln">
+</Property><Property Name="Date" Value="Thursday, June 07, 2012">
+</Property><Property Name="Time" Value="15:56:18 PM">
+</Property></Properties><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlSerializer.csproj" Description="Project file successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlSerializer.csproj">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\RehashableDictionary.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\RehashableDictionary.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlDoubleQuoteEscaping.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlDoubleQuoteEscaping.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\EasyTypeConverter.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\EasyTypeConverter.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\ObjectMemberAccessor.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\ObjectMemberAccessor.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\Parser.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\Parser.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\Properties\AssemblyInfo.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\Properties\AssemblyInfo.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\TypeUtils.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\TypeUtils.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\UriEncoding.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\UriEncoding.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlAnchorDictionary.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlAnchorDictionary.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlConstructor.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlConstructor.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlParser.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlParser.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlNode.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlNode.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlPresenter.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlPresenter.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlRepresenter.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlRepresenter.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlSerializer.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlSerializer.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlTagPrefixes.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlTagPrefixes.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlTagResolutionScheme.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlTagResolutionScheme.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlTagValidator.cs" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\YamlTagValidator.cs">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\ChangeLog.txt" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\ChangeLog.txt">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\Readme.txt" Description="File successfully backed up as E:\_work\bosh-dotnet\src\Backup\Readme.txt">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlSerializer.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="YamlSerializer" Source="YamlSerializer\YamlSerializer.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="YamlSerializer" Source="YamlSerializer\YamlSerializer.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

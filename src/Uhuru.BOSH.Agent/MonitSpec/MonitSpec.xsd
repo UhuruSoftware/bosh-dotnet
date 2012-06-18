@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="MonitSpec"
+    targetNamespace=""
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/MonitSpec.xsd"
+    xmlns:mstns="http://tempuri.org/MonitSpec.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:element name="Job">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="Service">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PreStart" type="xs:string"></xs:element>
+              <xs:element name="PreStop" type="xs:string"></xs:element>
+            </xs:sequence>
+            <xs:attribute name="Name" type="xs:string"></xs:attribute>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
