@@ -104,7 +104,8 @@ namespace Uhuru.BOSH.Agent
             string[] bscOptions = Config.BlobstoreOptions.ToArray();
             string bscProvider = Config.BlobstoreProvider;
 
-            IClient blobStore = BlobstoreClient.BlobstoreClient.Create(bscProvider, bscOptions);
+            Logger.Info("Storring blob");
+            IClient blobStore = BlobstoreClient.Blobstore.CreateClient(bscProvider, bscOptions);
 
             Logger.Info(string.Format("Uploading blob for {0} to blobstore", message));
 

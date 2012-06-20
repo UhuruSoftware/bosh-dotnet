@@ -10,11 +10,16 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.IO;
+    using Uhuru.Utilities;
+    using System.Security.Cryptography;
+    using Uhuru.BOSH.Agent.Objects;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class CompilePackage
+    public class CompilePackage : IMessage
     {
       ////attr_accessor :blobstore_id, :package_name, :package_version, :package_sha1
       ////attr_accessor :compile_base, :install_base
@@ -229,5 +234,134 @@ namespace Uhuru.BOSH.Agent.Message
       ////  { "sha1" => compiled_sha1, "blobstore_id" => compiled_blobstore_id,
       ////    "compile_log_id" => compile_log_id }
       ////end
+        public bool IsLongRunning()
+        {
+            return true;
+        }
+
+        string blobStroreProvider;
+        dynamic blobStoreOptions;
+        BlobstoreClient.Clients.IClient blobStoreClient;
+        string blobStoreId;
+        string sha1;
+        string packageName;
+        string packageVersion;
+        dynamic dependencies;
+        int maxDiskUsage = 90;
+        string compileBase;
+        string installBase;
+        string sourceFile;
+        string compileDir;
+        string installDir;
+        string compiledPackage;
+
+        public string Process(dynamic args)
+        {
+            //Initialize
+            blobStroreProvider = Config.BlobstoreProvider;
+            blobStoreOptions = Config.BlobstoreOptions;
+            blobStoreClient = BlobstoreClient.Blobstore.CreateClient(blobStroreProvider, blobStoreOptions);
+
+            blobStoreId = args[0].Value.ToString();
+            sha1 = args[1].Value.ToString();
+            packageName = args[2].Value.ToString();
+            packageVersion = args[3].Value.ToString();
+            dependencies = args[4];
+
+            Directory.CreateDirectory(Config.BaseDir + @"\data" + @"\tmp");
+
+            compileBase = Config.BaseDir + @"\data\compile";
+            installBase = Config.BaseDir + @"\data\packages";
+
+            compileDir = compileBase + @"\" +packageName ;
+            installDir = installBase + @"\" + packageName + @"\" + packageVersion;
+            sourceFile = Config.BaseDir + @"\data\tmp\" + @"\" + blobStoreId;
+            compiledPackage = sourceFile + ".compiled";
+            return Start();
+        }
+
+        private string Start()
+        {
+            InstallDependencies();
+            GetAndUnpackSourcePackage();
+            Compile();
+            Pack();
+            string result =JsonConvert.SerializeObject(Upload());
+            return string.Format("{{\"result\": {0} }}",result);
+        }
+
+        private void InstallDependencies()
+        {
+            Logger.Info("Installing dependencies");
+
+            foreach (dynamic dependency in dependencies)
+            {
+                Logger.Warning("TODO : install dependencies");
+            }
+        }
+
+        private void GetAndUnpackSourcePackage()
+        {
+            Logger.Info("Unpacking source packages");
+            Util.UnpackBlob(blobStoreId, sha1, compileBase);
+
+        }
+
+        private void Compile()
+        {
+            Logger.Info("Compiling package, copying files to install directory");
+            CopyAll(new DirectoryInfo(compileDir), new DirectoryInfo(installDir));
+
+        }
+
+        private void Pack()
+        {    
+            Util.PackBlob(installDir, compiledPackage);
+        }
+
+        private CompileResult Upload()
+        {
+            Logger.Info("Uploading compiled package");
+            FileInfo compiledFileInfo = new FileInfo(compiledPackage);
+            string compiledBlobStoreId = blobStoreClient.Create(compiledFileInfo);
+            
+            string compiledSha1;
+            using (FileStream fs = compiledFileInfo.Open(FileMode.Open))
+            {
+                SHA1 sha = new SHA1CryptoServiceProvider();
+                compiledSha1 = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-", "");
+            }
+
+            CompileResult compileResult = new CompileResult();
+
+            compileResult.BlobstoreId = compiledBlobStoreId;
+            compileResult.CompileLogId = "no logs for windows compilation";
+            compileResult.Sha1 = compiledSha1.ToLower();
+
+            return compileResult;
+        }
+
+        public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+     {
+         // Check if the target directory exists, if not, create it.
+         if (Directory.Exists(target.FullName) == false)
+         {
+             Directory.CreateDirectory(target.FullName);
+         }
+
+        // Copy each file into it’s new directory.
+         foreach (FileInfo fi in source.GetFiles())
+         {
+             fi.CopyTo(Path.Combine(target.ToString(), fi.Name), true);
+         }
+
+        // Copy each subdirectory using recursion.
+         foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+         {
+             DirectoryInfo nextTargetSubDir =
+                 target.CreateSubdirectory(diSourceSubDir.Name);
+             CopyAll(diSourceSubDir, nextTargetSubDir);
+         }
+     }
     }
 }

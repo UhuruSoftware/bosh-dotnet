@@ -28,6 +28,11 @@ namespace Uhuru.BOSH.Test.Unit
                 root = nodes[0];
             }
             Config.Setup(root, false);
+            
+            //ConfigBlobStore
+            Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
+            Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
+
 
             //Act
             Handler.Start();

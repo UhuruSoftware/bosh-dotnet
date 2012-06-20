@@ -12,6 +12,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.Text;
     using System.IO;
     using Uhuru.BOSH.Agent.ApplyPlan.Errors;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
@@ -75,6 +76,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         {
             // TODO: check to se if any king of IDicrionty
             // if (spec is IDictionary<,>)
+            Logger.Info("Initializing package :" + spec.ToString());
 
             var required = new string[] { "name", "version", "sha1", "blobstore_id" };
             foreach (var requiredKey in required)

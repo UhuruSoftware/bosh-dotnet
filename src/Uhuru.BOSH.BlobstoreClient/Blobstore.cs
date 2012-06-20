@@ -20,6 +20,7 @@ namespace Uhuru.BOSH.BlobstoreClient
 
         public static IClient CreateClient(string provider, dynamic options)
         {
+            
             switch (provider)
             {
                 case "simple":

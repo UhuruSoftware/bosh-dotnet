@@ -210,16 +210,24 @@ namespace Uhuru.BOSH.Agent
             throw new NotImplementedException();
         }
 
+        internal static void PackBlob(string directory, string fileName)
+        {
+            FileArchive.ZipFile(directory, fileName);
+        }
+
         internal static void UnpackBlob(string blobstoreId, string checksum, string installPath)
         {
-            IClient blobstoreClient = Blobstore.CreateClient(Config.BlobstoreProvider, Config.BlobstoreOptions);
-
             Logger.Info("Retrieving blob: ", blobstoreId);
+
+            IClient blobstoreClient = Blobstore.CreateClient(Config.BlobstoreProvider, Config.BlobstoreOptions);
 
             FileInfo fileInfo = new FileInfo(Path.Combine(Config.BaseDir, "data", "tmp", blobstoreId + ".tgz"));
 
             try
             {
+                if (!Directory.Exists(fileInfo.Directory.ToString()))
+                    Directory.CreateDirectory(fileInfo.Directory.ToString());
+
                 blobstoreClient.Get(blobstoreId, fileInfo);
 
                 string blobDataFile = fileInfo.FullName;

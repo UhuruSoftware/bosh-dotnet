@@ -112,15 +112,15 @@ using YamlDotNet.RepresentationModel;
 
         private string UploadTarball(string path)
         {
+            Logger.Info("Uploading tarball");
             string blobstoreId = null;
             try
             {
                 string[] bscOptions = Config.BlobstoreOptions.ToArray();
                 string bscProvider = Config.BlobstoreProvider;
 
-                IClient blobstore = BlobstoreClient.Create(bscProvider,  bscOptions );
                 Logger.Info("Uploading tarball to blobstore");
-
+                IClient blobstore = Blobstore.CreateClient(bscProvider,  bscOptions );
                 
                 blobstoreId = blobstore.Create(new FileInfo(path));
             }

@@ -42,10 +42,9 @@ namespace Uhuru.BOSH.Agent
 
         public Vitals GetVitals()
         {
-
-
             Vitals result = new Vitals();
 
+            //return result;
             //Populate CPU
             result.CPU = new Vitals.CPUInfo();
             double userCpuCount = userCpuCounter.NextValue();

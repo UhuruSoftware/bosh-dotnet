@@ -67,8 +67,8 @@ namespace Uhuru.BOSH.Agent
 
             this.Lock = new Mutex();
 
-            this.Results = new List<dynamic>();
-            this.LongRunningAgentTask = new object[0];
+            this.Results = new List<HandlerResult>();
+            this.LongRunningAgentTask = new List<string>();
             this.RestartingAgent = false;
 
             this.NatsFailCount = 0;
@@ -118,6 +118,10 @@ namespace Uhuru.BOSH.Agent
                     return new MountDisk();
                 case "list_disk":
                     return new ListDisk();
+                case "compile_package":
+                    return new CompilePackage();
+                case "test":
+                    return new TestMessage();
 
             }
             return null;
@@ -200,7 +204,8 @@ namespace Uhuru.BOSH.Agent
 
         private void Retry()
         {
-            throw new NotImplementedException();
+            StartHandler();
+            //throw new NotImplementedException();
         }
 
         public void Shutdown()
@@ -337,7 +342,7 @@ namespace Uhuru.BOSH.Agent
                             this.Lock.WaitOne();
                             try
                             {
-                                if (this.LongRunningAgentTask.Length == 0)
+                                if (this.LongRunningAgentTask.Count == 0)
                                 {
                                     this.ProcessLongRunning(replyTo, processor, args);
                                 }
@@ -384,11 +389,11 @@ namespace Uhuru.BOSH.Agent
         {
             if (this.LongRunningAgentTask.Contains(agentTaskId))
             {
-                this.Publish(replyTo, "{\"value\" : {\"state\" : \"running\", \"agent_task_id\" : "+agentTaskId +"}}");
+                this.Publish(replyTo, "{\"value\":{\"state\":\"running\",\"agent_task_id\": \""+agentTaskId +"\"}}");
             }
             else
             {
-                dynamic rs = this.Results.FirstOrDefault(r => r.AgentTaskId == agentTaskId);
+                HandlerResult rs = this.Results.FirstOrDefault(r => r.AgentTaskId == agentTaskId);
                 if (rs != null)
                 {
                     DateTime time = rs.Time;
@@ -454,7 +459,7 @@ namespace Uhuru.BOSH.Agent
         {
             string agentTaskId = GenerateAgentTaskId();
 
-            this.LongRunningAgentTask = new object[] { agentTaskId };
+            this.LongRunningAgentTask.Add(agentTaskId);
 
             string payload = @"{""value"":{""state"":""running"",""agent_task_id"":""" + agentTaskId + @"""}}";
 
@@ -482,7 +487,7 @@ namespace Uhuru.BOSH.Agent
             resultsItem.Result = result;
 
             this.Results.Add(resultsItem);
-            this.LongRunningAgentTask = new object[0];
+            this.LongRunningAgentTask.Remove(agentTaskId);
         }
 
         public void KillMainThreadIn(int seconds)
@@ -652,9 +657,9 @@ namespace Uhuru.BOSH.Agent
 
         public bool RestartingAgent { get; set; }
 
-        public object[] LongRunningAgentTask { get; set; }
+        public List<string> LongRunningAgentTask { get; set; }
 
-        public List<dynamic> Results { get; set; }
+        public List<HandlerResult> Results { get; set; }
 
         public Mutex Lock { get; set; }
 
