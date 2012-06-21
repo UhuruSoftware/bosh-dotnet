@@ -146,7 +146,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         {
             try
             {
-                RunPostInstallHook();
+                RunPreInstallHook();
                 //ConfigureMonit();
             }
             catch (Exception e)
@@ -272,10 +272,13 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  Bosh::Agent::Util.run_hook("post_install", @template)
       ////end
 
-        private void RunPostInstallHook()
+        private void RunPreInstallHook()
         {
             // TODO: maybe this is just a Process start helper function
-            Logger.Error("Not implemented: RunPostInstallHook");
+            Logger.Info("Running pre install script");
+            Monit.GetInstance().RunPreStartScripts();
+            
+            //Logger.Error("Not implemented: RunPostInstallHook");
         }
 
       ////def configure_monit

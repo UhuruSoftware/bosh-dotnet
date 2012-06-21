@@ -29,7 +29,7 @@ using System.Threading;
         static string jobDefDirectory = @"c:\vcap\jobs";
         MonitPerformance monitPerformance = null;
 
-        private List<MonitSpec.Base.Job> specifiedJobs = new List<MonitSpec.Base.Job>();
+        private Dictionary<MonitSpec.Base.Job, FileInfo> specifiedJobs = new Dictionary<MonitSpec.Base.Job, FileInfo>();
         private Dictionary<string, ServiceControllerStatus> serviceControllers = new Dictionary<string, ServiceControllerStatus>();
         private static readonly object locker = new object();
 
@@ -100,7 +100,7 @@ using System.Threading;
             lock (locker)
             {
                 MonitorServices();
-                foreach (MonitSpec.Base.Job currentServiceSpec in specifiedJobs)
+                foreach (MonitSpec.Base.Job currentServiceSpec in new List<MonitSpec.Base.Job>(specifiedJobs.Keys))
                 {
                     foreach (MonitSpec.Base.JobService service in currentServiceSpec.Service)
                     {
@@ -132,6 +132,7 @@ using System.Threading;
 
 
         }
+
    ////   def base_dir
    ////     Bosh::Agent::Config.base_dir
    ////   end
@@ -296,16 +297,45 @@ using System.Threading;
                 {
                     //MonitSpec.Base.Job currentServiceSpec = null;
                     XmlSerializer serializer = new XmlSerializer(typeof(MonitSpec.Base.Job));
-
-                    using (FileStream fileStream = File.OpenRead(jobDefFile))
+                    try
                     {
-                        //currentServiceSpec = ;
-                        specifiedJobs.Add((MonitSpec.Base.Job)serializer.Deserialize(fileStream));
+
+                        using (FileStream fileStream = File.OpenRead(jobDefFile))
+                        {
+                            //currentServiceSpec = ;
+                            specifiedJobs.Add((MonitSpec.Base.Job)serializer.Deserialize(fileStream), new FileInfo(jobDefFile));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warning("File " + jobDefFile + " is not a job definition file :" + ex.ToString());
                     }
                 }
             }
         }
-             
+
+         public void RunPreStartScripts()
+         {
+             lock (locker)
+             {
+                 MonitorServices();
+                 foreach (KeyValuePair<MonitSpec.Base.Job, FileInfo> jobInfo in specifiedJobs)
+                 {
+                     foreach (MonitSpec.Base.JobService jobService in jobInfo.Key.Service)
+                     {
+                         //TODO improve script execution
+                         string script = string.Format("/c {0}\\{1}", jobInfo.Value.Directory, jobService.PreStart);
+                         Logger.Info("Running script :" + script);
+                         Process p = Process.Start("cmd.exe", script);
+                         p.WaitForExit();
+                         if (p.ExitCode != 0)
+                         {
+                             Logger.Error("Exception while running script " + script);
+                         }
+                     }
+                 }
+             }
+         }
 
    ////   def start_services(attempts=20)
    ////     retry_monit_request(attempts) do |client|
@@ -319,8 +349,8 @@ using System.Threading;
          {
              lock (locker)
              {
-                 
                  Logger.Info("Starting all the services");
+                 Run();
                  ServiceController[] allServices = ServiceController.GetServices();
                  foreach (string serviceName in serviceControllers.Keys)
                  {

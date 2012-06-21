@@ -21,11 +21,10 @@ namespace Uhuru.BOSH.Agent.Message
         {
             try
             {
-                if (Config.Configure)
-                {
-                    
+                //if (Config.Configure)
+                //{  
                     Monit.GetInstance().StartServices();
-                }
+                //}
                 return "\"started\"";
             }
             catch (Exception e)

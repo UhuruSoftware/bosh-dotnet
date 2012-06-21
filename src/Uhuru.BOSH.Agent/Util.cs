@@ -253,7 +253,10 @@ namespace Uhuru.BOSH.Agent
 
                 string tarFile = Path.ChangeExtension(blobDataFile, "tar");
                 FileArchive.UnzipFile(fileInfo.DirectoryName, blobDataFile);
-                FileArchive.UnzipFile(installPath, tarFile);
+                if (File.Exists(tarFile))
+                    FileArchive.UnzipFile(installPath, tarFile);
+                else
+                    FileArchive.UnzipFile(installPath, blobDataFile);
             }
             catch (Exception ex)
             {

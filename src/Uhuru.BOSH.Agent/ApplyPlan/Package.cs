@@ -90,10 +90,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             baseDir = Config.BaseDir;
             name = spec["name"].Value;
             version = spec["version"].Value;
-            checksum = spec.ContainsKey("checksum") ? spec["checksum"].Value : null; 
+            checksum = spec.ContainsKey("sha1") ? spec["sha1"].Value : null; 
             blobstoreId = spec["blobstore_id"].Value;
             installPath = Path.Combine(baseDir, "data", "packages", name, version);
             linkPath = Path.Combine(baseDir, "packages", name);
+            Directory.CreateDirectory(Path.Combine(baseDir, "packages"));
 
         }
 
@@ -130,7 +131,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private void FetchPackage()
         {
             Directory.CreateDirectory(installPath);
-            Directory.CreateDirectory(linkPath);
 
             Util.UnpackBlob(blobstoreId, checksum, installPath);
             Util.CreateSymLink(installPath, linkPath);
