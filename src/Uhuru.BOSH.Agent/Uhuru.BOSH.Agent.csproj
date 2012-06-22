@@ -93,9 +93,6 @@
     <Reference Include="Uhuru.Utilities, Version=0.9.0.0, Culture=neutral, PublicKeyToken=14594b8a48a91b15, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Uhuru.Utilities.dll</HintPath>
     </Reference>
-    <Reference Include="YamlDotNet.RepresentationModel">
-      <HintPath>..\..\lib\YamlDotNet.RepresentationModel.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgentException.cs" />
@@ -223,10 +220,6 @@
     <ProjectReference Include="..\Uhuru.BOSH.BlobstoreClient\Uhuru.BOSH.BlobstoreClient.csproj">
       <Project>{D90250E7-149D-422C-A116-B1D7AC75CEA3}</Project>
       <Name>Uhuru.BOSH.BlobstoreClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\YamlSerializer\YamlSerializer.csproj">
-      <Project>{AD9F3A60-C492-4823-8F24-6F4854E7CBF5}</Project>
-      <Name>YamlSerializer</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

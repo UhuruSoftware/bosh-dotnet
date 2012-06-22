@@ -162,7 +162,7 @@ namespace Uhuru.BOSH.Agent
         private void UpdateTime()
         {
             Logger.Info("Updating time");
-            if (!Config.Settings.ContainsKey("ntp"))
+            if (Config.Settings["ntp"] == null)
             {
                 Logger.Warning("no ntp-servers configured");
                 return;
@@ -275,7 +275,7 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateIptables()
         {
-            if (!Config.Settings.ContainsKey("iptables"))
+            if (Config.Settings["iptables"] == null)
             {
                 Logger.Info("No Ip table found in the config, skipping ip tables update");
                 return;
@@ -291,7 +291,7 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdatePasswords()
         {
-            if (Config.Settings.ContainsKey("env") && Config.Settings["env"].Count > 0)
+            if (Config.Settings["env"] != null && Config.Settings["env"].Count > 0)
             {
                 throw new NotImplementedException();
             }
@@ -308,7 +308,7 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateAgentId()
         {
-
+            
             Logger.Info("Updating agent Id");
             Config.AgentId = Config.Settings["agent_id"].Value;
             Logger.Info("New agent id is :" + Config.AgentId);
@@ -325,7 +325,7 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateCredentials()
         {
-            if (Config.Settings.ContainsKey("env") && Config.Settings["env"].Count > 0)
+            if (Config.Settings["env"] != null && Config.Settings["env"].Count > 0)
             {
                 throw new NotImplementedException();
             }

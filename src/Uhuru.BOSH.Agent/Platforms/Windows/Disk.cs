@@ -25,7 +25,7 @@ using System.IO;
         public string GetDataDiskDeviceName()
         {
             dynamic disks = Config.Settings["disks"];
-            string dataDisk = disks["ephemeral"].Value;
+            string dataDisk = disks["ephemeral"].Value.ToString();
             return dataDisk;
         }
 

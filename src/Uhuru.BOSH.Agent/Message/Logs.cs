@@ -10,7 +10,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-using YamlDotNet.RepresentationModel;
+//using YamlDotNet.RepresentationModel;
     using System.Collections;
     using Uhuru.BOSH.BlobstoreClient;
     using Uhuru.BOSH.BlobstoreClient.Clients;

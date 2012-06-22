@@ -10,7 +10,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-using YamlDotNet.RepresentationModel;
+
     using System.IO;
 
     /// <summary>
@@ -19,7 +19,7 @@ using YamlDotNet.RepresentationModel;
     public class ReleaseApplySpec : Base
     {
 
-        public static YamlStream Process(string[] args)
+        public static string Process(string[] args)
         {
             return ApplySpec();
         }
@@ -32,12 +32,11 @@ using YamlDotNet.RepresentationModel;
             }
         }
 
-        static YamlStream ApplySpec()
+        static string ApplySpec()
         {
-            StreamReader input = new StreamReader(ReleaseApplySpecPath);
-            YamlStream yaml = new YamlStream();
-            yaml.Load(input);
-            return yaml;
+            //TODO
+            return string.Empty;
+            
         }
     }
 }

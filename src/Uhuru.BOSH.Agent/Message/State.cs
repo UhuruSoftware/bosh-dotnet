@@ -9,7 +9,9 @@ namespace Uhuru.BOSH.Agent.Message
     using System;
     using Uhuru.BOSH.Agent.Errors;
     using Uhuru.Utilities;
-    using YamlDotNet.RepresentationModel;
+    //using YamlDotNet.RepresentationModel;
+    using Uhuru.BOSH.Agent.Objects;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// TODO: Update summary.
@@ -37,7 +39,12 @@ namespace Uhuru.BOSH.Agent.Message
 
                 response.SetValue("job_state", JobState);
                 response.SetValue("bosh_protocol", "1"); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
-                response.SetValue("ntp", Ntp.GetNtpOffset().Offset.ToString());
+                HeartbeatMessage.NtpMessage ntpMessage = new HeartbeatMessage.NtpMessage();
+
+                ntpMessage.Offset = Ntp.GetNtpOffset().Offset.ToString();
+                ntpMessage.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss");
+
+                response.SetValue("ntp", JsonConvert.SerializeObject(ntpMessage));
 
                 return response.ToHash().ToString();
             }

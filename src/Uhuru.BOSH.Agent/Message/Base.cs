@@ -26,7 +26,7 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public System.Yaml.YamlMapping Settings
+        public dynamic Settings
         {
             get
             {

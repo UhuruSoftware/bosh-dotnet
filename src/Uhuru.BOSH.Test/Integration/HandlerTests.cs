@@ -8,6 +8,7 @@ using System.Yaml;
 using System.IO;
 using System.Threading;
 using Uhuru.NatsClient;
+using Newtonsoft.Json;
 
 namespace Uhuru.BOSH.Test.Unit
 {
@@ -21,13 +22,8 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC001_TestHandler()
         {
             //Arrange
-            YamlNode root = null;
-            using (TextReader textReader = new StreamReader(configFile))
-            {
-                YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                root = nodes[0];
-            }
-            Config.Setup(root, false);
+            string fileContent = File.ReadAllText(configFile);
+            Config.Setup(JsonConvert.DeserializeObject(fileContent), false);
             
             //ConfigBlobStore
             Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;

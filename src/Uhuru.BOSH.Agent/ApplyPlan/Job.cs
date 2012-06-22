@@ -89,7 +89,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             var required = new string[] { "name", "template", "version", "sha1", "blobstore_id" };
             foreach(var requiredKey in required)
             {
-                if (!spec.ContainsKey(requiredKey))
+                if (spec[requiredKey] == null)
                 {
                     throw new ArgumentException(String.Format("Invalid spec. {0} is missing", requiredKey));
                 }
@@ -99,9 +99,9 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             name = spec["name"].Value;
             template = spec["template"].Value;
             version = spec["version"].Value;
-            checksum = spec.ContainsKey("sha1") ? spec["sha1"].Value : null;
+            checksum = spec["sha1"] != null ? spec["sha1"].Value : null;
             blobstoreId = spec["blobstore_id"].Value;
-            configBinding = spec.ContainsKey("config_binding") ? spec["config_binding"].Value : null;
+            configBinding = spec["config_binding"] != null ? spec["config_binding"].Value : null;
             installPath = Path.Combine(baseDir, "data", "jobs", template, version);
             linkPath = Path.Combine(baseDir, "jobs", template);
 

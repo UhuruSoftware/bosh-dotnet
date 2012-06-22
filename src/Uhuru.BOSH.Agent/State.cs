@@ -15,8 +15,7 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Objects;
     using Uhuru.BOSH.Agent.Errors;
     using System.Globalization;
-    using System.Yaml.Serialization;
-    using System.Yaml;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// This is a thin abstraction on top of a state.yml file that is managed by agent.
@@ -80,7 +79,7 @@ namespace Uhuru.BOSH.Agent
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public YamlNode GetValue(string key)
+        public dynamic GetValue(string key)
         {
             lock (locker)
             {
@@ -128,15 +127,15 @@ namespace Uhuru.BOSH.Agent
                 {
                     try
                     {
-                        
-                        using (TextReader textReader = new StreamReader(stateFile))
+
+
+                        if (File.Exists(stateFile))
                         {
-                            YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                            if (nodes.Length > 0)
-                                data = nodes[0];
-                            else
-                                data = GetDefaultState();
+                          data = JsonConvert.DeserializeObject(File.ReadAllText(stateFile));
                         }
+                        else
+                          data = GetDefaultState();
+                        
                     }
                     catch (Exception ex)
                     {
@@ -156,12 +155,12 @@ namespace Uhuru.BOSH.Agent
         /// Writes the specified new state.
         /// </summary>
         /// <param name="newState">The new state.</param>
-        public void Write(YamlNode newState)
+        public void Write(dynamic newState)
         {
             
             try
             {
-                newState.ToYamlFile(stateFile);
+                File.WriteAllText(stateFile, newState.ToString());
             }
             catch (Exception ex)
             {
@@ -180,18 +179,16 @@ namespace Uhuru.BOSH.Agent
         /// Gets the default state.
         /// </summary>
         /// <returns></returns>
-        private YamlNode GetDefaultState()
+        private dynamic GetDefaultState()
         {
-            string defaultState = @"---
-            deployment    : 
-            networks      : { }
-            resource_pool : { }";
-            return YamlNode.FromYaml(defaultState)[0];
+            string defaultState = "{ \"deployment\": \"\", \"networks\" : { }, \"resource_pool\" : { } }";
+            return JsonConvert.DeserializeObject(defaultState);
+            
         }
    
         private Job GetCurrentJob()
         {
-            if (!data.ContainsKey("job"))
+            if (data["job"] == null)
                 return null;
             
             Job currentJob = new Job();
@@ -208,14 +205,14 @@ namespace Uhuru.BOSH.Agent
         {
             Collection<Network> currentNetworks =null;
 
-            if (data.ContainsKey("networks"))
+            if (data["networks"] == null)
             {
                 currentNetworks = new Collection<Network>();
                 foreach (dynamic net in data["networks"])
                 {
                     Network network = new Network();
-                    network.Name = net.Key.Value;
-                    network.Ip = net.Value["ip"].Value;
+                    network.Name = net.First.Name;
+                    network.Ip = net.First["ip"].Value;
                     currentNetworks.Add(network);
                 }
             }

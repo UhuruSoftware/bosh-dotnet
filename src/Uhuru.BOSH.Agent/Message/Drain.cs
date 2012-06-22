@@ -90,7 +90,14 @@ using Uhuru.NatsClient;
 
         private string DrainForUpdate()
         {
-            throw new NotImplementedException();
+            if (spec == null)
+            {
+                throw new MessageHandlerException("Drain update called without apply spec");
+            }
+            Logger.Warning("Not implemented yet");
+
+            return "0";
+            
         }
 
         private string DrainCheckStatus()

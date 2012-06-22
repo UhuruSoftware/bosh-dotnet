@@ -10,10 +10,11 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-using System.Yaml;
 using System.IO;
     using Uhuru.Utilities;
     using System.Diagnostics;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// TODO: Update summary.
@@ -43,23 +44,24 @@ using System.IO;
         {
             
             Logger.Info("Starting agent");
-            YamlNode root = null;
+            //YamlNode root = null;
             if (File.Exists(configFile))
             {
-                using (TextReader textReader = new StreamReader(configFile))
-                {
-                    YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                    root = nodes[0];
-                }
+                //using (TextReader textReader = new StreamReader(configFile))
+                //{
+                //    YamlNode[] nodes = YamlNode.FromYaml(textReader);
+                //    root = nodes[0];
+                //}
+                dynamic root = JsonConvert.DeserializeObject(File.ReadAllText(configFile));
                 Logger.Info("Configuring agent");
-                Config.Setup(root, false);
+                Config.Setup(root[0], false);
                 Monit.GetInstance().Start();
                 Monit.GetInstance().StartServices();               
             }
             else
             {
                 Logger.Info("Configuring agent for first run");
-                Config.Setup(new YamlMapping(), true);
+                Config.Setup(new JObject(), true);
 
                 Bootstrap bootStrap = new Bootstrap();
                 bootStrap.Configure();

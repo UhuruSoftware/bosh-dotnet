@@ -6,10 +6,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Uhuru.BOSH.Agent;
 using System.Yaml;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace Uhuru.BOSH.Test.Unit
 {
     [TestClass]
+    [DeploymentItem("log4net.config")]
+    [DeploymentItem("unity.config")]
     public class ConfigTest
     {
         [TestMethod]
@@ -20,12 +23,10 @@ namespace Uhuru.BOSH.Test.Unit
             YamlNode root = null;
 
             //Act
-            using (TextReader textReader = new StreamReader(configFile))
-            {
-                 YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                root = nodes[0];
-            }
-            Config.Setup(new YamlMapping(), true);
+            //string fileContent = File.ReadAllText(configFile);
+            
+
+            Config.Setup(new Newtonsoft.Json.Linq.JObject(), true);
 
             //Assert
             
@@ -39,13 +40,10 @@ namespace Uhuru.BOSH.Test.Unit
             YamlNode root = null;
 
             //Act
-            using (TextReader textReader = new StreamReader(configFile))
-            {
-                YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                root = nodes[0];
-            }
-            Config.Setup(root,false);
+            string fileContent = File.ReadAllText(configFile);
 
+            Config.Setup(JsonConvert.DeserializeObject(fileContent),false);
+            Console.WriteLine("");
             //Assert
         }
 

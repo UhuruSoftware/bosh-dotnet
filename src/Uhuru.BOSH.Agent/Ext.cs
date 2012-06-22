@@ -10,49 +10,49 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using YamlDotNet.RepresentationModel;
+    //using YamlDotNet.RepresentationModel;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public static class Ext
     {
-        public static YamlMappingNode GetChild(this YamlMappingNode yamlNode, string nodeName)
-        {
-            return (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
-        }
+        //public static YamlMappingNode GetChild(this YamlMappingNode yamlNode, string nodeName)
+        //{
+        //    return (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
+        //}
 
-        public static string GetString(this YamlMappingNode yamlNode, string nodeName)
-        {
-            YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
-            return node == null ? null : node.ToString();
-        }
+        //public static string GetString(this YamlMappingNode yamlNode, string nodeName)
+        //{
+        //    YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
+        //    return node == null ? null : node.ToString();
+        //}
 
-        public static int? GetInt(this YamlMappingNode yamlNode, string nodeName)
-        {
-            YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
-            if (node == null)
-            {
-                return null;
-            }
-            else
-            {
-                return Convert.ToInt32(node.ToString());
-            }
-        }
+        //public static int? GetInt(this YamlMappingNode yamlNode, string nodeName)
+        //{
+        //    YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
+        //    if (node == null)
+        //    {
+        //        return null;
+        //    }
+        //    else
+        //    {
+        //        return Convert.ToInt32(node.ToString());
+        //    }
+        //}
 
-        public static bool? GetBool(this YamlMappingNode yamlNode, string nodeName)
-        {
-            YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
-            if (node == null)
-            {
-                return null;
-            }
-            else
-            {
-                return Convert.ToBoolean(node.ToString());
-            }
-        }
+        //public static bool? GetBool(this YamlMappingNode yamlNode, string nodeName)
+        //{
+        //    YamlMappingNode node = (YamlMappingNode)yamlNode.Children[new YamlScalarNode(nodeName)];
+        //    if (node == null)
+        //    {
+        //        return null;
+        //    }
+        //    else
+        //    {
+        //        return Convert.ToBoolean(node.ToString());
+        //    }
+        //}
 
         ////class Object
         //// def to_openstruct

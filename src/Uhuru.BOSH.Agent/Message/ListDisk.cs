@@ -41,7 +41,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             foreach (var cid in cids)
             {
-                string diskId = Config.Platform.LookupDiskByCid(cid.Value);
+                string diskId = Config.Platform.LookupDiskByCid(cid.Name);
                 if (!(DiskUtil.MountEntry(diskId) == null))
                 {
                     diskInfo.Add(cid);

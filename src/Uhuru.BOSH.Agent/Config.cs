@@ -13,10 +13,9 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Providers;
     using Uhuru.NatsClient;
     using Uhuru.Utilities;
-    using System.Yaml.Serialization;
-    using System.Yaml;
     using Uhuru.BOSH.Agent.Objects;
     using System.Collections.ObjectModel;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// TODO: Update summary.
@@ -202,6 +201,7 @@ namespace Uhuru.BOSH.Agent
 
         public static void Setup(dynamic config, bool firstDeployment)
         {
+            Logger.Info("Running settup");
             //YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
             Config.SystemRoot = @"c:\"; //TODO system root
 
@@ -213,13 +213,15 @@ namespace Uhuru.BOSH.Agent
             //Config.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
             if (!Config.Configure)
             {
-                Config.BaseDir = config.ContainsKey("base_dir") ? config["base_dir"].Value : DEFAULT_BASE_DIR;
+                Logger.Info("Bosh agent not in configure mode");
+                Config.BaseDir = config["base_dir"] !=null ? config["base_dir"].Value : DEFAULT_BASE_DIR;
                 Config.AgentId = config["agent_id"].Value;
                 Config.MessageBus = config["mbus"].Value;
-                Config.BlobstoreOptions = config.ContainsKey("blobstore_options") ? config["blobstore_options"].Value : null;
+                Config.BlobstoreOptions = config["blobstore_options"] != null ? config["blobstore_options"].Value : null;
             }
             else
             {
+                Logger.Info("Bosh agent in configure mode");
                 Config.BaseDir = DEFAULT_BASE_DIR;
                 Config.AgentId = "not_configured";
                 Config.MessageBus = "nats://localhost:4222";
@@ -233,7 +235,7 @@ namespace Uhuru.BOSH.Agent
             
             //Config.BlobstoreOptions = new Collection<string>(){root.GetString("blobstore_options")};
 
-            Config.BlobstoreProvider = config.ContainsKey("blobstore_provider") ? config["blobstore_provider"] : null;
+            Config.BlobstoreProvider = config["blobstore_provider"] != null ? config["blobstore_provider"].Value : null;
             //Config.BlobstoreProvider = root.GetString("blobstore_provider");
 
             Config.InfrastructureName = "Windows"; //TODO Always windows, from unity
@@ -257,13 +259,13 @@ namespace Uhuru.BOSH.Agent
             Config.HeartbeatInterval = 60; //TODO from commandline
             //root.GetString("heartbeat_interval");
 
-            Config.SshdMonitorInterval = config.ContainsKey("sshd_monitor_interval") ? config["sshd_monitor_interval"] : DEFAULT_SSHD_MONITOR_INTERVAL;
+            Config.SshdMonitorInterval = config["sshd_monitor_interval"] != null ? int.Parse(config["sshd_monitor_interval"].Value) : DEFAULT_SSHD_MONITOR_INTERVAL;
 
-            Config.SshdStartDelay = config.ContainsKey("sshd_start_delay") ? config["sshd_start_delay"] : DEFAULT_SSHD_START_DELAY;
+            Config.SshdStartDelay = config["sshd_start_delay"] != null ? int.Parse(config["sshd_start_delay"].Value) : DEFAULT_SSHD_START_DELAY;
 
             //Config.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
 
-            Config.SshdMonitorEnabled = config.ContainsKey("sshd_monitor_enabled") ? config["sshd_monitor_enabled"] : false;
+            Config.SshdMonitorEnabled = config["sshd_monitor_enabled"] != null ? config["sshd_monitor_enabled"].Value : false;
             //Config.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
 
             //if (!string.IsNullOrEmpty(Config.Configure))
@@ -281,18 +283,16 @@ namespace Uhuru.BOSH.Agent
             Logger.Info("Configuration done!");
         }
 
-        private static YamlNode GetSettings(string settingsFile)
+        private static dynamic GetSettings(string settingsFile)
         {
-            YamlNode root = null;
+         
             if (!File.Exists(settingsFile))
                 return null;
+            string fileContent = File.ReadAllText(settingsFile);
 
-            using (TextReader textReader = new StreamReader(settingsFile))
-            {
-                YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                root = nodes[0];
-            }
-            return root;
+            return JsonConvert.DeserializeObject(fileContent);
+            
+            
         }
 
         /// <summary>

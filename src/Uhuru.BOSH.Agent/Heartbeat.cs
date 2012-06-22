@@ -118,9 +118,9 @@ namespace Uhuru.BOSH.Agent
             
             heartBeatMessage.Job = Config.State.Job != null ? Config.State.Job.Name : null;
             dynamic stateHash = Config.State.ToHash();
-            if (stateHash.ContainsKey("index"))
+            if (stateHash["index"] != null)
             {
-                heartBeatMessage.Index = int.Parse(stateHash["index"].Value);
+                heartBeatMessage.Index = stateHash["index"].Value;
             }
             heartBeatMessage.JobState = Monit.GetInstance().GetServiceGourpState();
             heartBeatMessage.Vitals = systemVitals;

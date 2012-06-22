@@ -15,10 +15,10 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.Utilities;
     using System.Diagnostics;
     using System.IO;
-    using System.Yaml;
     using Uhuru.BOSH.Agent.Objects;
     using System.Globalization;
     using Uhuru.BOSH.Agent.Message;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// TODO: Update summary.
@@ -156,7 +156,7 @@ namespace Uhuru.BOSH.Agent
                                 this.Nats.Start(this.NatsUri);
                                 break;
                             }
-                            catch (ReactorException ex)
+                            catch (Exception ex)
                             {
                                 if (retries <= 0)
                                 {
@@ -170,7 +170,6 @@ namespace Uhuru.BOSH.Agent
                         } while (retries-- > 0);
 
                         this.HeartBeatProcessor.Enable(Config.HeartbeatInterval * 1000);
-                        //this.SetupHeartbeats();
                         //this.SetupSshdMonitor();
 
                         if (this.ProcessAlerts)
@@ -259,13 +258,13 @@ namespace Uhuru.BOSH.Agent
         {
             try
             {
-                 dynamic msg = YamlMapping.FromYaml(json)[0];
+                dynamic msg = JsonConvert.DeserializeObject(json);
 
                 //TODO Improve this functionality. This hack is needed for removing !!int values
-                string aux = msg.ToString();
-                msg = YamlMapping.FromYaml(aux.Replace(" !!int", string.Empty))[0];
+                //string aux = msg.ToString();
+                //msg = YamlMapping.FromYaml(aux.Replace(" !!int", string.Empty))[0];
                 
-                if (!msg.ContainsKey("reply_to"))
+                if (msg["reply_to"] == null)
                 {
                     Logger.Info("Missing reply_to in: {0}", json);
                     return;
@@ -302,7 +301,7 @@ namespace Uhuru.BOSH.Agent
                 }
                 else if (method == "get_task")
                 {
-                    HandleGetTask(replyTo, ((args as YamlSequence).First() as YamlScalar).Value);
+                    HandleGetTask(replyTo, (JsonConvert.DeserializeObject(args.ToString(), typeof(string[])) as string[])[0]);
                 }
                 else if (method == "shutdown")
                 {
@@ -586,13 +585,13 @@ namespace Uhuru.BOSH.Agent
 
         public Dictionary<string, object> Decrypt(Dictionary<string, object> msg)
         {
-            if (!msg.ContainsKey("session_id"))
+            if (msg["session_id"] == null)
             {
                 Logger.Info("Missing session_id in {0}", msg.ToString());
                 return null;
             }
 
-            if (!msg.ContainsKey("encrypted_data"))
+            if (msg["encrypted_data"] == null)
             {
                 Logger.Info("Missing encrypted_data in {0}", msg.ToString());
                 return null;

@@ -13,7 +13,8 @@ namespace Uhuru.BOSH.Agent.Infrastructures
     using Uhuru.BOSH.Agent.Providers;
     using Uhuru.Utilities;
     using System.IO;
-    using System.Yaml;
+    using Newtonsoft.Json;
+    //using System.Yaml;
 
     /// <summary>
     /// VSphere Infrastructure
@@ -29,13 +30,14 @@ namespace Uhuru.BOSH.Agent.Infrastructures
             LoadCdromSettings();
 
             Logger.Info("Loading settings file");
-            YamlNode root = null;
-            using (TextReader textReader = new StreamReader(Config.SettingsFile))
-            {
-                YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                root = nodes[0];
-            }
-            return root;
+            //YamlNode root = null;
+            string fileContent = File.ReadAllText(Config.SettingsFile);
+            //using (TextReader textReader = new StreamReader(Config.SettingsFile))
+            //{
+            //    YamlNode[] nodes = YamlNode.FromYaml(textReader);
+            //    root = nodes[0];
+            //}
+            return JsonConvert.DeserializeObject(fileContent);
         }
 
         /// <summary>

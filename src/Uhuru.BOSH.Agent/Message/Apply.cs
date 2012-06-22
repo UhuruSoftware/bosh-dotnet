@@ -39,15 +39,19 @@ namespace Uhuru.BOSH.Agent.Message
 
             if (args.Count < 1)
                 throw new ArgumentException("not enough arguments");
-            
+
+
+            //args = YamlMapping.FromYaml(args.ToString());
+
             newSpec = args[0];
 
-            if (newSpec.ContainsKey("networks"))
+            //if (newSpec.ContainsKey("networks"))
+            if (newSpec["networks"] != null)
             {
                 Logger.Info("The new spec contains networks element");
                 foreach (dynamic network in newSpec["networks"])
                 {
-                    dynamic networkSettings = Config.Infrastructure.GetNetworkSettings(network.Key.Value, network.Value);
+                    dynamic networkSettings = Config.Infrastructure.GetNetworkSettings(network.Name, network.Value);
                     if (networkSettings != string.Empty)
                         throw new NotImplementedException();
                     Logger.Info("Plantform does not require additional settings");
