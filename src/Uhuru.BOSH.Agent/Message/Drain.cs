@@ -94,7 +94,12 @@ using Uhuru.NatsClient;
             {
                 throw new MessageHandlerException("Drain update called without apply spec");
             }
-            Logger.Warning("Not implemented yet");
+            spec.Remove("configuration_hash");
+            Message.Apply applyMessage = new Message.Apply();
+
+            applyMessage.Process(spec);
+
+            //Logger.Warning("Not implemented yet");
 
             return "0";
             

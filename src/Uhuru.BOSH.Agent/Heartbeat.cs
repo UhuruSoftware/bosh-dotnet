@@ -120,7 +120,7 @@ namespace Uhuru.BOSH.Agent
             dynamic stateHash = Config.State.ToHash();
             if (stateHash["index"] != null)
             {
-                heartBeatMessage.Index = stateHash["index"].Value;
+                heartBeatMessage.Index = Convert.ToInt32(stateHash["index"].Value);
             }
             heartBeatMessage.JobState = Monit.GetInstance().GetServiceGourpState();
             heartBeatMessage.Vitals = systemVitals;

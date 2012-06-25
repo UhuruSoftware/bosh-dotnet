@@ -44,7 +44,7 @@ namespace Uhuru.BOSH.Agent
         {
             Vitals result = new Vitals();
 
-            return result;
+            //return result;
             //Populate CPU
             result.CPU = new Vitals.CPUInfo();
             double userCpuCount = userCpuCounter.NextValue();

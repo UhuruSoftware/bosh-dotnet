@@ -42,8 +42,10 @@ namespace Uhuru.BOSH.Agent.Message
 
 
             //args = YamlMapping.FromYaml(args.ToString());
-
-            newSpec = args[0];
+            if (args.GetType().Name == "JObject")
+                newSpec = args;
+            else
+                newSpec = args[0];
 
             //if (newSpec.ContainsKey("networks"))
             if (newSpec["networks"] != null)
