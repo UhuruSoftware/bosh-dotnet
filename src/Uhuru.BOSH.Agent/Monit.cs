@@ -90,6 +90,7 @@ using System.Threading;
         public void Start()
         {
             Logger.Info("Starting monit");
+            enabled = true;
             Utilities.TimerHelper.RecurringLongCall(poolTime, new Utilities.TimerCallback(Run));
             //Utilities.TimerHelper.RecurringCall
         }
@@ -268,6 +269,7 @@ using System.Threading;
         {
             lock (locker)
             {
+                Logger.Info("Unmonitoring services");
                 specifiedJobs.Clear();
                 serviceControllers.Clear();
             }
@@ -314,8 +316,9 @@ using System.Threading;
             }
         }
 
-         public void RunPreStartScripts()
+         public string RunPreScripts(bool start)
          {
+             string result = "0";
              lock (locker)
              {
                  MonitorServices();
@@ -323,18 +326,24 @@ using System.Threading;
                  {
                      foreach (MonitSpec.Base.JobService jobService in jobInfo.Key.Service)
                      {
-                         //TODO improve script execution
-                         string script = string.Format("/c {0}\\{1}", jobInfo.Value.Directory, jobService.PreStart);
+                         string script = string.Empty;
+                         if (start)
+                            script = string.Format("/c {0}\\{1}", jobInfo.Value.Directory, jobService.PreStart);
+                         else
+                             script = string.Format("/c {0}\\{1}", jobInfo.Value.Directory, jobService.PreStop);
+
                          Logger.Info("Running script :" + script);
                          Process p = Process.Start("cmd.exe", script);
                          p.WaitForExit();
                          if (p.ExitCode != 0)
                          {
                              Logger.Error("Exception while running script " + script);
+                             result = p.ExitCode.ToString();
                          }
                      }
                  }
              }
+             return result;
          }
 
    ////   def start_services(attempts=20)
@@ -504,7 +513,11 @@ using System.Threading;
    ////   end
         public string GetServiceGourpState()
         {
-            if (!enabled) return "running";
+            if (!enabled)
+            {
+                Logger.Info("Heartbeat is disabled");
+                return "running";
+            }
 
             foreach (KeyValuePair<string, ServiceControllerStatus> service in serviceControllers )
             {

@@ -72,20 +72,30 @@ using Uhuru.NatsClient;
 
         private string DrainForShutdown()
         {
-            bool delivered = false;
-            ThreadPool.QueueUserWorkItem((data) =>
-                {
+            //bool delivered = false;
+            //ThreadPool.QueueUserWorkItem((data) =>
+            //    {
                     nats.Publish("hm.agent.shutdown." + agentId);
-                    delivered = true;
-                });
+              //      delivered = true;
+            //    });
             //TODO for drainscript
             //if (oldSpec.ToHash().ContainsKey("job") && drain
-            if (false)
-            {
+            //while (!delivered)
+            //{
+            //    Thread.Sleep(1000);
+            //}
+            return RunDrainScript();
+            //Monit.GetInstance().StopServices();
+            
+            
+           // return "0";
+        }
 
-            }
-            else
-                return "0";
+        private string RunDrainScript()
+        {
+            string result = Monit.GetInstance().RunPreScripts(false);
+            
+            return result;
         }
 
         private string DrainForUpdate()

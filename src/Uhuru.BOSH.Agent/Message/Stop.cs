@@ -11,6 +11,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Linq;
     using System.Text;
     using Uhuru.BOSH.Agent.Errors;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
@@ -22,9 +23,9 @@ namespace Uhuru.BOSH.Agent.Message
         {
             try
             {
-                if (!Config.Configure)
+                if (Config.Configure)
                 {
-                    //TODO: florind Bosh::Agent::Monit.stop_services
+                    Monit.GetInstance().StopServices();
                 }
                 return "\"stopped\"";
             }

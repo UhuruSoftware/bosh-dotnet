@@ -37,7 +37,7 @@ namespace Uhuru.BOSH.Agent.Message
                     response.SetValue("vm", Settings["vm"]);
                 }
 
-                response.SetValue("job_state", JobState);
+                response.SetValue("job_state", GetJobState());
                 response.SetValue("bosh_protocol", "1"); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
                 HeartbeatMessage.NtpMessage ntpMessage = new HeartbeatMessage.NtpMessage();
 
@@ -54,15 +54,11 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public string JobState
+        public string GetJobState()
         {
-            get
-            {
-                //TODO afte we implement monit
-                return "running";
-                //throw new NotImplementedException();
-                //  Bosh::Agent::Monit.service_group_state
-            }
+
+            string serviceState = Monit.GetInstance().GetServiceGourpState();
+            return serviceState;
         }
 
         public bool IsLongRunning()
