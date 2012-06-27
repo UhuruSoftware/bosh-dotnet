@@ -12,6 +12,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Text;
     using System.Security.Policy;
     using Newtonsoft.Json.Linq;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
@@ -21,7 +22,7 @@ namespace Uhuru.BOSH.Agent.Message
         public string Process(dynamic args)
         {
             List<string> diskInfo = new List<string>();
-
+            Logger.Info("Processing list_disk");
             dynamic settings = Config.Settings;
             dynamic cids;
 
@@ -42,15 +43,17 @@ namespace Uhuru.BOSH.Agent.Message
             foreach (var cid in cids)
             {
                 string diskId = Config.Platform.LookupDiskByCid(cid.Name);
+                Logger.Info("Found disk with Id :" + diskId);
+
                 if (!(DiskUtil.MountEntry(diskId) == null))
                 {
-                    diskInfo.Add(cid);
+                    diskInfo.Add(cid.Name);
                 }
             }
 
-            JObject obj = JObject.FromObject(diskInfo);
+            JArray obj = JArray.FromObject(diskInfo);
 
-            return obj.ToString();
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
         }
 
         public bool IsLongRunning()

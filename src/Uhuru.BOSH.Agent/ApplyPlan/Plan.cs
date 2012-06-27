@@ -150,7 +150,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         {
             get
             {
-                return (spec["configuration_hash"] == null);
+                return (spec["configuration_hash"] != null);
             }
         }
 

@@ -30,12 +30,7 @@ namespace Uhuru.BOSH.Agent.Message
             if (args.Count == 0)
                 return string.Empty;
             cid = args[0].ToString();
-            return new MountDisk().Mount();
-        }
-
-        public MountDisk()
-        {
-
+            return Mount();
         }
 
         /// <summary>
@@ -46,7 +41,8 @@ namespace Uhuru.BOSH.Agent.Message
             if (Config.Configure)
             {
                 UpdateSettings();
-                Logger.Info("MountDisk: {0} - {1}", cid, Settings["disk"].ToString());
+                Logger.Info("Current settings :" + Settings.ToString());
+                Logger.Info("MountDisk: {0} - {1}", cid, Settings["disks"].ToString());
 
                 return SetupDisk();
             }

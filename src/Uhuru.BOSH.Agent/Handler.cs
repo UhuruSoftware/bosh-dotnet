@@ -139,12 +139,12 @@ namespace Uhuru.BOSH.Agent
             {
                 Trap(s, () => Shutdown());
             }
-
+            
             ThreadPool.QueueUserWorkItem((data) =>
                 {
                     try
                     {
-                        this.Nats = new Reactor();
+                        this.Nats = new Reactor();  
                         this.Nats.OnConnect += new EventHandler<ReactorErrorEventArgs>(Nats_OnConnect);
                         Config.Nats = this.Nats;
 

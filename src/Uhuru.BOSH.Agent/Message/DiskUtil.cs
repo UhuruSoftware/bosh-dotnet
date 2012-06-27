@@ -35,8 +35,39 @@ namespace Uhuru.BOSH.Agent.Message
         /// <returns></returns>
         public static string MountEntry(string partition)
         {
-            throw new NotImplementedException();
-            ////  File.read('/proc/mounts').lines.select { |l| l.match(/#{partition}/) }.first
+            Logger.Info("Checkin mount entry");
+
+            string script = @"SELECT DISK " + partition+ @"
+            EXIT";
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, script);
+
+            ProcessStartInfo info = new ProcessStartInfo();
+            info.FileName = "diskpart.exe";
+            info.Arguments = String.Format("/s {0}", fileName);
+            info.RedirectStandardOutput = true;
+            info.UseShellExecute = false;
+
+            Process p = new Process();
+            p.StartInfo = info;
+            p.Start();
+            p.WaitForExit(60000);
+            if (!p.HasExited)
+            {
+                p.Kill();
+                return null;
+            }
+            else
+            {
+                string output = p.StandardOutput.ReadToEnd(); 
+                Logger.Warning(output);
+                if (!output.Contains("The disk you specified is not valid."))
+                    return "exists";
+                else
+                    //TODO imeplemnt block and mount point
+                    return null;
+            }
+            
         }
 
         static int GUARD_RETRIES = 600;

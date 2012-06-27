@@ -44,7 +44,7 @@ namespace Uhuru.BOSH.Agent.Message
                 ntpMessage.Offset = Ntp.GetNtpOffset().Offset.ToString();
                 ntpMessage.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss");
 
-                response.SetValue("ntp", JsonConvert.SerializeObject(ntpMessage));
+                response.SetValue("ntp", JsonConvert.SerializeObject(ntpMessage, Formatting.None));
 
                 return response.ToHash().ToString();
             }

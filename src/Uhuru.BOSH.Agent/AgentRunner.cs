@@ -54,7 +54,7 @@ using System.IO;
                 //}
                 dynamic root = JsonConvert.DeserializeObject(File.ReadAllText(configFile));
                 Logger.Info("Configuring agent");
-                Config.Setup(root[0], false);
+                Config.Setup(root, false);
                 Monit.GetInstance().Start();
                 Monit.GetInstance().StartServices();               
             }

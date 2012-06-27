@@ -96,6 +96,7 @@ using Uhuru.NatsClient;
             string result = Monit.GetInstance().RunPreScripts(false);
             
             return result;
+            //return "0";
         }
 
         private string DrainForUpdate()

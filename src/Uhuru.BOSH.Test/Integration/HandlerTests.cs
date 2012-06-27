@@ -26,6 +26,7 @@ namespace Uhuru.BOSH.Test.Unit
             Config.Setup(JsonConvert.DeserializeObject(fileContent), false);
             
             //ConfigBlobStore
+            Config.Configure = true;
             Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
             Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
             Monit.GetInstance().Start();

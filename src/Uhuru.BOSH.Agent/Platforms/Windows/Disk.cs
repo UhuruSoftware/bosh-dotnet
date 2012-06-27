@@ -52,6 +52,7 @@ using System.IO;
 
         public string LookupDiskByCid(string cid)
         {
+            Logger.Info("Looking disk by CID :" + Config.Settings.ToString());
             if (Config.Settings["disks"]["persistent"][cid] != null)
             {
                 return Config.Settings["disks"]["persistent"][cid].ToString();
