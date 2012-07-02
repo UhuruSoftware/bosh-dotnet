@@ -11,12 +11,14 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Linq;
     using System.Text;
     using System.IO;
+    using Uhuru.Utilities;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Unmount", Justification = "FxCop Bug")]
-    public class UnmountDisk : Base
+    public class UnmountDisk : Base, IMessage
     {
         /// <summary>
         /// Gets a value indicating whether [long running].
@@ -24,16 +26,11 @@ namespace Uhuru.BOSH.Agent.Message
         /// <value>
         ///   <c>true</c> if [long running]; otherwise, <c>false</c>.
         /// </value>
-        public bool LongRunning { get { return true; } }
-
-        public static void Process(dynamic args)
-        {
-            new UnmountDisk().Unmount(args);
-        }
+       
 
         public void Unmount(dynamic args)
         {
-            throw new NotImplementedException();
+
         }
 
       ////def unmount(args)
@@ -51,5 +48,40 @@ namespace Uhuru.BOSH.Agent.Message
       ////    return {:message => "Unknown mount for partition: #{partition}"}
       ////  end
       ////end
+
+        public bool IsLongRunning()
+        {
+            return true;
+        }
+
+        public string Process(dynamic args)
+        {
+            Logger.Info("Processing unmount disk :" + args.ToString());
+            string partition = args[0].Value.ToString();
+            string mountEntry = DiskUtil.MountEntry(partition);
+            if (mountEntry != null)
+            {
+                DiskUtil.UnmountGuard(partition);
+                UnmountMessage unmountMessage = new UnmountMessage();
+                unmountMessage.Message = string.Format("Unmounted {0} on {1}", @"C:\vcap\store\", partition);
+                return JsonConvert.SerializeObject(unmountMessage);
+            }
+            else
+            {
+                return "Unknown mount for partition" + partition;
+            }
+
+            return string.Empty;
+        }
+
+        public class UnmountMessage
+        {
+            [JsonProperty("message")]
+            public string Message
+            {
+                get;
+                set;
+            }
+        }
     }
 }

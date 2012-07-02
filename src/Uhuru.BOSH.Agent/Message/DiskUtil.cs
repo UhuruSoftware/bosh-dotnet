@@ -38,6 +38,8 @@ namespace Uhuru.BOSH.Agent.Message
             Logger.Info("Checkin mount entry");
 
             string script = @"SELECT DISK " + partition+ @"
+            SELECT PARTITION 1
+            DETAIL PARTITION
             EXIT";
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName, script);
@@ -61,10 +63,10 @@ namespace Uhuru.BOSH.Agent.Message
             {
                 string output = p.StandardOutput.ReadToEnd(); 
                 Logger.Warning(output);
-                if (!output.Contains("The disk you specified is not valid."))
+                if (!output.Contains(@"C:\vcap\store\"))
+                    //TODO imeplemnt block and mount point
                     return "exists";
                 else
-                    //TODO imeplemnt block and mount point
                     return null;
             }
             
@@ -77,11 +79,35 @@ namespace Uhuru.BOSH.Agent.Message
         /// Unmounts the guard.
         /// </summary>
         /// <param name="mountpoint">The mountpoint.</param>
-        public static void UnmountGuard(string mountpoint)
+        public static void UnmountGuard(string disk)
         {
             int unmountAttempts = GUARD_RETRIES;
 
-            throw new NotImplementedException();
+            string script = @"SELECT DISK " + disk + @"
+            SELECT PARTITION 1
+            remove all
+            EXIT";
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, script);
+
+            ProcessStartInfo info = new ProcessStartInfo();
+            info.FileName = "diskpart.exe";
+            info.Arguments = String.Format("/s {0}", fileName);
+            info.RedirectStandardOutput = true;
+            info.UseShellExecute = false;
+
+            Process p = new Process();
+            p.StartInfo = info;
+            p.Start();
+            p.WaitForExit(60000);
+            if (!p.HasExited)
+            {
+                p.Kill();
+                Logger.Error("Failed to umount");
+            }
+           
+
+           
 
             ////  loop do
             ////    umount_output = `umount #{mountpoint} 2>&1`

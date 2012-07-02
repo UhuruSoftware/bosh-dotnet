@@ -120,9 +120,11 @@ namespace Uhuru.BOSH.Agent
                     return new ListDisk();
                 case "compile_package":
                     return new CompilePackage();
+                case "unmount_disk":
+                    return new UnmountDisk();
                 case "test":
                     return new TestMessage();
-
+                    
             }
             return null;
          //   return this.Processors[method];
