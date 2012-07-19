@@ -13,6 +13,9 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.IO;
     using Uhuru.BOSH.Agent.ApplyPlan.Errors;
     using Uhuru.Utilities;
+using Uhuru.BOSH.Agent.Objects;
+    using Newtonsoft.Json.Linq;
+    using Uhuru.BOSH.Agent.Ruby;
 
     /// <summary>
     /// TODO: Update summary.
@@ -80,8 +83,8 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private string checksum;
         private string blobstoreId;
         private dynamic configBinding;
-
-        public Job(dynamic spec, object configBiding = null)
+        private dynamic jobProperties;
+        public Job(dynamic spec, dynamic jobProperties)
         {
             // TODO: check to se if any king of IDicrionty
             // if (spec is IDictionary<,>)
@@ -94,7 +97,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                     throw new ArgumentException(String.Format("Invalid spec. {0} is missing", requiredKey));
                 }
             }
-
+            this.jobProperties = jobProperties;
             baseDir = Config.BaseDir;
             name = spec["name"].Value;
             template = spec["template"].Value;
@@ -238,9 +241,97 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
         private void BindConfiguration()
         {
-            // TODO: determine if ERB templateing engine is a requirement.
-            // if not, chose an appropriate one for C#/.NET
-            Logger.Error("Not Implemented: BindConfiguration");
+            
+            Logger.Info("Binding configuration on "+ installPath);
+            string manifestPath = Path.Combine(installPath, "job.MF");
+            Logger.Info("Manifest file location is :" + manifestPath);
+            if (!File.Exists(manifestPath))
+            {
+                string message ="Cannot find job manifest " + manifestPath;
+                Logger.Error(message);
+                InstallFailed(message);
+            }
+
+            JobManifest currentJobManifest = null;
+            try
+            {
+                Logger.Info("Loading manifest file");
+                currentJobManifest = LoadManifest(manifestPath);
+                Logger.Info("Successfully loaded manifest file");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Malformed manifest file : " + ex.ToString());
+                InstallFailed("Malformed manifest file : " + ex.ToString());
+            }
+
+            Logger.Info("Building properties ruby object using :" + jobProperties.ToString());
+            string properties = GetRubyObject(jobProperties);
+            Logger.Info ("Object built " + properties);
+
+            foreach (var template in currentJobManifest.Templates)
+            {
+                string templatePath = Path.Combine(installPath, "templates", template.Key);
+                string outputPath = Path.Combine(installPath, template.Value);
+
+                Logger.Info("Try to apply " + templatePath + " to " + outputPath);
+
+                if (!File.Exists(templatePath))
+                {
+                    Logger.Error("Template does not exist " + templatePath);
+                    InstallFailed("Template does not exist " + templatePath);
+                }
+
+                Logger.Info("Running erb");
+                ErbTemplate erbTemplate = new ErbTemplate();
+                string outputFile = erbTemplate.Execute(templatePath, properties);
+                
+                Logger.Info("Writeing output file :" + outputFile);
+
+                File.WriteAllText(outputPath, outputFile);
+            }
+
+
+        }
+
+        public string GetRubyObject(dynamic jsonProperty)
+        {
+            StringBuilder currentObject = new StringBuilder();
+
+            if ((jsonProperty as JContainer).Children().Count() != 0)
+            {
+                if (jsonProperty.GetType() == typeof(JObject))
+                {
+                    currentObject.Append("{");
+                }
+                foreach (var child in jsonProperty.Children())
+                {
+                    if (child.GetType() == typeof(JValue))
+                    {
+                        string childValue = child.ToString();
+                        //Escaping \ character
+                        childValue = childValue.Replace(@"\", @"\\");
+                        return "\"" + childValue + "\"";
+                    }
+                    if (child.GetType() == typeof(JProperty))
+                    {
+                        if (currentObject.ToString() != "{")
+                            currentObject.Append(", ");
+                        currentObject.Append(child.Name + ": ");
+                        currentObject.Append(GetRubyObject(child));
+
+                    }
+                    if (child.GetType() == typeof(JObject))
+                    {
+                        currentObject.Append(GetRubyObject(child));
+                    }
+                }
+                if (jsonProperty.GetType() == typeof(JObject))
+                {
+                    currentObject.Append("}");
+                }
+            }
+            return currentObject.ToString();
         }
 
       ////def harden_permissions
@@ -379,9 +470,52 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
       ////  raise InstallationError, "Failed to install job '#{@name}': #{message}"
       ////end
 
+        private void InstallFailed(string message)
+        {
+            throw new InstallationException("Failed to install job" + this.name + " : " + message, null);
+        }
+
       ////def config_failed(message)
       ////  raise ConfigurationError, "Failed to configure job " +
       ////                            "'#{@name}': #{message}"
       ////end
+
+        private JobManifest LoadManifest(string jobManifestPath)
+        {
+            string[] fileContent = File.ReadAllLines(jobManifestPath);
+            //dynamic job = JsonConvert.DeserializeObject(fileContent);
+
+            JobManifest jobManifest = new JobManifest();
+
+
+            for (int i = 0; i < fileContent.Length; i++)
+            {
+                //get name
+                if (fileContent[i].StartsWith("name"))
+                {
+                    jobManifest.Name = fileContent[i].Split(':')[1].Trim();
+                }
+
+                if (fileContent[i].StartsWith("templates"))
+                {
+                    i++;
+                    while (fileContent[i] != string.Empty)
+                    {
+                        jobManifest.Templates.Add(fileContent[i].Split(':')[0].Trim(), fileContent[i].Split(':')[1].Trim());
+                        i++;
+                    }
+                }
+                if (fileContent[i].StartsWith("packages"))
+                {
+                    i++;
+                    while (fileContent[i] != string.Empty || i == fileContent.Length)
+                    {
+                        jobManifest.Packages.Add(fileContent[i].Split('-')[1].Trim());
+                        i++;
+                    }
+                }
+            }
+            return jobManifest;
+        }
     }
 }

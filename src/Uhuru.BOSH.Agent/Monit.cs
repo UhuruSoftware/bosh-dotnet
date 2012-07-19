@@ -292,10 +292,10 @@ using System.Threading;
                 return;
             }
             specifiedJobs.Clear();
-            foreach (string jobDefFile in Directory.GetFiles(jobDefDirectory, "*.xml", SearchOption.AllDirectories))
+            foreach (string jobDefFile in Directory.GetFiles(jobDefDirectory, "*.*", SearchOption.AllDirectories))
             {
 
-                if (jobDefFile.EndsWith(".xml"))
+                if (jobDefFile.Trim().EndsWith("monit"))
                 {
                     //MonitSpec.Base.Job currentServiceSpec = null;
                     XmlSerializer serializer = new XmlSerializer(typeof(MonitSpec.Base.Job));
@@ -322,15 +322,16 @@ using System.Threading;
              lock (locker)
              {
                  MonitorServices();
+                 Logger.Info("Nr of specified jobs found :" + specifiedJobs.Count);
                  foreach (KeyValuePair<MonitSpec.Base.Job, FileInfo> jobInfo in specifiedJobs)
                  {
                      foreach (MonitSpec.Base.JobService jobService in jobInfo.Key.Service)
                      {
                          string script = string.Empty;
                          if (start)
-                            script = string.Format("/c {0}\\{1}", jobInfo.Value.Directory, jobService.PreStart);
+                            script = string.Format("/c {0}", jobService.PreStart);
                          else
-                             script = string.Format("/c {0}\\{1}", jobInfo.Value.Directory, jobService.PreStop);
+                             script = string.Format("/c {0}", jobService.PreStop);
 
                          Logger.Info("Running script :" + script);
                          Process p = Process.Start("cmd.exe", script);

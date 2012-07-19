@@ -338,18 +338,20 @@ namespace Uhuru.BOSH.Agent
             get
             {
                 string ip = null;
-                foreach (Network network in Config.State.Networks)
-                {
-                    if (ip == null)
-                    {
-                        ip = network.Ip;
-                    }
+                //TODO
+                //foreach (Network network in Config.State.Networks)
+                //{
+                //    if (ip == null)
+                //    {
+                //        ip = network.Ip;
+                //    }
 
-                    if (network.Name == "default")
-                    {
-                        ip = network.Ip;
-                    }
-                }
+                //    if (network.Name == "default")
+                //    {
+                //        ip = network.Ip;
+                //    }
+                //}
+                ip = Config.State.GetValue("networks")["default"]["ip"].Value;
                 return ip;
             }
         }

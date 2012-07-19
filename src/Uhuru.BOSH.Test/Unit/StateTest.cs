@@ -8,13 +8,14 @@ using Uhuru.BOSH.Agent.Objects;
 using System.IO;
 using System.Yaml;
 using Uhuru.BOSH.Agent.Errors;
+using Newtonsoft.Json.Linq;
 
 namespace Uhuru.BOSH.Test.Unit
 {
     [TestClass]
     public class StateTest
     {
-        private static string yamlLocation = @"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Assets\apply_spec.yml";
+        private static string yamlLocation = @"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Assets\state.yml";
 
         [TestMethod]
         public void TC001_TestStateNoConfigFile()
@@ -39,12 +40,62 @@ namespace Uhuru.BOSH.Test.Unit
             State testState = new State(yamlLocation);
 
             //Act
+
+            string test = GetRubyObject(testState.GetValue("properties"));
+            //StringBuilder stringBuilder = new StringBuilder();
+            //foreach (var item in testState.GetValue("properties").Children())
+            //{
+            //    if (stringBuilder.ToString() != string.Empty)
+            //        stringBuilder.Append(",");
+            //    stringBuilder.Append("{" + item.Name);
+            //    foreach (var child in item.Children())
+            //    {
+            //        Console.WriteLine(child.ToString());
+            //    }
+            //    stringBuilder.Append("}" + item.Name);
+            //}
+
             List<string> ips = testState.GetIps().ToList();
 
             //Assert
             Assert.AreEqual(1, ips.Count);
             Assert.AreEqual(ips[0], "127.0.0.1");
             
+        }
+
+        public string GetRubyObject(dynamic jsonProperty)
+        {
+            StringBuilder currentObject = new StringBuilder();
+
+            if ((jsonProperty as JContainer).Children().Count() != 0)
+            {
+                if (jsonProperty.GetType() == typeof(JObject))
+                {
+                    currentObject.Append("{");
+                }
+                foreach (var child in jsonProperty.Children())
+                {
+                    if (child.GetType() == typeof(JValue))
+                        return "\"" + child.ToString() + "\"";
+                    if (child.GetType() == typeof(JProperty))
+                    {
+                        if (currentObject.ToString() != "{")
+                            currentObject.Append(", ");
+                        currentObject.Append(child.Name + ": ");
+                        currentObject.Append(GetRubyObject(child));
+                        
+                    }
+                    if (child.GetType() == typeof(JObject))
+                    {
+                        currentObject.Append(GetRubyObject(child));
+                    }
+                }
+                if (jsonProperty.GetType() == typeof(JObject))
+                {
+                    currentObject.Append("}");
+                }
+            }
+            return currentObject.ToString();
         }
 
         [TestMethod]
