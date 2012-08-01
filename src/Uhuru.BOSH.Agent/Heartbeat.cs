@@ -82,7 +82,14 @@ namespace Uhuru.BOSH.Agent
             string subject = "hm.agent.heartbeat." + Config.AgentId;
             string message = GetHearbeatPayload();
 
-            Config.Nats.Publish(subject, MessageDelivered, message);
+            try
+            {
+                Config.Nats.Publish(subject, MessageDelivered, message);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error publishing heartbeat " + ex.ToString());
+            }
 
             Logger.Info("Heartbeat sent");
         }

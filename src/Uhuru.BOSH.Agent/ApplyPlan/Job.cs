@@ -297,18 +297,19 @@ using Uhuru.BOSH.Agent.Objects;
         public string GetRubyObject(dynamic jsonProperty)
         {
             StringBuilder currentObject = new StringBuilder();
-
+            if (jsonProperty.GetType() == typeof(JObject))
+            {
+                currentObject.Append("{");
+            }
             if ((jsonProperty as JContainer).Children().Count() != 0)
             {
-                if (jsonProperty.GetType() == typeof(JObject))
-                {
-                    currentObject.Append("{");
-                }
+
                 foreach (var child in jsonProperty.Children())
                 {
                     if (child.GetType() == typeof(JValue))
                     {
                         string childValue = child.ToString();
+
                         //Escaping \ character
                         childValue = childValue.Replace(@"\", @"\\");
                         return "\"" + childValue + "\"";
@@ -321,15 +322,20 @@ using Uhuru.BOSH.Agent.Objects;
                         currentObject.Append(GetRubyObject(child));
 
                     }
+
+                    //TODO IMPROVE JARAY
+                    if (child.GetType() == typeof(JArray))
+                        return "{}";
                     if (child.GetType() == typeof(JObject))
                     {
                         currentObject.Append(GetRubyObject(child));
                     }
                 }
-                if (jsonProperty.GetType() == typeof(JObject))
-                {
-                    currentObject.Append("}");
-                }
+
+            }
+            if (jsonProperty.GetType() == typeof(JObject))
+            {
+                currentObject.Append("}");
             }
             return currentObject.ToString();
         }

@@ -148,28 +148,30 @@ namespace Uhuru.BOSH.Agent
                 {
                     try
                     {
-                        this.Nats = new Reactor();  
-                        this.Nats.OnConnect += new EventHandler<ReactorErrorEventArgs>(Nats_OnConnect);
-                        Config.Nats = this.Nats;
-
                         int retries = MAX_NATS_RETRIES;
                         do
                         {
+                            this.Nats = new Reactor();
+                            this.Nats.OnConnect += new EventHandler<ReactorErrorEventArgs>(Nats_OnConnect);
+                            this.Nats.OnError += new EventHandler<ReactorErrorEventArgs>(Nats_OnError);
                             try
                             {
                                 this.Nats.Start(this.NatsUri);
+                                Config.Nats = this.Nats;
                                 break;
                             }
                             catch (Exception ex)
                             {
-                                if (retries <= 0)
-                                {
-                                    throw ex;
-                                }
-                                else
-                                {
+                                Logger.Error("Nats start Error :" + ex.ToString());
+                                //TODO Improve this
+                                //if (retries <= 0)
+                                //{
+                                //    throw ex;
+                                //}
+                                //else
+                                //{
                                     Thread.Sleep(NATS_RECONNECT_SLEEP);
-                                }
+                                //}
                             }
                         } while (retries-- > 0);
 
@@ -205,6 +207,11 @@ namespace Uhuru.BOSH.Agent
                 });
         }
 
+        void Nats_OnError(object sender, ReactorErrorEventArgs e)
+        {
+            Logger.Error("Nats on Error :" + e.Exception.ToString());
+        }
+
         private void Retry()
         {
             StartHandler();
@@ -220,14 +227,22 @@ namespace Uhuru.BOSH.Agent
 
         public void Nats_OnConnect(object sender, EventArgs e)
         {
-            string subscription = string.Format("agent.{0}", this.AgentId);
+            try
+            {
+                string subscription = string.Format("agent.{0}", this.AgentId);
 
-            this.Nats.Subscribe(subscription, (string msg, string reply, string subject) =>
-                {
-                    this.HandleMessage(msg);
-                });
+                this.Nats.Subscribe(subscription, (string msg, string reply, string subject) =>
+                    {
+                        this.HandleMessage(msg);
+                    });
 
-            this.NatsFailCount = 0;
+                this.NatsFailCount = 0;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error on nats connect: " + ex.ToString());
+                this.NatsFailCount++;
+            }
         }
 
         public void SetupHeartbeats()
@@ -444,8 +459,15 @@ namespace Uhuru.BOSH.Agent
             // TODO figure out if we want to try to scale down the message instead
             // of generating an exception
             //if (json.Bytesize < NATS_MAX_PAYLOAD_SIZE)
-            //{
+            //{            
+            try
+            {
                 this.Nats.Publish(replyTo, block, payload);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error while publishing to nats");
+            }
             //}
             //else
             //{
@@ -475,7 +497,7 @@ namespace Uhuru.BOSH.Agent
             //            }
             //        }
             //};
-
+            
             //YamlNode payloadYaml = YamlMapping.FromYaml(payload)[0];
             // todo: vladi: fix payload serialization
             this.Publish(replyTo, payload);

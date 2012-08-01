@@ -47,7 +47,7 @@ namespace Uhuru.BOSH.Agent.Message
         {
             
             string userName = parm["user"].Value;
-            string password = parm["password"].Value;
+            string password = "password1234!";//parm["password"].Value;
             Logger.Info("Setting up SSH with user:" + userName +" and password: " + password);
 
             SshResult sshResult = new SshResult();

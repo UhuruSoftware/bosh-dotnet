@@ -29,7 +29,7 @@ using System.Timers;
     ////  end
         public void Enable(int interval)
         {
-            if (Config.Nats == null)
+            if (Config.Nats.Status != NatsClient.ConnectionStatus.Open)
             {
                 throw new HeartbeatException("Event loop must be running in order to enable heartbeats");
             }

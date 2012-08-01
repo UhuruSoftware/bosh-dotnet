@@ -42,18 +42,7 @@ namespace Uhuru.BOSH.Test.Unit
             //Act
 
             string test = GetRubyObject(testState.GetValue("properties"));
-            //StringBuilder stringBuilder = new StringBuilder();
-            //foreach (var item in testState.GetValue("properties").Children())
-            //{
-            //    if (stringBuilder.ToString() != string.Empty)
-            //        stringBuilder.Append(",");
-            //    stringBuilder.Append("{" + item.Name);
-            //    foreach (var child in item.Children())
-            //    {
-            //        Console.WriteLine(child.ToString());
-            //    }
-            //    stringBuilder.Append("}" + item.Name);
-            //}
+            
 
             List<string> ips = testState.GetIps().ToList();
 
@@ -66,34 +55,45 @@ namespace Uhuru.BOSH.Test.Unit
         public string GetRubyObject(dynamic jsonProperty)
         {
             StringBuilder currentObject = new StringBuilder();
-
+            if (jsonProperty.GetType() == typeof(JObject))
+            {
+                currentObject.Append("{");
+            }
             if ((jsonProperty as JContainer).Children().Count() != 0)
             {
-                if (jsonProperty.GetType() == typeof(JObject))
-                {
-                    currentObject.Append("{");
-                }
+             
                 foreach (var child in jsonProperty.Children())
                 {
                     if (child.GetType() == typeof(JValue))
-                        return "\"" + child.ToString() + "\"";
+                    {
+                        string childValue = child.ToString();
+                        
+                        //Escaping \ character
+                        childValue = childValue.Replace(@"\", @"\\");
+                        return "\"" + childValue + "\"";
+                    }
                     if (child.GetType() == typeof(JProperty))
                     {
                         if (currentObject.ToString() != "{")
                             currentObject.Append(", ");
                         currentObject.Append(child.Name + ": ");
                         currentObject.Append(GetRubyObject(child));
-                        
+
                     }
+
+                    //TODO IMPROVE JARAY
+                    if (child.GetType() == typeof(JArray))
+                        return "{}";
                     if (child.GetType() == typeof(JObject))
                     {
                         currentObject.Append(GetRubyObject(child));
                     }
                 }
-                if (jsonProperty.GetType() == typeof(JObject))
-                {
-                    currentObject.Append("}");
-                }
+               
+            }
+            if (jsonProperty.GetType() == typeof(JObject))
+            {
+                currentObject.Append("}");
             }
             return currentObject.ToString();
         }
