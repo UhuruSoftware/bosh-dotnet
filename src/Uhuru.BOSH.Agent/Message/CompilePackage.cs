@@ -15,225 +15,14 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Security.Cryptography;
     using Uhuru.BOSH.Agent.Objects;
     using Newtonsoft.Json;
+    using Uhuru.BOSH.Agent.Errors;
+    using System.Diagnostics;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class CompilePackage : IMessage
     {
-      ////attr_accessor :blobstore_id, :package_name, :package_version, :package_sha1
-      ////attr_accessor :compile_base, :install_base
-      ////attr_reader :blobstore_client
-
-      ////def self.process(args)
-      ////  self.new(args).start
-      ////end
-      ////def self.long_running?; true; end
-
-      ////def initialize(args)
-      ////  bsc_provider = Bosh::Agent::Config.blobstore_provider
-      ////  bsc_options = Bosh::Agent::Config.blobstore_options
-      ////  @blobstore_client = Bosh::Blobstore::Client.create(bsc_provider, bsc_options)
-      ////  @blobstore_id, @sha1, @package_name, @package_version, @dependencies = args
-
-      ////  @base_dir = Bosh::Agent::Config.base_dir
-
-      ////  # The maximum amount of disk percentage that can be used during
-      ////  # compilation before an error will be thrown.  This is to prevent
-      ////  # package compilation throwing arbitrary errors when disk space runs
-      ////  # out.
-      ////  # @attr [Integer] The max percentage of disk that can be used in
-      ////  #     compilation.
-      ////  @max_disk_usage_pct = 90
-      ////  FileUtils.mkdir_p(File.join(@base_dir, 'data', 'tmp'))
-
-      ////  @log_file = "#{@base_dir}/data/tmp/#{Bosh::Agent::Config.agent_id}"
-      ////  @logger = Logger.new(@log_file)
-      ////  @compile_base = "#{@base_dir}/data/compile"
-      ////  @install_base = "#{@base_dir}/data/packages"
-      ////end
-
-      ////def start
-      ////  # TODO implement sha1 verification
-      ////  # TODO propagate errors
-      ////  install_dependencies
-      ////  get_source_package
-      ////  unpack_source_package
-      ////  compile
-      ////  pack
-      ////  result = upload
-      ////  return { "result" => result }
-      ////rescue RuntimeError => e
-      ////  @logger.warn("%s\n%s" % [e.message, e.backtrace.join("\n")])
-      ////  raise Bosh::Agent::MessageHandlerError, e
-      ////ensure
-      ////  clear_log_file(@log_file)
-      ////  delete_tmp_files
-      ////end
-
-      ////# Delete the leftover compilation files after a compilation is done. This
-      ////# is done so that the reuse_compilation_vms option does not fill up a VM.
-      ////def delete_tmp_files
-      ////  [@compile_base, @install_base].each do |dir|
-      ////    if Dir.exists?(dir)
-      ////      FileUtils.rm_rf(dir)
-      ////    end
-      ////  end
-      ////end
-
-      ////def install_dependencies
-      ////  @logger.info("Installing Dependencies")
-      ////  @dependencies.each do |pkg_name, pkg|
-      ////    @logger.info("Installing depdendency: #{pkg_name} #{pkg.inspect}")
-
-      ////    blobstore_id = pkg['blobstore_id']
-      ////    sha1 = pkg['sha1']
-      ////    install_dir = File.join(@install_base, pkg_name, pkg['version'])
-
-      ////    Util.unpack_blob(blobstore_id, sha1, install_dir)
-
-      ////    pkg_link_dst = File.join(@base_dir, 'packages', pkg_name)
-      ////    FileUtils.ln_sf(install_dir, pkg_link_dst)
-      ////  end
-      ////end
-
-      ////def get_source_package
-      ////  compile_tmp = File.join(@compile_base, 'tmp')
-      ////  FileUtils.mkdir_p compile_tmp
-      ////  @source_file = File.join(compile_tmp, @blobstore_id)
-      ////  FileUtils.rm @source_file if File.exist?(@source_file)
-
-      ////  File.open(@source_file, 'w') do |f|
-      ////    @blobstore_client.get(@blobstore_id, f)
-      ////  end
-      ////end
-
-      ////def compile_dir
-      ////  @compile_dir ||= File.join(@compile_base, @package_name)
-      ////end
-
-      ////def install_dir
-      ////  @install_dir ||= File.join(@install_base, @package_name, @package_version.to_s)
-      ////end
-
-      ////def unpack_source_package
-      ////  FileUtils.rm_rf compile_dir if File.directory?(compile_dir)
-
-      ////  FileUtils.mkdir_p compile_dir
-      ////  Dir.chdir(compile_dir) do
-      ////    # TODO: error handling
-      ////    output = `tar -zxf #{@source_file} 2>&1`
-      ////    # stick the output in the blobstore
-      ////    unless $?.exitstatus == 0
-      ////      raise Bosh::Agent::MessageHandlerError.new(
-      ////        "Compile Package Unpack Source Failure (exit code: #{$?.exitstatus})",
-      ////        output)
-      ////    end
-      ////  end
-      ////end
-
-      ////def disk_info_as_array(path)
-      ////  # "Filesystem   1024-blocks     Used Available Capacity  Mounted on\n
-      ////  # /dev/disk0s2   195312496 92743676 102312820    48%    /\n"
-      ////  df_out = `df -Pk #{path} 2>&1`
-      ////  unless $?.exitstatus == 0
-      ////    raise Bosh::Agent::MessageHandlerError, "Command 'df -Pk #{path}' " +
-      ////        "on compilation VM failed with:\n#{df_out}\nexit code: " +
-      ////        "#{$?.exitstatus}"
-      ////  end
-
-      ////  # "/dev/disk0s2   195312496 92743568 102312928    48%    /\n"
-      ////  df_out = df_out.sub(/[^\/]*/, "")
-      ////  # ["/dev/disk0s2", "195312496", "92743568", "102312928", "48%", "/\n"]
-      ////  df_out.split(/[ ]+/)
-      ////end
-
-      ////# Get the amount of total disk (in KBytes).
-      ////# @param [String] path Path that the disk size is being requested for.
-      ////# @return [Integer] The total disk size (in KBytes).
-      ////def disk_total(path)
-      ////  disk_info_as_array(path)[1].to_i
-      ////end
-
-      ////# Get the amount of disk being used (in KBytes).
-      ////# @param [String] path Path that the disk usage is being requested for.
-      ////# @return [Integer] The amount being used (in KBytes).
-      ////def disk_used(path)
-      ////  disk_info_as_array(path)[2].to_i
-      ////end
-
-      ////# Get the percentage of disk that is used on the compilation VM.
-      ////# @param [String] path Path that the disk usage is being requested for.
-      ////# @return [Float] The percentage of disk in use.
-      ////def pct_disk_used(path)
-      ////  100 * disk_used(path).to_f / disk_total(path).to_f
-      ////end
-
-      ////def compile
-      ////  FileUtils.rm_rf install_dir if File.directory?(install_dir)
-      ////  FileUtils.mkdir_p install_dir
-      ////  pct_space_used = pct_disk_used(@compile_base)
-      ////  if pct_space_used >= @max_disk_usage_pct
-      ////    raise Bosh::Agent::MessageHandlerError,
-      ////        "Compile Package Failure. Greater than #{@max_disk_usage_pct}% " +
-      ////        "is used (#{pct_space_used}%."
-      ////  end
-      ////  Dir.chdir(compile_dir) do
-
-      ////    # Prevent these from getting inhereted from the agent
-      ////    %w{GEM_HOME BUNDLE_GEMFILE RUBYOPT}.each { |key| ENV.delete(key) }
-
-      ////    # TODO: error handling
-      ////    ENV['BOSH_COMPILE_TARGET'] = compile_dir
-      ////    ENV['BOSH_INSTALL_TARGET'] = install_dir
-      ////    if File.exist?('packaging')
-      ////      @logger.info("Compiling #{@package_name} #{@package_version}")
-      ////      output = `bash -x packaging 2>&1`
-      ////      # stick the output in the blobstore
-      ////      unless $?.exitstatus == 0
-      ////        raise Bosh::Agent::MessageHandlerError.new(
-      ////          "Compile Package Failure (exit code: #{$?.exitstatus})", output)
-      ////      end
-      ////      @logger.info(output)
-      ////    end
-      ////  end
-      ////end
-
-      ////def compiled_package
-      ////  File.join(@source_file + ".compiled")
-      ////end
-
-      ////def pack
-      ////  @logger.info("Packing #{@package_name} #{@package_version}")
-      ////  Dir.chdir(install_dir) do
-      ////    `tar -zcf #{compiled_package} .`
-      ////  end
-      ////end
-
-      ////# Clears the log file after a compilation runs.  This is needed because if
-      ////# reuse_compilation_vms is being used then without clearing the log then
-      ////# the log from each subsequent compilation will include the previous
-      ////# compilation's output.
-      ////# @param [String] log_file Path to the log file.
-      ////def clear_log_file(log_file)
-      ////  File.delete(log_file) if File.exists?(log_file)
-      ////  @logger = Logger.new(log_file)
-      ////end
-
-      ////def upload
-      ////  compiled_blobstore_id = nil
-      ////  File.open(compiled_package, 'r') do |f|
-      ////    compiled_blobstore_id = @blobstore_client.create(f)
-      ////  end
-      ////  compiled_sha1 = Digest::SHA1.hexdigest(File.read(compiled_package))
-      ////  compile_log_id = @blobstore_client.create(@log_file)
-      ////  @logger.info("Uploaded #{@package_name} #{@package_version} " +
-      ////               "(sha1: #{compiled_sha1}, " +
-      ////               "blobstore_id: #{compiled_blobstore_id})")
-      ////  @logger = nil
-      ////  { "sha1" => compiled_sha1, "blobstore_id" => compiled_blobstore_id,
-      ////    "compile_log_id" => compile_log_id }
-      ////end
         public bool IsLongRunning()
         {
             return true;
@@ -252,116 +41,243 @@ namespace Uhuru.BOSH.Agent.Message
         string installBase;
         string sourceFile;
         string compileDir;
+        string logFile;
+        FileLogger logger;
         string installDir;
         string compiledPackage;
 
         public object Process(dynamic args)
         {
             //Initialize
-            blobStroreProvider = Config.BlobstoreProvider;
-            blobStoreOptions = Config.BlobstoreOptions;
-            blobStoreClient = BlobstoreClient.Blobstore.CreateClient(blobStroreProvider, blobStoreOptions);
+            this.blobStroreProvider = Config.BlobstoreProvider;
+            this.blobStoreOptions = Config.BlobstoreOptions;
+            this.blobStoreClient = BlobstoreClient.Blobstore.CreateClient(blobStroreProvider, blobStoreOptions);
 
-            blobStoreId = args[0].Value.ToString();
-            sha1 = args[1].Value.ToString();
-            packageName = args[2].Value.ToString();
-            packageVersion = args[3].Value.ToString();
-            dependencies = args[4];
+            this.blobStoreId = args[0].Value.ToString();
+            this.sha1 = args[1].Value.ToString();
+            this.packageName = args[2].Value.ToString();
+            this.packageVersion = args[3].Value.ToString();
+            this.dependencies = args[4];
 
-            Directory.CreateDirectory(Config.BaseDir + @"\data" + @"\tmp");
+            Directory.CreateDirectory(Path.Combine(Config.BaseDir, @"data", @"tmp"));
 
-            compileBase = Config.BaseDir + @"\data\compile";
-            installBase = Config.BaseDir + @"\data\packages";
+            this.compileBase = Path.Combine(Config.BaseDir, "data", "compile");
+            this.installBase = Path.Combine(Config.BaseDir, "data", "packages");
+            this.logFile = Path.Combine(Config.BaseDir, "data", "tmp", Config.AgentId);
+            this.logger = new FileLogger(logFile);
 
-            compileDir = compileBase + @"\" +packageName ;
-            installDir = installBase + @"\" + packageName + @"\" + packageVersion;
-            sourceFile = Config.BaseDir + @"\data\tmp\" + @"\" + blobStoreId;
-            compiledPackage = sourceFile + ".compiled";
-            return Start();
+            this.compileDir = Path.Combine(compileBase, packageName);
+            this.installDir = Path.Combine(installBase, packageName, packageVersion);
+            this.compiledPackage = sourceFile + ".compiled";
+
+            return this.Start();
         }
 
         private object Start()
         {
-            InstallDependencies();
-            GetAndUnpackSourcePackage();
-            Compile();
-            Pack();
-            CompileResult compileResult = Upload();
-            return (new Dictionary<string,object>() {{"result" , compileResult }});
+            try
+            {
+                this.InstallDependencies();
+                this.GetAndUnpackSourcePackage();
+                this.Compile();
+                this.Pack();
+                var uploadResult = this.Upload();
+
+                var result = new CompileResult() { result = uploadResult };
+                return result;
+            }
+            catch (Exception e)
+            {
+                this.logger.Warning("Uncaught exception: ", e.ToString());
+                throw new MessageHandlerException("Uncaught exception in CompilePackage.", e);
+            }
+            finally
+            {
+                this.ClearLogFile();
+                this.DeleteTempFiles();
+            }
+        }
+
+        /// <summary>
+        /// Delete the leftover compilation files after a compilation is done. This
+        /// is done so that the reuse_compilation_vms option does not fill up a VM.
+        /// </summary>
+        private void DeleteTempFiles()
+        {
+            if (Directory.Exists(compileBase))
+            {
+                Directory.Delete(compileBase, true);
+            }
+
+            if (Directory.Exists(installBase))
+            {
+                Directory.Delete(installBase, true);
+            }
         }
 
         private void InstallDependencies()
         {
-            Logger.Info("Installing dependencies");
+            this.logger.Info("Installing dependencies");
 
             foreach (dynamic dependency in dependencies)
             {
-                Logger.Warning("TODO : install dependencies");
+                this.logger.Warning("TODO : install dependencies");
             }
         }
 
-        private void GetAndUnpackSourcePackage()
+        private void GetSourcePackage()
         {
-            Logger.Info("Unpacking source packages");
-            Util.UnpackBlob(blobStoreId, sha1, compileBase);
+            string compileTmp = Path.Combine(this.compileBase, "tmp");
+            Directory.CreateDirectory(compileTmp);
+            this.sourceFile = Path.Combine(compileTmp, this.blobStoreId);
+            if (File.Exists(this.sourceFile))
+            {
+                File.Delete(this.sourceFile);
+            }
 
+            this.blobStoreClient.Get(this.blobStoreId, new FileInfo(this.sourceFile));
         }
 
+        private void UnpackSourcePackage()
+        {
+            if(Directory.Exists(this.compileDir))
+            {
+                Directory.Delete(this.compileDir, true);
+            }
+            Directory.CreateDirectory(this.compileDir);
+
+            var sourceFileInfo = new FileInfo(this.sourceFile);
+
+            string tarFile = Path.ChangeExtension(this.sourceFile, "tar");
+            FileArchive.UnzipFile(sourceFileInfo.DirectoryName, this.sourceFile);
+
+            if (File.Exists(tarFile))
+            {
+                FileArchive.UnzipFile(this.compileDir, tarFile);
+            }
+            else
+            {
+                FileArchive.UnzipFile(this.compileDir, this.sourceFile);
+            }
+        }
+
+        // Directories are not good
+        private void GetAndUnpackSourcePackage()
+        {
+            this.logger.Info("Unpacking source packages");
+            Util.UnpackBlob(blobStoreId, sha1, compileBase);
+        }
+
+        /// <summary>
+        /// Compiles this instance.
+        /// The complie step will execute the "package" process
+        /// File extensions run and the priorites are defined in PATHEXT env variable.
+        /// PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+        /// </summary>
         private void Compile()
         {
-            Logger.Info("Compiling package, copying files to install directory");
-            CopyAll(new DirectoryInfo(compileDir), new DirectoryInfo(installDir));
+            if (Directory.Exists(this.installDir))
+            {
+                Directory.Delete(this.installDir, true);
+            }
+            Directory.CreateDirectory(this.installDir);
+            // TODO: check if enough disk is available
 
+            // Default PATHEXT env var
+            string[] execExtensions = new string[] { ".com", ".exe", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".msc" };
+            string packagingExecutive = "package";
+
+            foreach (var ext in execExtensions)
+            {
+                if (File.Exists(Path.Combine(compileDir, "package" + ext)))
+                {
+                    packagingExecutive += ext;
+                    break;
+                }
+
+                
+            }
+
+            if (File.Exists(packagingExecutive))
+            {
+                logger.Info("Compileing " + this.packageName + " " 
+
+                var pi = new ProcessStartInfo("package");
+
+                pi.CreateNoWindow = true;
+                pi.ErrorDialog = false;
+                pi.UseShellExecute = false;
+                pi.RedirectStandardOutput = true;
+                pi.RedirectStandardError = true;
+                pi.RedirectStandardInput = true;
+                pi.WorkingDirectory = this.compileDir;
+                pi.EnvironmentVariables["BOSH_COMPILE_TARGET"] = this.compileDir;
+                pi.EnvironmentVariables["BOSH_INSTALL_TARGET"] = this.installDir;
+
+                var pr = System.Diagnostics.Process.Start(pi);
+                pr.WaitForExit();
+
+                string output = pr.StandardOutput.ReadToEnd();
+                output += pr.StandardError.ReadToEnd();
+
+                if (pr.ExitCode != 0)
+                {
+                    new MessageHandlerException("Compile Package Failure (exit code: " + pr.ExitCode + ")", output);
+                }
+
+                this.logger.Info(output);
+            }
         }
 
         private void Pack()
-        {    
+        {
+            this.logger.Info("Packing " + this.packageName + " " + this.packageVersion);
             Util.PackBlob(installDir, compiledPackage);
         }
 
-        private CompileResult Upload()
+        /// <summary>
+        /// Clears the log file after a compilation runs.  This is needed because if
+        /// reuse_compilation_vms is being used then without clearing the log then
+        /// the log from each subsequent compilation will include the previous
+        /// compilation's output.
+        /// </summary>
+        /// <param name="logFile">The log file.</param>
+        private void ClearLogFile()
         {
-            Logger.Info("Uploading compiled package");
-            FileInfo compiledFileInfo = new FileInfo(compiledPackage);
-            string compiledBlobStoreId = blobStoreClient.Create(compiledFileInfo);
-            
-            string compiledSha1;
-            using (FileStream fs = compiledFileInfo.Open(FileMode.Open))
+            if (File.Exists(this.logFile))
             {
-                SHA1 sha = new SHA1CryptoServiceProvider();
-                compiledSha1 = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-", "");
+                File.Delete(this.logFile);
             }
 
-            CompileResult compileResult = new CompileResult();
-
-            compileResult.BlobstoreId = compiledBlobStoreId;
-            compileResult.CompileLogId = "no logs for windows compilation";
-            compileResult.Sha1 = compiledSha1.ToLower();
-
-            return compileResult;
+            this.logger = new FileLogger(this.logFile);
         }
 
-        public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
-     {
-         // Check if the target directory exists, if not, create it.
-         if (Directory.Exists(target.FullName) == false)
-         {
-             Directory.CreateDirectory(target.FullName);
-         }
+        private CompileResult.UploadResult Upload()
+        {
+            this.logger.Info("Uploading compiled package");
+            string compiledBlobStoreId = blobStoreClient.Create(new FileInfo(compiledPackage));
 
-        // Copy each file into it’s new directory.
-         foreach (FileInfo fi in source.GetFiles())
-         {
-             fi.CopyTo(Path.Combine(target.ToString(), fi.Name), true);
-         }
+            string compiledSha1;
+            using (FileStream fs = File.OpenRead(compiledPackage))
+            {
+                using (SHA1 sha1 = new SHA1CryptoServiceProvider())
+                {
+                    compiledSha1 = BitConverter.ToString(sha1.ComputeHash(fs)).Replace("-", "").ToLower();
+                }
+            }
 
-        // Copy each subdirectory using recursion.
-         foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
-         {
-             DirectoryInfo nextTargetSubDir =
-                 target.CreateSubdirectory(diSourceSubDir.Name);
-             CopyAll(diSourceSubDir, nextTargetSubDir);
-         }
-     }
+            this.logger.Info("Uploaded " + this.packageName + " " + this.packageVersion + " (sha1: " + compiledSha1 + ", blobstore_id: " + compiledBlobStoreId + ")");
+
+            string compileLogId = blobStoreClient.Create(new FileInfo(logFile));
+
+            CompileResult.UploadResult res = new CompileResult.UploadResult()
+            {
+                BlobstoreId = compiledBlobStoreId,
+                CompileLogId = compileLogId,
+                Sha1 = compiledSha1
+            };
+
+            return res;
+        }
     }
 }
