@@ -23,7 +23,10 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
 
         // Create a new blob and returns the blob ID
         string Create(string contents);
-        
+
+        // Create a new blob and returns the blob ID
+        string Create(byte[] contents);
+
         // Creates a new blob from file and returns the blob ID
         string Create(FileInfo contentsFilePath);
 
