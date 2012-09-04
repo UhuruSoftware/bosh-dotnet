@@ -10,6 +10,7 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+using System.IO;
 
     /// <summary>
     /// TODO: Update summary.
@@ -55,18 +56,84 @@ namespace Uhuru.BOSH.Agent
         ////    [ "**/*.log" ]
         ////  end
         ////end
-        public string BaseDir { get; set; }
 
-        public IEnumerable<string> Globs { get; set; }
+        internal string baseDir;
+        private IEnumerable<string> globs;
+
+        public FileMatcher(string baseDir)
+        {
+            this.baseDir = baseDir;
+        }
+        public virtual string BaseDir
+        {
+            get
+            {
+                return baseDir;
+            }
+        }
+
+        public virtual IEnumerable<string> Globs {
+            
+            set
+            {       
+                globs = value;
+            }
+            get
+            {
+                if (globs != null)
+                    return globs;
+                else
+                    return new List<string>();
+            }
+        }
     }
 
     class JobLogMatcher : FileMatcher
     {
+        public JobLogMatcher(string baseDir): base(baseDir)
+        {
 
+        }
+
+        public override string BaseDir
+        {
+            get
+            {
+                return Path.Combine(baseDir, "bosh", "log");
+            }
+        }
+
+        public override IEnumerable<string> Globs
+        {
+            get
+            {
+                return new List<string>() { "**/*" };
+            }
+        }
     }
 
     class AgentLogMatcher : FileMatcher
     {
+        public AgentLogMatcher(string baseDir) : base(baseDir)
+        {
+        
+        }
 
+        public override string BaseDir
+        {
+            get
+            {
+                return Path.Combine(baseDir, "sys", "log");
+            }
+        }
+
+        public override IEnumerable<string> Globs
+        {
+            get
+            {
+                return new List<string>(){ "**/*.log"};
+            }
+        }
+             
     }
 }

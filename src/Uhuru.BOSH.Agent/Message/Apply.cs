@@ -31,8 +31,6 @@ namespace Uhuru.BOSH.Agent.Message
 
         }
 
-        
-
         public string Process(dynamic args)
         {
             Logger.Info("Processing apply message");

@@ -20,28 +20,19 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class FetchLogs : Base
+    public class FetchLogs : Base, IMessage
     {
-        public static bool LongRunning { get { return true; } }
-        public FileMatcher Matcher { get; set; }
-        public FileAggregator Aggregator { get; set; }
+        public static bool longRunning { get { return true; } }
+        public FileMatcher matcher { get; set; }
+        public FileAggregator aggregator { get; set; }
 
         string logType;
         ICollection filters;
         object state;
 
-        public FetchLogs(object[] args)
+        public FetchLogs()
         {
-            logType = args[0].ToString();
-            filters = (ICollection)args[1]; // TODO: ??? Set.new(args[1])
-            state = Config.State; //TODO: Bosh::Agent::Config.state.to_hash
-            Matcher = defaultMatcher;
-            Aggregator = new FileAggregator();
-        }
-
-        public static void Process(string[] args)
-        {
-            new FetchLogs(args);
+         
         }
 
         private FileMatcher defaultMatcher
@@ -52,11 +43,11 @@ namespace Uhuru.BOSH.Agent.Message
                 {
                     case "job":
                         {
-                            return new JobLogMatcher();
+                            return new JobLogMatcher(BaseDir);
                         }
                     case "agent":
                         {
-                            return new AgentLogMatcher();
+                            return new AgentLogMatcher(BaseDir);
                         }
                     default:
                         {
@@ -66,22 +57,7 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public void Process()
-        {
-            if (Matcher == null)
-            {
-                ErrorHandler(String.Format("matcher for {0} logs not found", logType));
-            }
-            if (Aggregator == null)
-            {
-                ErrorHandler(String.Format("aggregator for {0} logs not found", logType));
-            }
-
-            if (filters != null && filters.Count > 0)
-            {
-                Matcher.Globs = filterGlobs;
-            }
-        }
+       
 
         private IEnumerable<string> filterGlobs
         {
@@ -116,7 +92,7 @@ namespace Uhuru.BOSH.Agent.Message
             string blobstoreId = null;
             try
             {
-                string[] bscOptions = Config.BlobstoreOptions.ToArray();
+               dynamic bscOptions = Config.BlobstoreOptions;
                 string bscProvider = Config.BlobstoreProvider;
 
                 Logger.Info("Uploading tarball to blobstore");
@@ -129,6 +105,55 @@ namespace Uhuru.BOSH.Agent.Message
                 ErrorHandler(String.Format("unable to upload logs to blobstore: {0}", e.Message));
             }
             return blobstoreId;
+        }
+
+        /// <summary>
+        /// Determines whether [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsLongRunning()
+        {
+           return true;
+        }
+
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
+        public string Process(dynamic args)
+        {
+            Logger.Info(string.Format("Processing {0} ", args.ToString()));
+            logType = args[0].ToString();
+            filters = (ICollection)args[1]; // TODO: ??? Set.new(args[1])
+            state = Config.State.ToHash(); //TODO: Bosh::Agent::Config.state.to_hash
+            matcher = defaultMatcher;
+            aggregator = new FileAggregator();
+            aggregator.Matcher = matcher;
+
+            if (matcher == null)
+            {
+                ErrorHandler(String.Format("matcher for {0} logs not found", logType));
+            }
+            if (aggregator == null)
+            {
+                ErrorHandler(String.Format("aggregator for {0} logs not found", logType));
+            }
+
+            if (filters != null && filters.Count > 0)
+            {
+                matcher.Globs = filterGlobs;
+            }
+            
+            string tarballPath = aggregator.GenerateTarball();
+
+            string blobstoreId = UploadTarball(tarballPath);
+
+            string result = "{\"blobstore_id\":\""+blobstoreId+"\"}";
+
+            return result;
         }
     }
 }

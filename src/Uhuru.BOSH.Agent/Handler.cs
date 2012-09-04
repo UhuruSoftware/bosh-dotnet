@@ -122,8 +122,10 @@ namespace Uhuru.BOSH.Agent
                     return new CompilePackage();
                 case "unmount_disk":
                     return new UnmountDisk();
-                    case "ssh":
-                        return new Ssh();
+                case "ssh":
+                    return new Ssh();
+                case "fetch_logs":
+                    return new FetchLogs();
                 case "test":
                     return new TestMessage();
                     

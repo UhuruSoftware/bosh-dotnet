@@ -19,7 +19,7 @@ using System.IO;
     {
         public FileAggregator()
         {
-          this.UsedDirs = new List<string>();
+            this.UsedDirs = new List<string>();
         }
 
         // Generates a tarball including all the requested entries
@@ -55,7 +55,7 @@ using System.IO;
             }
         }
 
-        public void cleanup()
+        public void Cleanup()
         {
             foreach (string dir in this.UsedDirs)
             {
@@ -64,7 +64,7 @@ using System.IO;
                     Directory.Delete(dir, true);
                 }
             }
-         }
+        }
 
         public int CopyFiles(string dstDirectory)
         {
@@ -78,24 +78,34 @@ using System.IO;
                 throw new InvalidOperationException(string.Format("Base directory {0} not found", this.Matcher.BaseDir));
             }
 
-          int copied = 0;
+            int copied = 0;
 
-          string baseDir = Realpath(this.Matcher.BaseDir);
+            string baseDir = Realpath(this.Matcher.BaseDir);
 
-          foreach (string glob in this.Matcher.Globs)
-          {
-            foreach (string file in Directory.GetFiles(glob))
+
+
+            foreach (string glob in this.Matcher.Globs)
             {
-                string dstFilename = Path.Combine(dstDirectory, Path.GetFileName(file));
-                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                //TODO: Improve this using patterns
+                SearchOption searchOption = SearchOption.TopDirectoryOnly;
+                string searchPattern = glob.Split('/')[1];
+                if (glob.Contains("**"))
+                {
+                    searchOption = SearchOption.AllDirectories;
+                }
 
-                File.Copy(file, dstFilename);
+                foreach (string file in Directory.GetFiles(baseDir, searchPattern, searchOption))
+                {
+                    string dstFilename = Path.Combine(dstDirectory, Path.GetFileName(file));
+                    Directory.CreateDirectory(Path.GetDirectoryName(file));
 
-                copied++;
+                    File.Copy(file, dstFilename);
+
+                    copied++;
+                }
             }
-          }
 
-          return copied;
+            return copied;
         }
 
         private string Realpath(string path)

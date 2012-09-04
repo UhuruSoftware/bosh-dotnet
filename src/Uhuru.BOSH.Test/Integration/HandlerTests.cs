@@ -17,7 +17,7 @@ namespace Uhuru.BOSH.Test.Unit
     [DeploymentItem("unity.config")]
     public class HandlerTests
     {
-        private static string configFile = @"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Resources\settings.json";
+        private static string configFile = @"C:\vcap\bosh\settings.json";
         [TestMethod]
         public void TC001_TestHandler()
         {
