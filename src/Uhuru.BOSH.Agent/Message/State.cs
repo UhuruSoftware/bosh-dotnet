@@ -12,6 +12,7 @@ namespace Uhuru.BOSH.Agent.Message
     //using YamlDotNet.RepresentationModel;
     using Uhuru.BOSH.Agent.Objects;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// TODO: Update summary.
@@ -24,7 +25,7 @@ namespace Uhuru.BOSH.Agent.Message
         //    return new State();
         //}
 
-        public string GetState()
+        public object GetState()
         {
             try
             {
@@ -44,9 +45,9 @@ namespace Uhuru.BOSH.Agent.Message
                 ntpMessage.Offset = Ntp.GetNtpOffset().Offset.ToString();
                 ntpMessage.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss");
 
-                response.SetValue("ntp", JsonConvert.SerializeObject(ntpMessage, Formatting.None));
+                response.SetValue("ntp", JToken.FromObject(ntpMessage));
 
-                return response.ToHash().ToString();
+                return response.ToHash();
             }
             catch (StateException e)
             {
@@ -66,7 +67,7 @@ namespace Uhuru.BOSH.Agent.Message
             return false;
         }
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             return GetState();
         }

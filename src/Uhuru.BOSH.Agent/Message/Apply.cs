@@ -31,7 +31,7 @@ namespace Uhuru.BOSH.Agent.Message
 
         }
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             Logger.Info("Processing apply message");
 
@@ -64,7 +64,7 @@ namespace Uhuru.BOSH.Agent.Message
             Logger.Info("Retrieving new plan");
             newPlan = new Plan(newSpec);
 
-            string newState = ApplyPlan().ToString();
+            dynamic newState = ApplyPlan();
 
             return newState;
         }

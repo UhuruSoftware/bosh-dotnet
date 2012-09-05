@@ -255,7 +255,7 @@ namespace Uhuru.BOSH.Agent.Message
         string installDir;
         string compiledPackage;
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             //Initialize
             blobStroreProvider = Config.BlobstoreProvider;
@@ -280,14 +280,14 @@ namespace Uhuru.BOSH.Agent.Message
             return Start();
         }
 
-        private string Start()
+        private object Start()
         {
             InstallDependencies();
             GetAndUnpackSourcePackage();
             Compile();
             Pack();
-            string result =JsonConvert.SerializeObject(Upload());
-            return string.Format("{{\"result\": {0} }}",result);
+            CompileResult compileResult = Upload();
+            return (new Dictionary<string,object>() {{"result" , compileResult }});
         }
 
         private void InstallDependencies()

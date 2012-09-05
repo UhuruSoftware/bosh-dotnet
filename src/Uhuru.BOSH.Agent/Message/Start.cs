@@ -17,7 +17,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// </summary>
     public class Start : IMessage
     {
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             try
             {
@@ -25,7 +25,7 @@ namespace Uhuru.BOSH.Agent.Message
                 //{  
                     Monit.GetInstance().StartServices();
                 //}
-                return "\"started\"";
+                return "started";
             }
             catch (Exception e)
             {

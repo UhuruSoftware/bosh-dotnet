@@ -533,9 +533,9 @@ namespace Uhuru.BOSH.Agent
             try
             {
                 Logger.Info("Processing :" + args.ToString() +" using processor " + processor.ToString());
-                string result = processor.Process(args);
-                return string.Format("{{ \"value\": {0} }}", result);
-                //return new Dictionary<string, object>() { { "value", result } };
+                object result = processor.Process(args);
+                //return string.Format("{{ \"value\": {0} }}", result);
+                return JsonConvert.SerializeObject(new Dictionary<string, object>() { { "value", result } });
             }
             catch (AgentException aex)
             {
@@ -548,8 +548,7 @@ namespace Uhuru.BOSH.Agent
             {
                 KillMainThreadIn(KILL_AGENT_THREAD_TIMEOUT);
                 Logger.Error("{0}", ex.ToString());
-                return "{ \"exception\": \"" + ex.Message.ToString() + "\" }";
-                //return new Dictionary<string, object>() { { "exception", ex.ToString() } };
+                return JsonConvert.SerializeObject( new Dictionary<string, object>() { { "exception", ex.ToString() } });
             }
         }
 
@@ -713,9 +712,9 @@ namespace Uhuru.BOSH.Agent
 
         class Ping : IMessage
         {
-            public string Process(dynamic args)
+            public object Process(dynamic args)
             {
-                return "\"pong\"";
+                return "pong";
             }
 
             public bool IsLongRunning()
@@ -726,9 +725,9 @@ namespace Uhuru.BOSH.Agent
 
         class Noop :IMessage
         {
-            public string Process(dynamic args)
+            public object Process(dynamic args)
             {
-                return "\"nope\"";
+                return "nope";
             }
             public bool IsLongRunning()
             {

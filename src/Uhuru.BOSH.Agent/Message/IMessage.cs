@@ -9,6 +9,6 @@ namespace Uhuru.BOSH.Agent.Message
     {
         bool IsLongRunning();
 
-        string Process(dynamic args);
+        object Process(dynamic args);
     }
 }

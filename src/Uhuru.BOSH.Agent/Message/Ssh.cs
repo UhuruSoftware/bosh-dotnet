@@ -25,7 +25,7 @@ namespace Uhuru.BOSH.Agent.Message
            return false;
         }
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             string sshType = args[0].Value.ToString();
 
@@ -43,7 +43,7 @@ namespace Uhuru.BOSH.Agent.Message
 
         }
 
-        private string SetupSsh(dynamic parm)
+        private object SetupSsh(dynamic parm)
         {
             
             string userName = parm["user"].Value;
@@ -66,12 +66,11 @@ namespace Uhuru.BOSH.Agent.Message
             }
             sshResult.Ip = Config.DefaultIp;
 
-            string result = JsonConvert.SerializeObject(sshResult);
 
-            return result;
+            return sshResult;
         }
 
-        private string CleanupSsh(dynamic parm)
+        private object CleanupSsh(dynamic parm)
         {
             string userRegex = parm["user_regex"].Value;
             string userName = userRegex.Remove(0, 1);
@@ -93,9 +92,8 @@ namespace Uhuru.BOSH.Agent.Message
                 sshResult.Status = "failed";
             }
 
-            sshResult.Ip = null;
-            string result = JsonConvert.SerializeObject(sshResult);
-            return result;
+            sshResult.Ip = null;            
+            return sshResult;
         }
 
 

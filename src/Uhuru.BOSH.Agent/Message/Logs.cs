@@ -123,7 +123,7 @@ namespace Uhuru.BOSH.Agent.Message
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns></returns>
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             Logger.Info(string.Format("Processing {0} ", args.ToString()));
             logType = args[0].ToString();
@@ -151,9 +151,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             string blobstoreId = UploadTarball(tarballPath);
 
-            string result = "{\"blobstore_id\":\""+blobstoreId+"\"}";
-
-            return result;
+            return new Dictionary<string, string>() { { "blobstore_id", blobstoreId } };
         }
     }
 }

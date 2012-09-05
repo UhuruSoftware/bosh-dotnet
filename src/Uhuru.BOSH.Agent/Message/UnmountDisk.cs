@@ -55,7 +55,7 @@ namespace Uhuru.BOSH.Agent.Message
             return true;
         }
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             Logger.Info("Processing unmount disk :" + args.ToString());
             string cid = args[0].Value.ToString();
@@ -67,16 +67,14 @@ namespace Uhuru.BOSH.Agent.Message
                 DiskUtil.UnmountGuard(mountEntry);
                 UnmountMessage unmountMessage = new UnmountMessage();
                 unmountMessage.Message = string.Format("Unmounted {0} on {1}", mountEntry, diskId);
-                return JsonConvert.SerializeObject(unmountMessage);
+                return unmountMessage;
             }
             else
             {
                 UnmountMessage unmountMessage = new UnmountMessage();
                 unmountMessage.Message = string.Format("Unknown mount for partition {0}", diskId.ToString());
-                return JsonConvert.SerializeObject(unmountMessage);
+                return unmountMessage;
             }
-
-            return string.Empty;
         }
 
         public class UnmountMessage

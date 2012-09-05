@@ -19,7 +19,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// </summary>
     public class ListDisk : Base, IMessage
     {
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             List<string> diskInfo = new List<string>();
             Logger.Info("Processing list_disk");
@@ -53,7 +53,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             JArray obj = JArray.FromObject(diskInfo);
 
-            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
+            return obj;
         }
 
         public bool IsLongRunning()

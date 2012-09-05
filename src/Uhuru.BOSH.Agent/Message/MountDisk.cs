@@ -25,7 +25,7 @@ namespace Uhuru.BOSH.Agent.Message
         /// Processes the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             if (args.Count == 0)
                 return string.Empty;
@@ -36,7 +36,7 @@ namespace Uhuru.BOSH.Agent.Message
         /// <summary>
         /// Mounts this instance.
         /// </summary>
-        public string Mount()
+        public object Mount()
         {
             if (Config.Configure)
             {
@@ -62,7 +62,7 @@ namespace Uhuru.BOSH.Agent.Message
         /// <summary>
         /// Setups the disk.
         /// </summary>
-        public string SetupDisk()
+        public object SetupDisk()
         {
 
             int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
@@ -85,7 +85,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             MountPersistentDisk(diskId);
 
-            return "{}";
+            return new object();
         }
 
         /// <summary>

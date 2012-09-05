@@ -14,7 +14,7 @@ namespace Uhuru.BOSH.Agent.Message
             return true;
         }
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             while (true)
             {

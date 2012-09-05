@@ -29,10 +29,10 @@ namespace Uhuru.BOSH.Agent.Message
             return true;
         }
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             Migrate(args);
-            return "{}";
+            return new object();
         }
 
         public void Migrate(dynamic args)

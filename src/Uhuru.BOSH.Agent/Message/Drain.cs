@@ -34,7 +34,7 @@ using Uhuru.NatsClient;
         string drainType;
         dynamic spec;
 
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             this.baseDir = Config.BaseDir;
             this.nats = Config.Nats;
@@ -70,7 +70,7 @@ using Uhuru.NatsClient;
 
         }
 
-        private string DrainForShutdown()
+        private object DrainForShutdown()
         {
             //bool delivered = false;
             //ThreadPool.QueueUserWorkItem((data) =>
@@ -91,7 +91,7 @@ using Uhuru.NatsClient;
            // return "0";
         }
 
-        private string RunDrainScript()
+        private object RunDrainScript()
         {
             string result = Monit.GetInstance().RunPreScripts(false);
             

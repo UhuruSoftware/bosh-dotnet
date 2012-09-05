@@ -19,7 +19,7 @@ namespace Uhuru.BOSH.Agent.Message
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Keeping the name so it's the same as VMWare's")]
     public class Stop: IMessage
     {
-        public string Process(dynamic args)
+        public object Process(dynamic args)
         {
             try
             {
@@ -27,7 +27,7 @@ namespace Uhuru.BOSH.Agent.Message
                 {
                     Monit.GetInstance().StopServices();
                 }
-                return "\"stopped\"";
+                return "stopped";
             }
             catch (Exception e)
             {
