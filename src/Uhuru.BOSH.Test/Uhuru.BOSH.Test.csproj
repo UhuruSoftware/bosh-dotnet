@@ -103,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyFileInfo.cs" />
+    <Compile Include="Integration\CompilePackageTest.cs" />
     <Compile Include="Integration\SimpleBlobstoreTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestUtil.cs" />
@@ -118,7 +119,9 @@
     <Compile Include="Unit\WindowsNetworkTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\Monit\MonitFile1.xml" />
+    <EmbeddedResource Include="Resources\Monit\MonitFile1.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <Content Include="uhuruTest.config">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -132,8 +135,21 @@
     <None Include="log4net_test.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Resources\settings.json" />
-    <None Include="Resources\WinServBosh.exe.config.erb" />
+    <EmbeddedResource Include="Resources\package.tgz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\uhuruTest.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\WinServBosh.exe.config.erb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\hubba.tgz">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <None Include="Ruby\erb.rb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

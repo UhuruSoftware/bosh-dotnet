@@ -46,6 +46,26 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
             }
         }
 
+        public virtual string Create(byte[] contents)
+        {
+            try
+            {
+                string tempFile = TempPath();
+
+                File.WriteAllBytes(tempFile, contents);
+
+                return CreateFile(new FileInfo(tempFile));
+            }
+            catch (BlobstoreException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new BlobstoreException("Failed to create object", e);
+            }
+        }
+
         public virtual string Create(FileInfo contentsFilePath)
         {
             return CreateFile(contentsFilePath);
