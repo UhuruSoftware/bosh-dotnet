@@ -29,24 +29,24 @@ using System.IO;
             return dataDisk;
         }
 
-        public void MountPersistentDisk(string cid)
+        public void MountPersistentDisk(int diskId)
         {
             if (!Directory.Exists(StorePath))
             {
                 Directory.CreateDirectory(StorePath);
             }
-            if (!DiskUtil.DiskHasPartition(int.Parse(cid)))
+            if (!DiskUtil.DiskHasPartition(diskId))
             {
-                if (DiskUtil.CreatePrimaryPartition(int.Parse(cid), "store") != 0)
+                if (DiskUtil.CreatePrimaryPartition(diskId, "store") != 0)
                 {
-                    Logger.Error("Could not create partition on drive " + cid);
+                    Logger.Error("Could not create partition on drive " + diskId);
                 }
             }
 
-            if (DiskUtil.MountPartition(int.Parse(cid), StorePath) != 0)
+            if (DiskUtil.MountPartition(diskId, StorePath) != 0)
             {
-                Logger.Error("Could not mount disk " + cid + " to " + StorePath);
-                throw new Errors.FatalBoshException("Failed to mount: " + cid + " to " + StorePath);
+                Logger.Error("Could not mount disk " + diskId + " to " + StorePath);
+                throw new Errors.FatalBoshException("Failed to mount: " + diskId + " to " + StorePath);
             }
         }
 

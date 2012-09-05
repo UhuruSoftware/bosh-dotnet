@@ -46,7 +46,7 @@ namespace Uhuru.BOSH.Agent.Message
         {
             get
             {
-                return Path.Combine(BaseDir, "store_migration_target");
+                return Path.Combine(BaseDir, "store_migraton_target");
             }
         }
 

@@ -137,13 +137,13 @@ namespace Uhuru.BOSH.Agent
 
         private void SetupDiskData()
         {   
-            int dataDisk = int.Parse(Config.Platform.GetDataDiskDeviceName());
+            int dataDiskId = int.Parse(Config.Platform.GetDataDiskDeviceName());
 
-            Logger.Info("Creating partition on drive " + dataDisk);
+            Logger.Info("Creating partition on drive " + dataDiskId);
 
-            if (DiskUtil.CreatePrimaryPartition(dataDisk, "data") != 0)
+            if (DiskUtil.CreatePrimaryPartition(dataDiskId, "data") != 0)
             {
-                Logger.Error("Could not create partition on drive " + dataDisk);
+                Logger.Error("Could not create partition on drive " + dataDiskId);
             }
             string dataDir = Path.Combine(BaseDir, "data");
             if (!Directory.Exists(dataDir))
@@ -151,9 +151,9 @@ namespace Uhuru.BOSH.Agent
                 Directory.CreateDirectory(dataDir);
             }
 
-            if (DiskUtil.MountPartition(dataDisk, dataDir) != 0)
+            if (DiskUtil.MountPartition(dataDiskId, dataDir) != 0)
             {
-                Logger.Error("Could not mount disk " + dataDisk + " to " + dataDir);
+                Logger.Error("Could not mount disk " + dataDiskId + " to " + dataDir);
             }
 
             SetupDataSys();
@@ -532,10 +532,10 @@ namespace Uhuru.BOSH.Agent
                 }
                 else
                 {
-                    string storeDisk = Config.Settings["disks"]["persistent"][0].Value;
-                    if (!string.IsNullOrEmpty(storeDisk))
+                    string storeDiskId = Config.Settings["disks"]["persistent"][0].Value;
+                    if (!string.IsNullOrEmpty(storeDiskId))
                     {
-                        Config.Platform.MountPersistentDisk(storeDisk);
+                        Config.Platform.MountPersistentDisk(int.Parse(storeDiskId));
                     }
                 }
             }

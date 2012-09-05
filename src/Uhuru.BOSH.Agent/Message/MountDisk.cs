@@ -66,6 +66,7 @@ namespace Uhuru.BOSH.Agent.Message
         {
 
             int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
+            
             Logger.Info("Setup disk settings: " + Settings.ToString());
 
             if (!DiskUtil.DiskHasPartition(diskId))
@@ -90,8 +91,8 @@ namespace Uhuru.BOSH.Agent.Message
         /// <summary>
         /// Mounts the persistent disk.
         /// </summary>
-        /// <param name="diskIndex">Index of the disk.</param>
-        public void MountPersistentDisk(int diskIndex)
+        /// <param name="diskId">Id of the disk.</param>
+        public void MountPersistentDisk(int diskId)
         {
             string storeMountPoint = Path.Combine(BaseDir, "store");
             string mountpoint;
@@ -112,13 +113,13 @@ namespace Uhuru.BOSH.Agent.Message
                 Directory.CreateDirectory(mountpoint);
             }
 
-            Logger.Info(String.Format("Mount Partition {0} {1}", diskIndex, mountpoint));
+            Logger.Info(String.Format("Mount Partition {0} {1}", diskId, mountpoint));
 
-            int returnCode = DiskUtil.MountPartition(diskIndex, mountpoint);
+            int returnCode = DiskUtil.MountPartition(diskId, mountpoint);
 
             if (returnCode != 0)
             {
-                throw new MessageHandlerException(String.Format("Failed mount disk {0} on {1}. Exit code: {2}", diskIndex, mountpoint, returnCode));
+                throw new MessageHandlerException(String.Format("Failed mount disk {0} on {1}. Exit code: {2}", diskId, mountpoint, returnCode));
             }
 
         }

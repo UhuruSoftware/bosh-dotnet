@@ -13,6 +13,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.IO;
     using Uhuru.Utilities;
     using Newtonsoft.Json;
+    using Uhuru.BOSH.Agent.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -57,18 +58,22 @@ namespace Uhuru.BOSH.Agent.Message
         public string Process(dynamic args)
         {
             Logger.Info("Processing unmount disk :" + args.ToString());
-            string partition = args[0].Value.ToString();
-            string mountEntry = DiskUtil.MountEntry(partition);
+            string cid = args[0].Value.ToString();
+
+            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
+            string mountEntry = DiskUtil.MountEntry(diskId);
             if (mountEntry != null)
             {
-                DiskUtil.UnmountGuard(partition);
+                DiskUtil.UnmountGuard(mountEntry);
                 UnmountMessage unmountMessage = new UnmountMessage();
-                unmountMessage.Message = string.Format("Unmounted {0} on {1}", @"C:\vcap\store\", partition);
+                unmountMessage.Message = string.Format("Unmounted {0} on {1}", mountEntry, diskId);
                 return JsonConvert.SerializeObject(unmountMessage);
             }
             else
             {
-                return "Unknown mount for partition" + partition;
+                UnmountMessage unmountMessage = new UnmountMessage();
+                unmountMessage.Message = string.Format("Unknown mount for partition {0}", diskId.ToString());
+                return JsonConvert.SerializeObject(unmountMessage);
             }
 
             return string.Empty;

@@ -17,7 +17,7 @@ namespace Uhuru.BOSH.Agent.Platforms
     /// </summary>
     public class DummyPlatform : IPlatform
     {
-        public void MountPersistentDisk(string cid)
+        public void MountPersistentDisk(int diskId)
         {
             throw new NotImplementedException();
         }

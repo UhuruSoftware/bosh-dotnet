@@ -9,9 +9,9 @@ namespace Uhuru.BOSH.Agent.Platforms
 {
     public class WindowsPlatform : IPlatform
     {
-        public void MountPersistentDisk(string cid)
+        public void MountPersistentDisk(int diskId)
         {
-            new Disk().MountPersistentDisk(cid);
+            new Disk().MountPersistentDisk(diskId);
         }
 
         public void UpdateLogging()

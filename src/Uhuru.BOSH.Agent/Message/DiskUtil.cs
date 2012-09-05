@@ -13,6 +13,8 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Management;
     using System.Runtime.InteropServices;
     using Uhuru.Utilities;
+    using System.Threading;
+    using Uhuru.BOSH.Agent.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -31,16 +33,18 @@ namespace Uhuru.BOSH.Agent.Message
         /// <summary>
         /// Mounts the entry.
         /// </summary>
-        /// <param name="partition">The partition.</param>
+        /// <param name="diskId">The disk Id.</param>
         /// <returns></returns>
-        public static string MountEntry(string partition)
+        public static string MountEntry(int diskId)
         {
             Logger.Info("Checkin mount entry");
 
-            string script = @"SELECT DISK " + partition+ @"
-            SELECT PARTITION 1
-            DETAIL PARTITION
-            EXIT";
+            int diskIndex = GetDiskIndexForDiskId(diskId);
+
+            string script = String.Format(@"SELECT DISK {0}
+SELECT PARTITION 1
+DETAIL PARTITION
+EXIT", diskIndex);
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName, script);
 
@@ -63,9 +67,9 @@ namespace Uhuru.BOSH.Agent.Message
             {
                 string output = p.StandardOutput.ReadToEnd(); 
                 Logger.Warning(output);
-                if (!output.Contains(@"C:\vcap\store\"))
+                if (output.Contains(@"C:\vcap\store\"))
                     //TODO imeplemnt block and mount point
-                    return "exists";
+                    return @"C:\vcap\store\";
                 else
                     return null;
             }
@@ -73,22 +77,27 @@ namespace Uhuru.BOSH.Agent.Message
         }
 
         static int GUARD_RETRIES = 600;
-        static int GUARD_SLEEP = 1;
+        static int GUARD_SLEEP = 1000;
 
         /// <summary>
         /// Unmounts the guard.
         /// </summary>
         /// <param name="mountpoint">The mountpoint.</param>
-        public static void UnmountGuard(string disk)
+        public static void UnmountGuard(string mountPoint)
         {
             int unmountAttempts = GUARD_RETRIES;
 
-            string script = @"SELECT DISK " + disk + @"
-            SELECT PARTITION 1
-            remove all
-            EXIT";
+            int diskIndex = GetDiskIndexForMountPoint(mountPoint);
+
+            string script = String.Format(@"SELECT DISK {0}
+SELECT PARTITION 1
+REMOVE ALL
+SELECT DISK {0}
+OFFLINE DISK NOERR
+EXIT", diskIndex);
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName, script);
+
 
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "diskpart.exe";
@@ -96,18 +105,37 @@ namespace Uhuru.BOSH.Agent.Message
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
-            Process p = new Process();
-            p.StartInfo = info;
-            p.Start();
-            p.WaitForExit(60000);
-            if (!p.HasExited)
+            while (unmountAttempts > 0)
             {
-                p.Kill();
-                Logger.Error("Failed to umount");
+                Process p = new Process();
+                p.StartInfo = info;
+                p.Start();
+                p.WaitForExit(60000);
+                if (!p.HasExited)
+                {
+                    p.Kill();
+                    Logger.Debug(p.StandardOutput.ReadToEnd());
+                    Logger.Error("Failed to umount {0}", mountPoint);
+                    throw new MessageHandlerException(String.Format("Failed to umount {0}", mountPoint));
+                }
+                else
+                {
+                    if (p.ExitCode != 0)
+                    {
+                        unmountAttempts--;
+                        Thread.Sleep(GUARD_SLEEP);
+                        continue;
+                    }
+                    else
+                    {
+                        Logger.Debug(p.StandardOutput.ReadToEnd());
+                        return;
+                    }
+                }
             }
-           
 
-           
+            Logger.Error("Failed to umount {0}", mountPoint);
+            throw new MessageHandlerException(String.Format("Failed to umount {0}", mountPoint));
 
             ////  loop do
             ////    umount_output = `umount #{mountpoint} 2>&1`
@@ -216,15 +244,17 @@ namespace Uhuru.BOSH.Agent.Message
         /// <summary>
         /// Creates the primary partition.
         /// </summary>
-        /// <param name="diskIndex">Index of the disk.</param>
+        /// <param name="diskId">Id of the disk.</param>
         /// <param name="label">The label.</param>
         /// <returns></returns>
-        public static int CreatePrimaryPartition(int diskIndex, string label)
+        public static int CreatePrimaryPartition(int diskId, string label)
         {
+            int diskIndex = GetDiskIndexForDiskId(diskId);
+
             string script = String.Format(@"SELECT Disk {0}
 ATTRIBUTE DISK CLEAR READONLY
 SELECT Disk {0}
-ONLINE DISK
+ONLINE DISK NOERR
 SELECT Disk {0}
 CREATE PARTITION PRIMARY
 SELECT PARTITION 1
@@ -259,14 +289,16 @@ EXIT", diskIndex, label);
         /// <summary>
         /// Disks the has partition.
         /// </summary>
-        /// <param name="diskIndex">Index of the disk.</param>
+        /// <param name="diskId">Id of the disk.</param>
         /// <returns></returns>
-        public static bool DiskHasPartition(int diskIndex)
+        public static bool DiskHasPartition(int diskId)
         {
+            int diskIndex = GetDiskIndexForDiskId(diskId);
+
             using (ManagementObjectSearcher search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskDrive "))
             {
                 foreach (ManagementObject queryObj in search.Get())
-                {
+                {                    
                     if (int.Parse(queryObj["Index"].ToString()) == diskIndex)
                     {
                         if (int.Parse(queryObj["Partitions"].ToString()) > 0)
@@ -280,19 +312,26 @@ EXIT", diskIndex, label);
                     }
                 }
             }
-            throw new Exception("Disk not found");
+            throw new MessageHandlerException("Disk not found " + diskIndex.ToString());
         }
 
         /// <summary>
         /// Mounts the partition.
         /// </summary>
-        /// <param name="diskIndex">Index of the disk.</param>
+        /// <param name="diskId">Id of the disk.</param>
         /// <param name="mountPath">The mount path.</param>
         /// <returns></returns>
-        public static int MountPartition(int diskIndex, string mountPath)
+        public static int MountPartition(int diskId, string mountPath)
         {
+            int diskIndex = GetDiskIndexForDiskId(diskId);
+
             string script = String.Format(@"SELECT Disk {0}
+ATTRIBUTE DISK CLEAR READONLY
+SELECT Disk {0}
+ONLINE DISK NOERR
+SELECT Disk {0}
 SELECT PARTITION 1
+REMOVE ALL NOERR
 ASSIGN MOUNT={1}
 EXIT", diskIndex, mountPath);
 
@@ -305,20 +344,35 @@ EXIT", diskIndex, mountPath);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
-            Process p = new Process();
-            p.StartInfo = info;
-            p.Start();
-            p.WaitForExit(60000);
-            if (!p.HasExited)
+            int retryCount = 10;
+            while (retryCount > 0)
             {
-                p.Kill();
-                return -1;
+                Process p = new Process();
+                p.StartInfo = info;
+                p.Start();
+                p.WaitForExit(60000);
+                if (!p.HasExited)
+                {
+                    p.Kill();
+                    return -1;
+                }
+                else
+                {
+                    if (p.ExitCode != 0)
+                    {
+                        retryCount--;
+                        Thread.Sleep(1000);
+                        continue;
+                    }
+                    else
+                    {
+                        Logger.Warning(p.StandardOutput.ReadToEnd());
+                        return p.ExitCode;
+                    }
+                }
             }
-            else
-            {
-                Logger.Warning(p.StandardOutput.ReadToEnd());
-                return p.ExitCode;
-            }
+
+            return -2;
         }
 
         /// <summary>
@@ -331,17 +385,25 @@ EXIT", diskIndex, mountPath);
         public static bool IsMountPoint(string path)
         {
             char[] trimChars = { '\\' };
+            int retryCount = 10;
 
-            using (ManagementObjectSearcher search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Volume "))
+            while (retryCount > 0)
             {
-                foreach (ManagementObject queryObj in search.Get())
+                using (ManagementObjectSearcher search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Volume "))
                 {
-                    if (queryObj["Caption"].ToString().TrimEnd(trimChars) == path.TrimEnd(trimChars))
+                    foreach (ManagementObject queryObj in search.Get())
                     {
-                        return true;
+                        if (queryObj["Caption"].ToString().TrimEnd(trimChars).Equals(path.TrimEnd(trimChars), StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            Logger.Debug("{0} is mount point.", path);
+                            return true;
+                        }
                     }
                 }
+                retryCount--;
+                Thread.Sleep(1000);
             }
+            Logger.Debug("{0} is not mount point.", path);
             return false;
         }
 
@@ -355,9 +417,11 @@ EXIT", diskIndex, mountPath);
         /// </summary>
         /// <param name="mountPoint">The mount point.</param>
         /// <returns></returns>
-        public static int GetDiskIdForMountPoint(string mountPoint)
+        public static int GetDiskIndexForMountPoint(string mountPoint)
         {
             string volumeId = GetVolumeDeviceId(mountPoint).TrimEnd(new char[] { '\\' });
+
+            Logger.Debug("Mount point {0} volume ID: {1}", mountPoint, volumeId);
 
             IntPtr file = NativeMethods.CreateFile(volumeId, NativeMethods.GENERIC_READ, NativeMethods.FILE_SHARE_READ | NativeMethods.FILE_SHARE_WRITE, IntPtr.Zero, NativeMethods.OPEN_EXISTING, 0, IntPtr.Zero);
 
@@ -374,7 +438,7 @@ EXIT", diskIndex, mountPath);
                 NativeMethods.CloseHandle(file);
             }
 
-            int diskId = -1;
+            int diskIndex = -1;
 
             if (bytesReturned > 0)
             {
@@ -384,17 +448,18 @@ EXIT", diskIndex, mountPath);
                     IntPtr extentPtr = new IntPtr(buffer.ToInt32() + Marshal.SizeOf(typeof(long)) + i * Marshal.SizeOf(typeof(NativeMethods.DISK_EXTENT)));
                     NativeMethods.DISK_EXTENT extent = (NativeMethods.DISK_EXTENT)Marshal.PtrToStructure(extentPtr, typeof(NativeMethods.DISK_EXTENT));
 
-                    diskId = extent.DiskNumber;
+                    diskIndex = extent.DiskNumber;
                 }
             }
 
-            if (diskId == -1)
+            if (diskIndex == -1)
             {
-                throw new Exception("Could not get disk id.");
+                throw new MessageHandlerException("Could not get disk id.");
             }
             else
             {
-                return diskId;
+                Logger.Debug("Found disk index {0} for mount point {1}", diskIndex, mountPoint);
+                return diskIndex;
             }
 
         }
@@ -406,18 +471,51 @@ EXIT", diskIndex, mountPath);
         /// <returns></returns>
         public static string GetVolumeDeviceId(string mountPoint)
         {
-            using (ManagementClass volume = new ManagementClass("Win32_Volume"))
-            { 
-                ManagementObjectCollection moc = volume.GetInstances();
-                foreach (ManagementObject mo in moc)
+            char[] trimChars = { '\\' };
+
+            int retryCount = 10;
+
+            while (retryCount > 0)
+            {
+                using (ManagementClass volume = new ManagementClass("Win32_Volume"))
                 {
-                    if (mo["Caption"].ToString() == mountPoint)
+                    ManagementObjectCollection moc = volume.GetInstances();
+                    foreach (ManagementObject mo in moc)
                     {
-                        return mo["DeviceID"].ToString();
+                        if (mo["Caption"].ToString().TrimEnd(trimChars).Equals(mountPoint.TrimEnd(trimChars), StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            Logger.Debug("Found VolumeId {0} for mount point {1}", mo["DeviceID"].ToString(), mountPoint);
+                            return mo["DeviceID"].ToString();
+                        }
                     }
                 }
+                retryCount--;
+                Thread.Sleep(1000);
             }
             return string.Empty;
+        }
+
+        public static int GetDiskIndexForDiskId(int diskId)
+        {
+            int retryCount = 10;
+
+            while (retryCount > 0)
+            {
+                using (ManagementClass volume = new ManagementClass("Win32_DiskDrive"))
+                {
+                    ManagementObjectCollection moc = volume.GetInstances();
+                    foreach (ManagementObject mo in moc)
+                    {
+                        if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(), StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            return int.Parse(mo["Index"].ToString());
+                        }
+                    }
+                }
+                retryCount--;
+                Thread.Sleep(1000);
+            }
+            throw new MessageHandlerException("Could not find disk index for disk id: " + diskId);
         }
     }
 }

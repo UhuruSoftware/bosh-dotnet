@@ -128,7 +128,8 @@ namespace Uhuru.BOSH.Agent
                     return new FetchLogs();
                 case "test":
                     return new TestMessage();
-                    
+                case "migrate_disk":
+                    return new MigrateDisk();
             }
             return null;
          //   return this.Processors[method];

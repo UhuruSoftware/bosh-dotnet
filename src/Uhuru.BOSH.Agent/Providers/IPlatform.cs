@@ -10,7 +10,7 @@ namespace Uhuru.BOSH.Agent.Providers
     /// </summary>
     public interface IPlatform
     {
-        void MountPersistentDisk(string cid);
+        void MountPersistentDisk(int diskId);
 
         void UpdateLogging();
 

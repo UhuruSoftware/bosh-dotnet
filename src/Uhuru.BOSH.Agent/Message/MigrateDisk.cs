@@ -11,45 +11,60 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Linq;
     using System.Text;
     using Uhuru.Utilities;
+    using Uhuru.BOSH.Agent.Errors;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Threading;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class MigrateDisk : Base
+    public class MigrateDisk : Base, IMessage
     {
         string oldCid;
         string newCid;
 
-        public bool LongRunning
+        public bool IsLongRunning()
         {
-            get { return true; }
+            return true;
         }
 
-        public static void Process(dynamic args)
+        public string Process(dynamic args)
         {
-            new MigrateDisk().Migrate(args);
+            Migrate(args);
+            return "{}";
         }
-
-        ////  def self.process(args)
-        ////    #logger = Bosh::Agent::Config.logger
-        ////    #logger.info("MigrateDisk:" + args.inspect)
-
-        ////    self.new.migrate(args)
-        ////    {}
-        ////  end
 
         public void Migrate(dynamic args)
         {
             Logger.Info(String.Format("MigrateDisk:{0}", args));
-            oldCid = args[0];
-            newCid = args[1];
+            oldCid = args[0].ToString();
+            newCid = args[1].ToString();
             DiskUtil.UnmountGuard(StorePath);
-            MountStore(oldCid, "-o -ro"); // TODO
+            MountStoreReadOnly(oldCid);
 
             if (CheckMountpoints())
             {
                 Logger.Info("Copy data from old to new store disk");
-                throw new NotImplementedException();
+
+                char[] trimChars = { '\\' };
+
+                ProcessStartInfo info = new ProcessStartInfo();
+                info.FileName = "xcopy";
+                info.Arguments = "\"" + StorePath.TrimEnd(trimChars) + "\"" + " " + "\"" + StoreMigrationTarget.TrimEnd(trimChars) + @" /O /X /E /H /K";
+                info.RedirectStandardOutput = true;
+                info.UseShellExecute = false;
+
+                Process p = new Process();
+                p.StartInfo = info;
+                p.Start();
+                p.WaitForExit();
+                Logger.Debug(p.StandardOutput.ReadToEnd());
+
+                if (p.ExitCode != 0)
+                {
+                    throw new MessageHandlerException(String.Format("Failed to copy data from old to new store disk"));
+                }
             }
 
             DiskUtil.UnmountGuard(StorePath);
@@ -58,47 +73,93 @@ namespace Uhuru.BOSH.Agent.Message
             MountStore(newCid);
         }
 
-        ////  def migrate(args)
-        ////    logger.info("MigrateDisk:" + args.inspect)
-        ////    @old_cid, @new_cid = args
-
-        ////    DiskUtil.umount_guard(store_path)
-
-        ////    mount_store(@old_cid, "-o ro") #read-only
-
-        ////    if check_mountpoints
-        ////      logger.info("Copy data from old to new store disk")
-        ////      `(cd #{store_path} && tar cf - .) | (cd #{store_migration_target} && tar xpf -)`
-        ////    end
-
-        ////    DiskUtil.umount_guard(store_path)
-        ////    DiskUtil.umount_guard(store_migration_target)
-
-        ////    mount_store(@new_cid)
-        ////  end
-
         public bool CheckMountpoints()
         {
-            throw new NotImplementedException();
+            if (DiskUtil.IsMountPoint(StorePath) && DiskUtil.IsMountPoint(StoreMigrationTarget))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
-
-        ////  def check_mountpoints
-        ////    Pathname.new(store_path).mountpoint? && Pathname.new(store_migration_target).mountpoint?
-        ////  end
 
         public void MountStore(string cid, string options = "")
         {
-            throw new NotImplementedException();
+            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
+
+            Logger.Info(String.Format("Mount Partition {0} {1}", diskId, StorePath));
+
+            int returnCode = DiskUtil.MountPartition(diskId, StorePath);
+
+            if (returnCode != 0)
+            {
+                throw new MessageHandlerException(String.Format("Failed mount disk {0} on {1}. Exit code: {2}", diskId, StorePath, returnCode));
+            }
         }
 
-        ////  def mount_store(cid, options="")
-        ////    disk = Bosh::Agent::Config.platform.lookup_disk_by_cid(cid)
-        ////    partition = "#{disk}1"
-        ////    logger.info("Mounting: #{partition} #{store_path}")
-        ////    `mount #{options} #{partition} #{store_path}`
-        ////    unless $?.exitstatus == 0
-        ////      raise Bosh::Agent::MessageHandlerError, "Failed to mount: #{partition} #{store_path} (exit code #{$?.exitstatus})"
-        ////    end
-        ////  end
+        public void MountStoreReadOnly(string cid)
+        {
+            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
+            int diskIndex = DiskUtil.GetDiskIndexForDiskId(diskId);
+
+            Logger.Info("Mounting {0} {1}", cid, StorePath);
+
+            int returnCode = -2;
+
+            string script = String.Format(@"SELECT Disk {0}
+ATTRIBUTE DISK SET READONLY
+SELECT Disk {0}
+ONLINE DISK NOERR
+SELECT Disk {0}
+SELECT PARTITION 1
+REMOVE ALL NOERR
+ASSIGN MOUNT={1}
+EXIT", diskIndex, StorePath);
+
+            string fileName = Path.GetTempFileName();
+            File.WriteAllText(fileName, script);
+
+            ProcessStartInfo info = new ProcessStartInfo();
+            info.FileName = "diskpart.exe";
+            info.Arguments = String.Format("/s {0}", fileName);
+            info.RedirectStandardOutput = true;
+            info.UseShellExecute = false;
+
+            int retryCount = 10;
+            while (retryCount > 0)
+            {
+                Process p = new Process();
+                p.StartInfo = info;
+                p.Start();
+                p.WaitForExit(60000);
+                if (!p.HasExited)
+                {
+                    p.Kill();
+                    returnCode = -1;
+                }
+                else
+                {
+                    if (p.ExitCode != 0)
+                    {
+                        retryCount--;
+                        Thread.Sleep(1000);
+                        continue;
+                    }
+                    else
+                    {
+                        Logger.Warning(p.StandardOutput.ReadToEnd());
+                        returnCode = p.ExitCode;
+                        break;
+                    }
+                }
+            }
+
+            if (returnCode != 0)
+            {
+                throw new MessageHandlerException(String.Format("Failed mount disk {0} on {1}. Exit code: {2}", diskIndex, StorePath, returnCode));
+            }
+        }
     }
 }

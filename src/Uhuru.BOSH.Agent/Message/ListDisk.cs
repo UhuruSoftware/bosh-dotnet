@@ -42,7 +42,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             foreach (var cid in cids)
             {
-                string diskId = Config.Platform.LookupDiskByCid(cid.Name);
+                int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid.Name));
                 Logger.Info("Found disk with Id :" + diskId);
 
                 if (!(DiskUtil.MountEntry(diskId) == null))
