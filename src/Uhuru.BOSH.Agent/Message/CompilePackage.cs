@@ -149,17 +149,17 @@ namespace Uhuru.BOSH.Agent.Message
 
             var sourceFileInfo = new FileInfo(this.sourceFile);
 
+            
             string tarFile = Path.ChangeExtension(this.sourceFile, "tar");
-            FileArchive.UnzipFile(sourceFileInfo.DirectoryName, this.sourceFile);
+            string tgzFile = Path.ChangeExtension(this.sourceFile, "tgz");
 
-            if (File.Exists(tarFile))
-            {
-                FileArchive.UnzipFile(this.compileDir, tarFile);
-            }
-            else
-            {
-                FileArchive.UnzipFile(this.compileDir, this.sourceFile);
-            }
+            File.Move(this.sourceFile, tgzFile);
+
+            // The fist step just decompresses the gzip stream
+            FileArchive.UnzipFile(sourceFileInfo.DirectoryName, tgzFile);
+
+            // The second and final step will untal the files
+            FileArchive.UnzipFile(this.compileDir, tarFile);
         }
 
         /// <summary>
@@ -178,14 +178,14 @@ namespace Uhuru.BOSH.Agent.Message
             // TODO: check if enough disk is available
 
             // Default PATHEXT env var
-            string[] execExtensions = new string[] { ".com", ".exe", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".msc" };
+            string[] execExtensions = new string[] { ".com", ".exe", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".msc", ".ps1" };
             string packagingExecutive = "package";
 
             foreach (var ext in execExtensions)
             {
                 if (File.Exists(Path.Combine(compileDir, "package" + ext)))
                 {
-                    packagingExecutive += ext;
+                    packagingExecutive = Path.Combine(compileDir, "package" + ext);
                     break;
                 }
             }
@@ -194,7 +194,7 @@ namespace Uhuru.BOSH.Agent.Message
             {
                 logger.Info("Compileing " + this.packageName + " " + this.packageVersion);
 
-                var pi = new ProcessStartInfo("package");
+                var pi = new ProcessStartInfo(packagingExecutive);
 
                 pi.CreateNoWindow = true;
                 pi.ErrorDialog = false;
@@ -224,7 +224,7 @@ namespace Uhuru.BOSH.Agent.Message
         private void Pack()
         {
             this.logger.Info("Packing " + this.packageName + " " + this.packageVersion);
-            Util.PackBlob(installDir, compiledPackage);
+            Util.PackBlob(this.installDir, this.compiledPackage);
         }
 
         /// <summary>
