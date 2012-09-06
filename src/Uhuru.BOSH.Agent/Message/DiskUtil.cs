@@ -515,7 +515,8 @@ EXIT", diskIndex, mountPath);
                 retryCount--;
                 Thread.Sleep(1000);
             }
-            throw new MessageHandlerException("Could not find disk index for disk id: " + diskId);
+            Logger.Debug("Could not find disk index for disk id: " + diskId);
+            return -int.MaxValue;
         }
     }
 }

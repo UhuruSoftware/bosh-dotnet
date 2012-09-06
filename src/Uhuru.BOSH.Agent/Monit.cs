@@ -316,9 +316,9 @@ using System.Threading;
             }
         }
 
-         public string RunPreScripts(bool start)
+         public object RunPreScripts(bool start)
          {
-             string result = "0";
+             object result = 0;
              lock (locker)
              {
                  MonitorServices();
@@ -339,7 +339,7 @@ using System.Threading;
                          if (p.ExitCode != 0)
                          {
                              Logger.Error("Exception while running script " + script);
-                             result = p.ExitCode.ToString();
+                             result = p.ExitCode;
                          }
                      }
                  }

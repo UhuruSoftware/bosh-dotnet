@@ -50,8 +50,8 @@ namespace Uhuru.BOSH.Agent.Message
                 char[] trimChars = { '\\' };
 
                 ProcessStartInfo info = new ProcessStartInfo();
-                info.FileName = "xcopy";
-                info.Arguments = "\"" + StorePath.TrimEnd(trimChars) + "\"" + " " + "\"" + StoreMigrationTarget.TrimEnd(trimChars) + @" /O /X /E /H /K";
+                info.FileName = "robocopy";
+                info.Arguments = String.Format("{0} {1} /MIR /R:1 /W:1 /COPYALL", StorePath, StoreMigrationTarget);
                 info.RedirectStandardOutput = true;
                 info.UseShellExecute = false;
 

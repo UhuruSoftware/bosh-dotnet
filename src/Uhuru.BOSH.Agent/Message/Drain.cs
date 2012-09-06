@@ -93,13 +93,13 @@ using Uhuru.NatsClient;
 
         private object RunDrainScript()
         {
-            string result = Monit.GetInstance().RunPreScripts(false);
+            object result = Monit.GetInstance().RunPreScripts(false);
             
             return result;
             //return "0";
         }
 
-        private string DrainForUpdate()
+        private object DrainForUpdate()
         {
             if (spec == null)
             {
@@ -112,7 +112,7 @@ using Uhuru.NatsClient;
 
             //Logger.Warning("Not implemented yet");
 
-            return "0";
+            return 0;
             
         }
 
