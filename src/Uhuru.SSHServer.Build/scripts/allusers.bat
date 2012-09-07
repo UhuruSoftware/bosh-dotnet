@@ -1,0 +1,3 @@
+chcp 437
+
+cd %USERPROFILE%
