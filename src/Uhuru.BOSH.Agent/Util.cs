@@ -17,6 +17,7 @@ namespace Uhuru.BOSH.Agent
     using System.Security.Cryptography;
     using Uhuru.BOSH.Agent.Errors;
     using System.Diagnostics;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -248,7 +249,7 @@ namespace Uhuru.BOSH.Agent
                 }
                 if (String.Compare(blobSHA1,checksum, true) != 0)
                 {
-                    throw new MessageHandlerException(String.Format("Expected sha1: {0}, Downloaded sha1: {1}", checksum, blobSHA1));
+                    throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Expected sha1: {0}, Downloaded sha1: {1}", checksum, blobSHA1));
                 }
 
                 string tarFile = Path.ChangeExtension(blobDataFile, "tar");
@@ -267,11 +268,11 @@ namespace Uhuru.BOSH.Agent
 
         internal static void CreateSymLink(string installPath, string linkPath)
         {
-            Process p = Process.Start("cmd.exe", String.Format("/c mklink /D {0} {1}", linkPath, installPath));
+            Process p = Process.Start("cmd.exe", String.Format(CultureInfo.InvariantCulture, "/c mklink /D {0} {1}", linkPath, installPath));
             p.WaitForExit();
             if (p.ExitCode != 0)
             {
-                Logger.Error(String.Format("Failed creating symbolic link between {0} and {1}", installPath, linkPath));
+                Logger.Error(String.Format(CultureInfo.InvariantCulture, "Failed creating symbolic link between {0} and {1}", installPath, linkPath));
             }
         }
     }

@@ -15,6 +15,7 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.Utilities;
     using System.Threading;
     using Uhuru.BOSH.Agent.Errors;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -41,7 +42,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             int diskIndex = GetDiskIndexForDiskId(diskId);
 
-            string script = String.Format(@"SELECT DISK {0}
+            string script = String.Format(CultureInfo.InvariantCulture, @"SELECT DISK {0}
 SELECT PARTITION 1
 DETAIL PARTITION
 EXIT", diskIndex);
@@ -50,7 +51,7 @@ EXIT", diskIndex);
 
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "diskpart.exe";
-            info.Arguments = String.Format("/s {0}", fileName);
+            info.Arguments = String.Format(CultureInfo.InvariantCulture, "/s {0}", fileName);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
@@ -89,7 +90,7 @@ EXIT", diskIndex);
 
             int diskIndex = GetDiskIndexForMountPoint(mountPoint);
 
-            string script = String.Format(@"SELECT DISK {0}
+            string script = String.Format(CultureInfo.InvariantCulture, @"SELECT DISK {0}
 SELECT PARTITION 1
 REMOVE ALL
 SELECT DISK {0}
@@ -101,7 +102,7 @@ EXIT", diskIndex);
 
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "diskpart.exe";
-            info.Arguments = String.Format("/s {0}", fileName);
+            info.Arguments = String.Format(CultureInfo.InvariantCulture, "/s {0}", fileName);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
@@ -116,7 +117,7 @@ EXIT", diskIndex);
                     p.Kill();
                     Logger.Debug(p.StandardOutput.ReadToEnd());
                     Logger.Error("Failed to umount {0}", mountPoint);
-                    throw new MessageHandlerException(String.Format("Failed to umount {0}", mountPoint));
+                    throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to umount {0}", mountPoint));
                 }
                 else
                 {
@@ -135,7 +136,7 @@ EXIT", diskIndex);
             }
 
             Logger.Error("Failed to umount {0}", mountPoint);
-            throw new MessageHandlerException(String.Format("Failed to umount {0}", mountPoint));
+            throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to umount {0}", mountPoint));
 
             ////  loop do
             ////    umount_output = `umount #{mountpoint} 2>&1`
@@ -222,17 +223,17 @@ EXIT", diskIndex);
                 string caption = queryObj["Caption"].ToString().TrimEnd(new char[] { '\\' }).ToLower();
                 if (caption == "c:")
                 {
-                    result["system"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString()));
+                    result["system"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture));
                     continue;
                 }
                 else if (caption == dataDir)
                 {
-                    result["ephemeral"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString()));
+                    result["ephemeral"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture));
                     continue;
                 }
                 else if (caption == storeDir)
                 {
-                    result.Add("persistent", CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString()), UInt64.Parse(queryObj["FreeSpace"].ToString())));
+                    result.Add("persistent", CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture)));
                     continue;
                 }
 
@@ -251,7 +252,7 @@ EXIT", diskIndex);
         {
             int diskIndex = GetDiskIndexForDiskId(diskId);
 
-            string script = String.Format(@"SELECT Disk {0}
+            string script = String.Format(CultureInfo.InvariantCulture, @"SELECT Disk {0}
 ATTRIBUTE DISK CLEAR READONLY
 SELECT Disk {0}
 ONLINE DISK NOERR
@@ -267,7 +268,7 @@ EXIT", diskIndex, label);
 
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "diskpart.exe";
-            info.Arguments = String.Format("/s {0}", fileName);
+            info.Arguments = String.Format(CultureInfo.InvariantCulture, "/s {0}", fileName);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
@@ -299,10 +300,10 @@ EXIT", diskIndex, label);
             using (ManagementObjectSearcher search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_DiskDrive "))
             {
                 foreach (ManagementObject queryObj in search.Get())
-                {                    
-                    if (int.Parse(queryObj["Index"].ToString()) == diskIndex)
+                {
+                    if (int.Parse(queryObj["Index"].ToString(), CultureInfo.InvariantCulture) == diskIndex)
                     {
-                        if (int.Parse(queryObj["Partitions"].ToString()) > 0)
+                        if (int.Parse(queryObj["Partitions"].ToString(), CultureInfo.InvariantCulture) > 0)
                         {
                             return true;
                         }
@@ -313,7 +314,7 @@ EXIT", diskIndex, label);
                     }
                 }
             }
-            throw new MessageHandlerException("Disk not found " + diskIndex.ToString());
+            throw new MessageHandlerException("Disk not found " + diskIndex.ToString(CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -326,7 +327,7 @@ EXIT", diskIndex, label);
         {
             int diskIndex = GetDiskIndexForDiskId(diskId);
 
-            string script = String.Format(@"SELECT Disk {0}
+            string script = String.Format(CultureInfo.InvariantCulture, @"SELECT Disk {0}
 ATTRIBUTE DISK CLEAR READONLY
 SELECT Disk {0}
 ONLINE DISK NOERR
@@ -341,7 +342,7 @@ EXIT", diskIndex, mountPath);
 
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "diskpart.exe";
-            info.Arguments = String.Format("/s {0}", fileName);
+            info.Arguments = String.Format(CultureInfo.InvariantCulture, "/s {0}", fileName);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
@@ -507,9 +508,9 @@ EXIT", diskIndex, mountPath);
                     ManagementObjectCollection moc = volume.GetInstances();
                     foreach (ManagementObject mo in moc)
                     {
-                        if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(), StringComparison.InvariantCultureIgnoreCase))
+                        if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase))
                         {
-                            return int.Parse(mo["Index"].ToString());
+                            return int.Parse(mo["Index"].ToString(), CultureInfo.InvariantCulture);
                         }
                     }
                 }

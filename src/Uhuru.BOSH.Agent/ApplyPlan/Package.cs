@@ -13,6 +13,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.IO;
     using Uhuru.BOSH.Agent.ApplyPlan.Errors;
     using Uhuru.Utilities;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -83,7 +84,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             {
                 if (spec[requiredKey] == null)
                 {
-                    throw new ArgumentException(String.Format("Invalid spec. {0} is missing", requiredKey));
+                    throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Invalid spec. {0} is missing", requiredKey));
                 }
             }
 

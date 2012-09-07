@@ -13,6 +13,7 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.Utilities;
     using System.IO;
     using Uhuru.BOSH.Agent.Errors;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -65,22 +66,22 @@ namespace Uhuru.BOSH.Agent.Message
         public object SetupDisk()
         {
 
-            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
+            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid), CultureInfo.InvariantCulture);
             
             Logger.Info("Setup disk settings: " + Settings.ToString());
 
             if (!DiskUtil.DiskHasPartition(diskId))
             {
-                Logger.Info("Found blank disk "+ diskId.ToString());
+                Logger.Info("Found blank disk " + diskId.ToString(CultureInfo.InvariantCulture));
                 int returnCode = DiskUtil.CreatePrimaryPartition(diskId, "store");
                 if (returnCode != 0)
                 {
-                    throw new MessageHandlerException(String.Format("Unable to create partition. Exit code: {0}", returnCode));
+                    throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Unable to create partition. Exit code: {0}", returnCode));
                 }
             }
             else
             {
-                Logger.Info(String.Format("Disk has partition"));
+                Logger.Info(String.Format(CultureInfo.InvariantCulture, "Disk has partition"));
             }
 
             MountPersistentDisk(diskId);
@@ -113,13 +114,13 @@ namespace Uhuru.BOSH.Agent.Message
                 Directory.CreateDirectory(mountpoint);
             }
 
-            Logger.Info(String.Format("Mount Partition {0} {1}", diskId, mountpoint));
+            Logger.Info(String.Format(CultureInfo.InvariantCulture, "Mount Partition {0} {1}", diskId, mountpoint));
 
             int returnCode = DiskUtil.MountPartition(diskId, mountpoint);
 
             if (returnCode != 0)
             {
-                throw new MessageHandlerException(String.Format("Failed mount disk {0} on {1}. Exit code: {2}", diskId, mountpoint, returnCode));
+                throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed mount disk {0} on {1}. Exit code: {2}", diskId, mountpoint, returnCode));
             }
 
         }

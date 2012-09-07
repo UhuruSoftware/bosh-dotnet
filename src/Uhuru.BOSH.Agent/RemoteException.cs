@@ -107,7 +107,7 @@ namespace Uhuru.BOSH.Agent
             Logger.Info("Storring blob");
             IClient blobStore = BlobstoreClient.Blobstore.CreateClient(bscProvider, bscOptions);
 
-            Logger.Info(string.Format("Uploading blob for {0} to blobstore", message));
+            Logger.Info(string.Format(CultureInfo.InvariantCulture, "Uploading blob for {0} to blobstore", message));
 
             string blobStoreId = null;
             try
@@ -116,8 +116,8 @@ namespace Uhuru.BOSH.Agent
             }
             catch (Exception ex)
             {
-                Logger.Warning(string.Format("unable to upload blob for {0}", message));
-                throw new BlobstoreException(string.Format("error: unable to upload blob to blobstore."),ex);
+                Logger.Warning(string.Format(CultureInfo.InvariantCulture, "unable to upload blob for {0}", message));
+                throw new BlobstoreException(string.Format(CultureInfo.InvariantCulture, "error: unable to upload blob to blobstore."),ex);
             }
 
             return blobStoreId;

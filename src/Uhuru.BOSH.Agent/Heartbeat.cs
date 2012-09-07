@@ -14,6 +14,7 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Errors;
     using Uhuru.BOSH.Agent.Objects;
     using Newtonsoft.Json;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -133,8 +134,8 @@ namespace Uhuru.BOSH.Agent
             heartBeatMessage.Vitals = systemVitals;
             heartBeatMessage.NtpMsg = new HeartbeatMessage.NtpMessage();
             Ntp ntp = Ntp.GetNtpOffset();
-            heartBeatMessage.NtpMsg.Offset = ntp.Offset.ToString();
-            heartBeatMessage.NtpMsg.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss");
+            heartBeatMessage.NtpMsg.Offset = ntp.Offset.ToString(CultureInfo.InvariantCulture);
+            heartBeatMessage.NtpMsg.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss", CultureInfo.InvariantCulture);
 
             string result = JsonConvert.SerializeObject(heartBeatMessage);
             

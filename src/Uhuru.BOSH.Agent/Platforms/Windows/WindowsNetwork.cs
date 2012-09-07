@@ -6,6 +6,7 @@ using System.Management;
 using System.Collections.ObjectModel;
 using System.Net.NetworkInformation;
 using Uhuru.Utilities;
+using System.Globalization;
 
 namespace Uhuru.BOSH.Agent.Platforms.Windows
 {
@@ -65,7 +66,7 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
                     macAddresses.Add(objMO["MACAddress"].ToString().ToLower());
                 }
             }
-           Logger.Info(string.Format("Found {0} MAC addresses ", macAddresses.Count.ToString()));
+            Logger.Info(string.Format(CultureInfo.InvariantCulture, "Found {0} MAC addresses ", macAddresses.Count.ToString(CultureInfo.InvariantCulture)));
            return macAddresses;
         }
 
@@ -81,7 +82,7 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
                 {
                     if (objMO["MACAddress"].ToString().ToLower().Equals(macAddress.ToLower()))
                     {
-                        Logger.Info(string.Format("Configuring new ip {0} with subnet mask {1} on mac {2}", ipAddress, subnetMask, macAddress));
+                        Logger.Info(string.Format(CultureInfo.InvariantCulture, "Configuring new ip {0} with subnet mask {1} on mac {2}", ipAddress, subnetMask, macAddress));
 
                         try
                         {
@@ -120,7 +121,7 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
                 {
                     if (objMO["MACAddress"].ToString().ToLower().Equals(macAddress.ToLower()))
                     {
-                        Logger.Info(string.Format("Setting gateway {0} on mac {1}", gateway, macAddress));
+                        Logger.Info(string.Format(CultureInfo.InvariantCulture, "Setting gateway {0} on mac {1}", gateway, macAddress));
                         try
                         {
                             ManagementBaseObject setGateway;
@@ -159,7 +160,7 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
                 {
                     if (objMO["MACAddress"].ToString().ToLower().Equals(macAddress.ToLower()))
                     {
-                        Logger.Info(string.Format("Setting DNS {0} for mac {1}", DNS, macAddress));
+                        Logger.Info(string.Format(CultureInfo.InvariantCulture, "Setting DNS {0} for mac {1}", DNS, macAddress));
                         try
                         {
                             ManagementBaseObject newDNS =

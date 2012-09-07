@@ -17,6 +17,7 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Providers;
     using Uhuru.BOSH.Agent.Message;
     using Uhuru.BOSH.Agent.Errors;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -137,7 +138,7 @@ namespace Uhuru.BOSH.Agent
 
         private void SetupDiskData()
         {   
-            int dataDiskId = int.Parse(Config.Platform.GetDataDiskDeviceName());
+            int dataDiskId = int.Parse(Config.Platform.GetDataDiskDeviceName(), CultureInfo.InvariantCulture);
 
             Logger.Info("Creating partition on drive " + dataDiskId);
 
@@ -453,11 +454,11 @@ namespace Uhuru.BOSH.Agent
                 }
             }
             string sysDirectory = Path.Combine(BaseDir, "sys");
-            Process p = Process.Start("cmd.exe", String.Format("/c mklink /D {0} {1}", sysDirectory, dataSysDirectory));
+            Process p = Process.Start("cmd.exe", String.Format(CultureInfo.InvariantCulture, "/c mklink /D {0} {1}", sysDirectory, dataSysDirectory));
             p.WaitForExit();
             if (p.ExitCode != 0)
             {
-                Logger.Error(String.Format("Failed creating symbolic link between {0} and {1}", sysDirectory, dataSysDirectory));
+                Logger.Error(String.Format(CultureInfo.InvariantCulture, "Failed creating symbolic link between {0} and {1}", sysDirectory, dataSysDirectory));
             }
         }
 
@@ -535,7 +536,7 @@ namespace Uhuru.BOSH.Agent
                     string storeDiskId = Config.Settings["disks"]["persistent"][0].Value;
                     if (!string.IsNullOrEmpty(storeDiskId))
                     {
-                        Config.Platform.MountPersistentDisk(int.Parse(storeDiskId));
+                        Config.Platform.MountPersistentDisk(int.Parse(storeDiskId, CultureInfo.InvariantCulture));
                     }
                 }
             }

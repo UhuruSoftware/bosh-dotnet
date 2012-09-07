@@ -190,7 +190,7 @@ namespace Uhuru.BOSH.Agent
                             }
                             else
                             {
-                                Logger.Debug(string.Format("SMTP: {0}", this.SmtpPassword));
+                                Logger.Debug(string.Format(CultureInfo.InvariantCulture, "SMTP: {0}", this.SmtpPassword));
                                 //this.Processor = AlertProcessor.Start("127.0.0.1", this.SmtpPort, this.SmtpUser, this.SmtpPassword);
                             }
                         }
@@ -205,7 +205,7 @@ namespace Uhuru.BOSH.Agent
                         {
                             this.Retry();
                         }
-                        Logger.Fatal(string.Format("Unable to reconnect to NATS after {0} retries, exiting...", MAX_NATS_RETRIES));
+                        Logger.Fatal(string.Format(CultureInfo.InvariantCulture, "Unable to reconnect to NATS after {0} retries, exiting...", MAX_NATS_RETRIES));
                     }
                 });
         }
@@ -268,7 +268,7 @@ namespace Uhuru.BOSH.Agent
             if (interval > 0)
             {
                 SshdMonitor.Enable(interval, Config.SshdStartDelay);
-                Logger.Info(string.Format("sshd monitor is enabled, interval of {0} and start delay of {0} seconds", interval, Config.SshdStartDelay));
+                Logger.Info(string.Format(CultureInfo.InvariantCulture, "sshd monitor is enabled, interval of {0} and start delay of {0} seconds", interval, Config.SshdStartDelay));
             }
             else
             {
@@ -331,7 +331,7 @@ namespace Uhuru.BOSH.Agent
                 }
                 else
                 {
-                    RemoteException re = new RemoteException(string.Format("Unknown message {0}", json));
+                    RemoteException re = new RemoteException(string.Format(CultureInfo.InvariantCulture, "Unknown message {0}", json));
                     // todo: vlad: fix the hash here
                     this.Publish(replyTo, re.ToHash().ToString());
                 }

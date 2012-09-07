@@ -12,6 +12,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Text;
     using Uhuru.BOSH.Agent.Errors;
     using Uhuru.Utilities;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -31,7 +32,7 @@ namespace Uhuru.BOSH.Agent.Message
             }
             catch (Exception e)
             {
-                throw new MessageHandlerException(String.Format("Cannot stop job: {0}", e.ToString()));
+                throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Cannot stop job: {0}", e.ToString()));
             }
         }
 

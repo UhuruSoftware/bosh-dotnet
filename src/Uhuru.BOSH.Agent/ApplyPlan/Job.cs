@@ -16,6 +16,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 using Uhuru.BOSH.Agent.Objects;
     using Newtonsoft.Json.Linq;
     using Uhuru.BOSH.Agent.Ruby;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -94,7 +95,7 @@ using Uhuru.BOSH.Agent.Objects;
             {
                 if (spec[requiredKey] == null)
                 {
-                    throw new ArgumentException(String.Format("Invalid spec. {0} is missing", requiredKey));
+                    throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Invalid spec. {0} is missing", requiredKey));
                 }
             }
             this.jobProperties = jobProperties;

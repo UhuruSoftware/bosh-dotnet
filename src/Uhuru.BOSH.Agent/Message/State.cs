@@ -13,6 +13,7 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.BOSH.Agent.Objects;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -30,7 +31,7 @@ namespace Uhuru.BOSH.Agent.Message
             try
             {
                 Agent.State response = Config.State;
-                Logger.Info(String.Format("Agent state: {0}", response.ToString()));
+                Logger.Info(String.Format(CultureInfo.InvariantCulture, "Agent state: {0}", response.ToString()));
 
                 if (Settings != null)
                 {
@@ -42,8 +43,8 @@ namespace Uhuru.BOSH.Agent.Message
                 response.SetValue("bosh_protocol", "1"); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
                 HeartbeatMessage.NtpMessage ntpMessage = new HeartbeatMessage.NtpMessage();
 
-                ntpMessage.Offset = Ntp.GetNtpOffset().Offset.ToString();
-                ntpMessage.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss");
+                ntpMessage.Offset = Ntp.GetNtpOffset().Offset.ToString(CultureInfo.InvariantCulture);
+                ntpMessage.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss", CultureInfo.InvariantCulture);
 
                 response.SetValue("ntp", JToken.FromObject(ntpMessage));
 

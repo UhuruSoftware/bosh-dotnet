@@ -17,6 +17,7 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     using Uhuru.BOSH.Agent.Errors;
     using System.Diagnostics;
     using System.Threading;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -102,10 +103,6 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////    raise Bosh::Agent::LoadSettingsError, 'No bosh cdrom env'
     ////  end
     ////end
-        private void CheckCDRom()
-        {
-
-        }
 
     ////def create_cdrom_settings_mount_point
     ////  FileUtils.mkdir_p(@cdrom_settings_mount_point)
@@ -126,11 +123,12 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////    "Failed to mount settings on #{@cdrom_settings_mount_point}: #{output}" unless $?.exitstatus == 0
     ////end
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands", Justification = "Suitable fur the current context.")]
         private void MountCDROM(string volumeName)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "mountvol.exe";
-            info.Arguments = String.Format("{0} {1}", CdromSettingsMountPoint, volumeName);
+            info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} {1}", CdromSettingsMountPoint, volumeName);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
@@ -182,7 +180,7 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
         {
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "mountvol.exe";
-            info.Arguments = String.Format("{0} /D", CdromSettingsMountPoint);
+            info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} /D", CdromSettingsMountPoint);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
@@ -221,9 +219,6 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////  `eject /dev/cdrom`
     ////end
 
-        private void EjectCDROM()
-        {
-        }
 
         private void LoadCDRomSettings()
         {

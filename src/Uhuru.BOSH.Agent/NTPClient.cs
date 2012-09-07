@@ -9,6 +9,7 @@ namespace Uhuru.BOSH.Agent
     using System.Net;
     using System.Net.Sockets;
     using System.Runtime.InteropServices;
+    using System.Globalization;
 
     // Leap indicator field values
     public enum _LeapIndicator
@@ -286,10 +287,10 @@ namespace Uhuru.BOSH.Agent
                         switch (VersionNumber)
                         {
                             case 3:	// Version 3, Reference ID is an IPv4 address
-                                string Address = NTPData[offReferenceID + 0].ToString() + "." +
-                                                 NTPData[offReferenceID + 1].ToString() + "." +
-                                                 NTPData[offReferenceID + 2].ToString() + "." +
-                                                 NTPData[offReferenceID + 3].ToString();
+                                string Address = NTPData[offReferenceID + 0].ToString(CultureInfo.InvariantCulture) + "." +
+                                                 NTPData[offReferenceID + 1].ToString(CultureInfo.InvariantCulture) + "." +
+                                                 NTPData[offReferenceID + 2].ToString(CultureInfo.InvariantCulture) + "." +
+                                                 NTPData[offReferenceID + 3].ToString(CultureInfo.InvariantCulture);
                                 try
                                 {
                                     IPHostEntry Host = Dns.GetHostByAddress(Address);
@@ -528,7 +529,7 @@ namespace Uhuru.BOSH.Agent
                     str += "Alarm Condition (clock not synchronized)";
                     break;
             }
-            str += "\r\nVersion number: " + VersionNumber.ToString() + "\r\n";
+            str += "\r\nVersion number: " + VersionNumber.ToString(CultureInfo.InvariantCulture) + "\r\n";
             str += "Mode: ";
             switch (Mode)
             {
@@ -565,14 +566,14 @@ namespace Uhuru.BOSH.Agent
                     str += "Secondary Reference";
                     break;
             }
-            str += "\r\nLocal time: " + TransmitTimestamp.ToString();
-            str += "\r\nPrecision: " + Precision.ToString() + " ms";
-            str += "\r\nPoll Interval: " + PollInterval.ToString() + " s";
-            str += "\r\nReference ID: " + ReferenceID.ToString();
-            str += "\r\nRoot Delay: " + RootDelay.ToString() + " ms";
-            str += "\r\nRoot Dispersion: " + RootDispersion.ToString() + " ms";
-            str += "\r\nRound Trip Delay: " + RoundTripDelay.ToString() + " ms";
-            str += "\r\nLocal Clock Offset: " + LocalClockOffset.ToString() + " ms";
+            str += "\r\nLocal time: " + TransmitTimestamp.ToString(CultureInfo.InvariantCulture);
+            str += "\r\nPrecision: " + Precision.ToString(CultureInfo.InvariantCulture) + " ms";
+            str += "\r\nPoll Interval: " + PollInterval.ToString(CultureInfo.InvariantCulture) + " s";
+            str += "\r\nReference ID: " + ReferenceID.ToString(CultureInfo.InvariantCulture);
+            str += "\r\nRoot Delay: " + RootDelay.ToString(CultureInfo.InvariantCulture) + " ms";
+            str += "\r\nRoot Dispersion: " + RootDispersion.ToString(CultureInfo.InvariantCulture) + " ms";
+            str += "\r\nRound Trip Delay: " + RoundTripDelay.ToString(CultureInfo.InvariantCulture) + " ms";
+            str += "\r\nLocal Clock Offset: " + LocalClockOffset.ToString(CultureInfo.InvariantCulture) + " ms";
             str += "\r\n";
 
             return str;

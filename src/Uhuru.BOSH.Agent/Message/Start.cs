@@ -11,6 +11,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Linq;
     using System.Text;
     using Uhuru.BOSH.Agent.Errors;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -29,7 +30,7 @@ namespace Uhuru.BOSH.Agent.Message
             }
             catch (Exception e)
             {
-                throw new MessageHandlerException(String.Format("Cannot start job: {0}", e.ToString()));
+                throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Cannot start job: {0}", e.ToString()));
             }
         }
 

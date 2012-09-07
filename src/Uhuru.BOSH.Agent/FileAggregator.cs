@@ -11,6 +11,7 @@ namespace Uhuru.BOSH.Agent
     using System.Linq;
     using System.Text;
 using System.IO;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -75,7 +76,7 @@ using System.IO;
 
             if (!Directory.Exists(this.Matcher.BaseDir))
             {
-                throw new InvalidOperationException(string.Format("Base directory {0} not found", this.Matcher.BaseDir));
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Base directory {0} not found", this.Matcher.BaseDir));
             }
 
             int copied = 0;

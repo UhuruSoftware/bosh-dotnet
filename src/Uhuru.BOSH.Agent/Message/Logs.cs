@@ -16,6 +16,7 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.BOSH.BlobstoreClient.Clients;
     using Uhuru.Utilities;
     using System.IO;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -102,7 +103,7 @@ namespace Uhuru.BOSH.Agent.Message
             }
             catch (Exception e)
             {
-                ErrorHandler(String.Format("unable to upload logs to blobstore: {0}", e.Message));
+                ErrorHandler(String.Format(CultureInfo.InvariantCulture, "unable to upload logs to blobstore: {0}", e.Message));
             }
             return blobstoreId;
         }
@@ -135,11 +136,11 @@ namespace Uhuru.BOSH.Agent.Message
 
             if (matcher == null)
             {
-                ErrorHandler(String.Format("matcher for {0} logs not found", logType));
+                ErrorHandler(String.Format(CultureInfo.InvariantCulture, "matcher for {0} logs not found", logType));
             }
             if (aggregator == null)
             {
-                ErrorHandler(String.Format("aggregator for {0} logs not found", logType));
+                ErrorHandler(String.Format(CultureInfo.InvariantCulture, "aggregator for {0} logs not found", logType));
             }
 
             if (filters != null && filters.Count > 0)

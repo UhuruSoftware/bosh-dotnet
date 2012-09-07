@@ -16,6 +16,7 @@ using System.Threading;
     using System.Xml.Serialization;
     using Uhuru.Utilities;
     using System.Diagnostics;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -329,9 +330,9 @@ using System.Threading;
                      {
                          string script = string.Empty;
                          if (start)
-                            script = string.Format("/c {0}", jobService.PreStart);
+                            script = string.Format(CultureInfo.InvariantCulture, "/c {0}", jobService.PreStart);
                          else
-                             script = string.Format("/c {0}", jobService.PreStop);
+                             script = string.Format(CultureInfo.InvariantCulture, "/c {0}", jobService.PreStop);
 
                          Logger.Info("Running script :" + script);
                          Process p = Process.Start("cmd.exe", script);

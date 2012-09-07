@@ -14,6 +14,7 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.Utilities;
     using Newtonsoft.Json;
     using Uhuru.BOSH.Agent.Errors;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -60,19 +61,19 @@ namespace Uhuru.BOSH.Agent.Message
             Logger.Info("Processing unmount disk :" + args.ToString());
             string cid = args[0].Value.ToString();
 
-            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid));
+            int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid), CultureInfo.InvariantCulture);
             string mountEntry = DiskUtil.MountEntry(diskId);
             if (mountEntry != null)
             {
                 DiskUtil.UnmountGuard(mountEntry);
                 UnmountMessage unmountMessage = new UnmountMessage();
-                unmountMessage.Message = string.Format("Unmounted {0} on {1}", mountEntry, diskId);
+                unmountMessage.Message = string.Format(CultureInfo.InvariantCulture, "Unmounted {0} on {1}", mountEntry, diskId);
                 return unmountMessage;
             }
             else
             {
                 UnmountMessage unmountMessage = new UnmountMessage();
-                unmountMessage.Message = string.Format("Unknown mount for partition {0}", diskId.ToString());
+                unmountMessage.Message = string.Format(CultureInfo.InvariantCulture, "Unknown mount for partition {0}", diskId.ToString(CultureInfo.InvariantCulture));
                 return unmountMessage;
             }
         }
