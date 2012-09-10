@@ -43,7 +43,8 @@ namespace Uhuru.BOSH.Agent.Message
 
         }
 
-        private object SetupSsh(dynamic parm)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        private static object SetupSsh(dynamic parm)
         {
             
             string userName = parm["user"].Value;
@@ -52,7 +53,6 @@ namespace Uhuru.BOSH.Agent.Message
 
             SshResult sshResult = new SshResult();
             sshResult.Command = "setup";
-
             try
             {
                 Uhuru.Utilities.WindowsVCAPUsers.CreateUser(userName, password);
@@ -70,18 +70,23 @@ namespace Uhuru.BOSH.Agent.Message
             return sshResult;
         }
 
-        private object CleanupSsh(dynamic parm)
+        /// <summary>
+        /// Clean the SSH.
+        /// </summary>
+        /// <param name="parm">User parameters.</param>
+        /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        private static object CleanupSsh(dynamic parm)
         {
             string userRegex = parm["user_regex"].Value;
             string userName = userRegex.Remove(0, 1);
             userName = userName.Remove(userName.Length - 1, 1);
             SshResult sshResult = new SshResult();
             sshResult.Command = "cleanup";
-            Logger.Info("Cealnning up SSH");
+            Logger.Info("Cleaning up SSH");
 
             try
             {
-                
                 WindowsVCAPUsers.DeleteUser(userName);
                 sshResult.Status = "success";
                 Logger.Info("Deleted user for SSH");

@@ -15,25 +15,21 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.Utilities;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// List Disk message.
     /// </summary>
-    public class ListDisk : Base, IMessage
+    public class ListDisk : IMessage
     {
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
             List<string> diskInfo = new List<string>();
-            Logger.Info("Processing list_disk");
+            Logger.Info("Processing list disk");
             dynamic settings = Config.Settings;
             dynamic cids;
-
-            // TODO: check for hash
-
-            ////  # TODO abstraction for settings
-            ////  if settings["disks"].kind_of?(Hash) && settings["disks"]["persistent"].kind_of?(Hash)
-            ////    cids = settings["disks"]["persistent"]
-            ////  else
-            ////    cids = {}
-            ////  end
 
             cids = settings["disks"]["persistent"] ?? new string[] {};
 
@@ -56,6 +52,12 @@ namespace Uhuru.BOSH.Agent.Message
             return obj;
         }
 
+        /// <summary>
+        /// Determines whether the message [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
             return false;

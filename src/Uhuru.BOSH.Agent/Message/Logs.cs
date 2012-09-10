@@ -10,7 +10,6 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-//using YamlDotNet.RepresentationModel;
     using System.Collections;
     using Uhuru.BOSH.BlobstoreClient;
     using Uhuru.BOSH.BlobstoreClient.Clients;
@@ -19,36 +18,72 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Globalization;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Grab Logs message
     /// </summary>
-    public class FetchLogs : Base, IMessage
+    public class FetchLogs :  IMessage
     {
-        public static bool longRunning { get { return true; } }
-        public FileMatcher matcher { get; set; }
-        public FileAggregator aggregator { get; set; }
+
+        private FileMatcher matcher;
+        private FileAggregator aggregator;
+
+        /// <summary>
+        /// Gets or sets the file matcher.
+        /// </summary>
+        /// <value>
+        /// The file matcher.
+        /// </value>
+        public FileMatcher Matcher {
+            get
+            {
+                return matcher;
+            }
+            set
+            {
+                matcher = value;
+            } 
+        }
+
+        /// <summary>
+        /// Gets or sets the file aggregator.
+        /// </summary>
+        /// <value>
+        /// The file aggregator.
+        /// </value>
+        public FileAggregator Aggregator
+        {
+            get
+            {
+                return aggregator;
+            }
+            set
+            {
+                aggregator = value;
+            }
+        }
 
         string logType;
         ICollection filters;
-        object state;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FetchLogs"/> class.
+        /// </summary>
         public FetchLogs()
         {
-         
         }
 
         private FileMatcher defaultMatcher
         {
             get
             {
-                switch (logType.ToLower())
+                switch (logType.ToUpperInvariant())
                 {
-                    case "job":
+                    case "JOB":
                         {
-                            return new JobLogMatcher(BaseDir);
+                            return new JobLogMatcher(BaseMessage.BaseDir);
                         }
-                    case "agent":
+                    case "AGENT":
                         {
-                            return new AgentLogMatcher(BaseDir);
+                            return new AgentLogMatcher(BaseMessage.BaseDir);
                         }
                     default:
                         {
@@ -58,52 +93,34 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-       
-
+        //TODO Jira UH-1175
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         private IEnumerable<string> filterGlobs
         {
             get
             {
                 throw new NotImplementedException();
-                ////custom_job_logs = {}
-
-                ////if @state["job"] && @state["job"]["logs"]
-                ////  logs_spec = @state["job"]["logs"]
-
-                ////  if logs_spec.is_a?(Hash)
-                ////    custom_job_logs = logs_spec
-                ////  else
-                ////    logger.warn("Invalid format for job logs spec: Hash expected, #{logs_spec.class} given")
-                ////    logger.warn("All custom filtering except '--all' thus disabled")
-                ////  end
-                ////end
-
-                ////predefined = { "all" => "**/*" }
-
-                ////predefined.merge(custom_job_logs).inject([]) do |result, (filter_name, glob)|
-                ////  result << glob if @filters.include?(filter_name)
-                ////  result
-                ////end
             }
         }
 
-        private string UploadTarball(string path)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        private static string UploadTarball(string path)
         {
             Logger.Info("Uploading tarball");
             string blobstoreId = null;
             try
             {
-               dynamic bscOptions = Config.BlobstoreOptions;
+                dynamic bscOptions = Config.BlobstoreOptions;
                 string bscProvider = Config.BlobstoreProvider;
 
                 Logger.Info("Uploading tarball to blobstore");
-                IClient blobstore = Blobstore.CreateClient(bscProvider,  bscOptions );
-                
+                IClient blobstore = Blobstore.CreateClient(bscProvider, bscOptions);
+
                 blobstoreId = blobstore.Create(new FileInfo(path));
             }
             catch (Exception e)
             {
-                ErrorHandler(String.Format(CultureInfo.InvariantCulture, "unable to upload logs to blobstore: {0}", e.Message));
+                BaseMessage.ErrorHandler(String.Format(CultureInfo.InvariantCulture, "unable to upload logs to blobstore: {0}", e.Message));
             }
             return blobstoreId;
         }
@@ -128,19 +145,18 @@ namespace Uhuru.BOSH.Agent.Message
         {
             Logger.Info(string.Format("Processing {0} ", args.ToString()));
             logType = args[0].ToString();
-            filters = (ICollection)args[1]; // TODO: ??? Set.new(args[1])
-            state = Config.State.ToHash(); //TODO: Bosh::Agent::Config.state.to_hash
+            filters = (ICollection)args[1]; 
             matcher = defaultMatcher;
             aggregator = new FileAggregator();
             aggregator.Matcher = matcher;
 
             if (matcher == null)
             {
-                ErrorHandler(String.Format(CultureInfo.InvariantCulture, "matcher for {0} logs not found", logType));
+                BaseMessage.ErrorHandler(String.Format(CultureInfo.InvariantCulture, "matcher for {0} logs not found", logType));
             }
             if (aggregator == null)
             {
-                ErrorHandler(String.Format(CultureInfo.InvariantCulture, "aggregator for {0} logs not found", logType));
+                BaseMessage.ErrorHandler(String.Format(CultureInfo.InvariantCulture, "aggregator for {0} logs not found", logType));
             }
 
             if (filters != null && filters.Count > 0)

@@ -129,6 +129,7 @@
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Message\BaseMessage.cs" />
     <Compile Include="Message\IMessage.cs" />
     <Compile Include="Message\NativeMethods.cs" />
     <Compile Include="Message\TestMessage.cs" />
@@ -192,7 +193,6 @@
     <Compile Include="Util.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="Message\Apply.cs" />
-    <Compile Include="Message\Base.cs" />
     <Compile Include="Message\CompilePackage.cs" />
     <Compile Include="Message\DiskUtil.cs" />
     <Compile Include="Message\ListDisk.cs" />

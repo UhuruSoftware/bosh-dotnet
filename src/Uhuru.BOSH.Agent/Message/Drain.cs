@@ -21,26 +21,44 @@ using Uhuru.NatsClient;
     public class Drain :IMessage
 
     {
+        /// <summary>
+        /// Determines whether [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
             return true;
         }
 
-        string baseDir;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Drain"/> class.
+        /// </summary>
+        public Drain()
+        {
+            this.monit = Monit.GetInstance();
+        }
+        
         Reactor nats;
         string agentId;
-        Agent.State oldSpec;
-        dynamic args;
+        //TODO: Jira UH-1202
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
+        Agent.State oldSpec;        
         string drainType;
         dynamic spec;
+        Monit monit = null;
 
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
-            this.baseDir = Config.BaseDir;
             this.nats = Config.Nats;
             this.agentId = Config.AgentId;
             this.oldSpec = Config.State;
-            this.args = args;
             drainType = args[0].Value;
             if (args.Count > 1)
             {
@@ -72,28 +90,13 @@ using Uhuru.NatsClient;
 
         private object DrainForShutdown()
         {
-            //bool delivered = false;
-            //ThreadPool.QueueUserWorkItem((data) =>
-            //    {
-                    nats.Publish("hm.agent.shutdown." + agentId);
-              //      delivered = true;
-            //    });
-            //TODO for drainscript
-            //if (oldSpec.ToHash().ContainsKey("job") && drain
-            //while (!delivered)
-            //{
-            //    Thread.Sleep(1000);
-            //}
-            return RunDrainScript();
-            //Monit.GetInstance().StopServices();
-            
-            
-           // return "0";
+            nats.Publish("hm.agent.shutdown." + agentId);
+            return this.RunDrainScript();
         }
 
         private object RunDrainScript()
         {
-            object result = Monit.GetInstance().RunPreScripts(false);
+            object result =this.monit.RunPreScripts(false);
             
             return result;
             //return "0";
@@ -116,6 +119,8 @@ using Uhuru.NatsClient;
             
         }
 
+        //TODO : Jira 12000
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         private string DrainCheckStatus()
         {
             throw new NotImplementedException();

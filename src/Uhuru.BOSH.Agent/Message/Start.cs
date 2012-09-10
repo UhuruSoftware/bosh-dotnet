@@ -14,18 +14,21 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Globalization;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Start Message
     /// </summary>
     public class Start : IMessage
     {
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
             try
             {
-                //if (Config.Configure)
-                //{  
-                    Monit.GetInstance().StartServices();
-                //}
+                Monit.GetInstance().StartServices();
+
                 return "started";
             }
             catch (Exception e)
@@ -34,6 +37,12 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
+        /// <summary>
+        /// Determines whether the message [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
             return false;

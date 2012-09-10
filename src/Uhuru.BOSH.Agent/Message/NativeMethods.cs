@@ -15,7 +15,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class NativeMethods
+    public static class NativeMethods
     {
         internal const int INVALID_HANDLE_VALUE = -1;
         internal const int GENERIC_READ = unchecked((int)0x80000000);
@@ -32,13 +32,15 @@ namespace Uhuru.BOSH.Agent.Message
             internal long ExtentLength;
         }
 
-        [DllImport("Kernel32.dll", SetLastError = true)]
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr CreateFile(string lpFileName, int dwDesiredAccess, int dwShareMode, IntPtr lpSecurityAttributes, int dwCreationDisposition, int dwFlagsAndAttributes, IntPtr hTemplateFile);
 
         [DllImport("Kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeviceIoControl(IntPtr hDevice, int dwIoControlCode, IntPtr lpInBuffer, int nInBufferSize, IntPtr lpOutBuffer, int nOutBufferSize, out int lpBytesReturned, IntPtr lpOverlapped);
 
         [DllImport("Kernel32.dll", SetLastError = true)]
+        [return : MarshalAs(UnmanagedType.Bool)]
         internal static extern bool CloseHandle(IntPtr hObject);
 
     }

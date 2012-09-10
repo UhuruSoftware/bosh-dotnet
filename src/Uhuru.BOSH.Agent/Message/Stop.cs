@@ -15,11 +15,16 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Globalization;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Stop Message
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Stop", Justification = "Keeping the name so it's the same as VMWare's")]
     public class Stop: IMessage
     {
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
             try
@@ -36,6 +41,12 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
+        /// <summary>
+        /// Determines whether the message [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
             return true;

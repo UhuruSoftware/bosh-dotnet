@@ -20,7 +20,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class MigrateDisk : Base, IMessage
+    public class MigrateDisk : IMessage
     {
         string oldCid;
         string newCid;
@@ -41,42 +41,46 @@ namespace Uhuru.BOSH.Agent.Message
             Logger.Info(String.Format("MigrateDisk:{0}", args));
             oldCid = args[0].ToString();
             newCid = args[1].ToString();
-            DiskUtil.UnmountGuard(StorePath);
+            DiskUtil.UnmountGuard(BaseMessage.StorePath);
             MountStoreReadOnly(oldCid);
 
-            if (CheckMountpoints())
+            if (CheckMountPoints())
             {
                 Logger.Info("Copy data from old to new store disk");
 
-                char[] trimChars = { '\\' };
-
                 ProcessStartInfo info = new ProcessStartInfo();
                 info.FileName = "robocopy";
-                info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} {1} /MIR /R:1 /W:1 /COPYALL", StorePath, StoreMigrationTarget);
+                info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} {1} /MIR /R:1 /W:1 /COPYALL", BaseMessage.StorePath, BaseMessage.StoreMigrationTarget);
                 info.RedirectStandardOutput = true;
                 info.UseShellExecute = false;
 
                 Process p = new Process();
-                p.StartInfo = info;
-                p.Start();
-                p.WaitForExit();
-                Logger.Debug(p.StandardOutput.ReadToEnd());
-
-                if (p.ExitCode != 0)
+                try
                 {
-                    throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to copy data from old to new store disk"));
+                    p.StartInfo = info;
+                    p.Start();
+                    p.WaitForExit();
+                    Logger.Debug(p.StandardOutput.ReadToEnd());
+                    if (p.ExitCode != 0)
+                    {
+                        throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to copy data from old to new store disk"));
+                    }
+                }
+                finally
+                {
+                    p.Dispose();
                 }
             }
 
-            DiskUtil.UnmountGuard(StorePath);
-            DiskUtil.UnmountGuard(StoreMigrationTarget);
+            DiskUtil.UnmountGuard(BaseMessage.StorePath);
+            DiskUtil.UnmountGuard(BaseMessage.StoreMigrationTarget);
 
             MountStore(newCid);
         }
 
-        public bool CheckMountpoints()
+        public static bool CheckMountPoints()
         {
-            if (DiskUtil.IsMountPoint(StorePath) && DiskUtil.IsMountPoint(StoreMigrationTarget))
+            if (DiskUtil.IsMountPoint(BaseMessage.StorePath) && DiskUtil.IsMountPoint(BaseMessage.StoreMigrationTarget))
             {
                 return true;
             }
@@ -86,26 +90,31 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public void MountStore(string cid, string options = "")
+
+        /// <summary>
+        /// Mounts the store.
+        /// </summary>
+        /// <param name="cid">The cid.</param>
+        public static void MountStore(string cid)
         {
             int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid), CultureInfo.InvariantCulture);
 
-            Logger.Info(String.Format(CultureInfo.InvariantCulture, "Mount Partition {0} {1}", diskId, StorePath));
+            Logger.Info(String.Format(CultureInfo.InvariantCulture, "Mount Partition {0} {1}", diskId, BaseMessage.StorePath));
 
-            int returnCode = DiskUtil.MountPartition(diskId, StorePath);
+            int returnCode = DiskUtil.MountPartition(diskId, BaseMessage.StorePath);
 
             if (returnCode != 0)
             {
-                throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed mount disk {0} on {1}. Exit code: {2}", diskId, StorePath, returnCode));
+                throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed mount disk {0} on {1}. Exit code: {2}", diskId, BaseMessage.StorePath, returnCode));
             }
         }
 
-        public void MountStoreReadOnly(string cid)
+        private static void MountStoreReadOnly(string cid)
         {
             int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid), CultureInfo.InvariantCulture);
             int diskIndex = DiskUtil.GetDiskIndexForDiskId(diskId);
 
-            Logger.Info("Mounting {0} {1}", cid, StorePath);
+            Logger.Info("Mounting {0} {1}", cid, BaseMessage.StorePath);
 
             int returnCode = -2;
 
@@ -117,7 +126,7 @@ SELECT Disk {0}
 SELECT PARTITION 1
 REMOVE ALL NOERR
 ASSIGN MOUNT={1}
-EXIT", diskIndex, StorePath);
+EXIT", diskIndex, BaseMessage.StorePath);
 
             string fileName = Path.GetTempFileName();
             File.WriteAllText(fileName, script);
@@ -132,34 +141,41 @@ EXIT", diskIndex, StorePath);
             while (retryCount > 0)
             {
                 Process p = new Process();
-                p.StartInfo = info;
-                p.Start();
-                p.WaitForExit(60000);
-                if (!p.HasExited)
+                try
                 {
-                    p.Kill();
-                    returnCode = -1;
-                }
-                else
-                {
-                    if (p.ExitCode != 0)
+                    p.StartInfo = info;
+                    p.Start();
+                    p.WaitForExit(60000);
+                    if (!p.HasExited)
                     {
-                        retryCount--;
-                        Thread.Sleep(1000);
-                        continue;
+                        p.Kill();
+                        returnCode = -1;
                     }
                     else
                     {
-                        Logger.Warning(p.StandardOutput.ReadToEnd());
-                        returnCode = p.ExitCode;
-                        break;
+                        if (p.ExitCode != 0)
+                        {
+                            retryCount--;
+                            Thread.Sleep(1000);
+                            continue;
+                        }
+                        else
+                        {
+                            Logger.Warning(p.StandardOutput.ReadToEnd());
+                            returnCode = p.ExitCode;
+                            break;
+                        }
                     }
+                }
+                finally
+                {
+                    p.Dispose();
                 }
             }
 
             if (returnCode != 0)
             {
-                throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed mount disk {0} on {1}. Exit code: {2}", diskIndex, StorePath, returnCode));
+                throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed mount disk {0} on {1}. Exit code: {2}", diskIndex, BaseMessage.StorePath, returnCode));
             }
         }
     }

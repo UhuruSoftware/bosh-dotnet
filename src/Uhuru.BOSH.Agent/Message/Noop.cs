@@ -12,14 +12,31 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Text;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// the Noop message
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Noop", Justification = "FxCop bug")]
-    public class Noop
+    public class Noop : IMessage
     {
-        public static string Process(string[] args)
+
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
+        public object Process(dynamic args)
         {
             return "nope";
         }
+
+        /// <summary>
+        /// Determines whether the message [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsLongRunning()
+        {
+            return false;
+        }
+
     }
 }
