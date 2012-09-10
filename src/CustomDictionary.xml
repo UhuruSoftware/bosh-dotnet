@@ -8,24 +8,31 @@
       <Word>Vmc</Word>
       <Word>Healthz</Word>
       <Word>Varz</Word>
-      <word>Unprovision</word>
-      <word>Vcap</word>
-      <word>Uuid</word>
-      <word>Sha</word>
-      <word>Plugin</word>
-      <word>Plugins</word>
-      <word>Renice</word>
-      <word>Ulimit</word>
-      <word>Monit</word>
-      <word>Ntp</word>
-      <word>Ssh</word>
-      <word>Sshd</word>
-      <word>Util</word>
-      <word>Ubuntu</word>
-      <word>Unmount</word>
-      <word>unmount</word>
-      <word>Noop</word>
+      <Word>Unprovision</Word>
+      <Word>Vcap</Word>
+      <Word>Uuid</Word>
+      <Word>Sha</Word>
+      <Word>Plugin</Word>
+      <Word>Plugins</Word>
+      <Word>Renice</Word>
+      <Word>Ulimit</Word>
+      <Word>Monit</Word>
+      <Word>Ntp</Word>
+      <Word>Ssh</Word>
+      <Word>Sshd</Word>
+      <Word>Util</Word>
+      <Word>Ubuntu</Word>
+      <Word>Unmount</Word>
+      <Word>Blobstore</Word>
+      <Word>unmount</Word>
+      <Word>Noop</Word>
+      <Word>Monitrc</Word>
+      <Word>vSphere</Word>
+      <Word>AddModes</Word>
     </Recognized>
+    <DiscreteExceptions>
+      <Term>vsphere</Term>
+    </DiscreteExceptions>
   </Words>
   <Acronyms>
     <CasingExceptions>
@@ -40,6 +47,7 @@
       <Acronym>FDS</Acronym>
       <Acronym>AWS</Acronym>
       <Acronym>BOSH</Acronym>
+      <Acronym>ERB</Acronym>
     </CasingExceptions>
   </Acronyms>
 </Dictionary>

@@ -17,19 +17,22 @@ using System.IO;
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class Disk
+    public static class Disk
     {
-        public string BaseDir { get { return Config.BaseDir; } }
-        public string StorePath { get { return Path.Combine(BaseDir, "store"); } }
+        public static string BaseDir { get { return Config.BaseDir; } }
+        public static string StorePath { get { return Path.Combine(BaseDir, "store"); } }
 
-        public string GetDataDiskDeviceName()
+        public static string GetDataDiskDeviceName
         {
-            dynamic disks = Config.Settings["disks"];
-            string dataDisk = disks["ephemeral"].Value.ToString();
-            return dataDisk;
+            get
+            {
+                dynamic disks = Config.Settings["disks"];
+                string dataDisk = disks["ephemeral"].Value.ToString();
+                return dataDisk;
+            }
         }
 
-        public void MountPersistentDisk(int diskId)
+        public static void MountPersistentDisk(int diskId)
         {
             if (!Directory.Exists(StorePath))
             {
@@ -50,7 +53,7 @@ using System.IO;
             }
         }
 
-        public string LookupDiskByCid(string cid)
+        public static string LookupDiskByCid(string cid)
         {
             Logger.Info("Looking disk by CID :" + Config.Settings.ToString());
             if (Config.Settings["disks"]["persistent"][cid] != null)

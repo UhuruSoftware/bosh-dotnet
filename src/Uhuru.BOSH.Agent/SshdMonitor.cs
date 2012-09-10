@@ -15,7 +15,7 @@ namespace Uhuru.BOSH.Agent
     /// TODO: Update summary.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Sshd", Justification = "FxCop Bug")]
-    public class SshdMonitor
+    public static class SshdMonitor
     {
       ////def ok_to_stop?
       ////  Config.sshd_monitor_enabled && @start_time && (Time.now - @start_time) > @start_delay

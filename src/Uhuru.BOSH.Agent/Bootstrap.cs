@@ -180,7 +180,7 @@ namespace Uhuru.BOSH.Agent
 
         private void SetupNetwork()
         {
-            Config.Platform.SettupNetworking();
+            Config.Platform.SetupNetworking();
         }
 
         private void UpdateBlobStore()

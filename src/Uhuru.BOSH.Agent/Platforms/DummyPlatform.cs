@@ -11,6 +11,7 @@ namespace Uhuru.BOSH.Agent.Platforms
     using System.Linq;
     using System.Text;
     using Uhuru.BOSH.Agent.Providers;
+    using System.Collections.ObjectModel;
 
     /// <summary>
     /// Dummy platform
@@ -26,7 +27,7 @@ namespace Uhuru.BOSH.Agent.Platforms
         {
         }
 
-        public void UpdatePasswords(List<string> settings)
+        public void UpdatePasswords(Collection<string> settings)
         {
             throw new NotImplementedException();
         }
@@ -41,7 +42,7 @@ namespace Uhuru.BOSH.Agent.Platforms
             return string.Empty;
         }
 
-        public void SettupNetworking()
+        public void SetupNetworking()
         {
             
         }

@@ -296,7 +296,7 @@ using System.Threading;
             foreach (string jobDefFile in Directory.GetFiles(jobDefDirectory, "*.*", SearchOption.AllDirectories))
             {
 
-                if (jobDefFile.Trim().EndsWith("monit"))
+                if (jobDefFile.Trim().EndsWith("monit", StringComparison.OrdinalIgnoreCase))
                 {
                     //MonitSpec.Base.Job currentServiceSpec = null;
                     XmlSerializer serializer = new XmlSerializer(typeof(MonitSpec.Base.Job));

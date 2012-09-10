@@ -104,7 +104,7 @@ namespace Uhuru.BOSH.Agent
         /// Gets the existing ips in the state file.
         /// </summary>
         /// <returns>Collection of ips</returns>
-        public Collection<string> GetIps()
+        public Collection<string> GetIPs()
         {
             Collection<string> ips = new Collection<string>();
 
@@ -179,11 +179,10 @@ namespace Uhuru.BOSH.Agent
         /// Gets the default state.
         /// </summary>
         /// <returns></returns>
-        private dynamic GetDefaultState()
+        private static dynamic GetDefaultState()
         {
             string defaultState = "{ \"deployment\": \"\", \"networks\" : { }, \"resource_pool\" : { } }";
             return JsonConvert.DeserializeObject(defaultState);
-            
         }
    
         private Job GetCurrentJob()
@@ -194,9 +193,9 @@ namespace Uhuru.BOSH.Agent
             Job currentJob = new Job();
             currentJob.Name = data["job"]["name"].Value;
             currentJob.Version = data["job"]["version"].Value;
-            currentJob.Sha1 = data["job"]["sha1"].Value;
+            currentJob.SHA1 = data["job"]["sha1"].Value;
             currentJob.Template = data["job"]["template"].Value;
-            currentJob.Blobstore_id = data["job"]["blobstore_id"].Value;
+            currentJob.BlobstoreId = data["job"]["blobstore_id"].Value;
 
             return currentJob;
         }

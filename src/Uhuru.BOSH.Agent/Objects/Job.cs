@@ -40,7 +40,7 @@ namespace Uhuru.BOSH.Agent.Objects
         /// <value>
         /// The sha1.
         /// </value>
-        public string Sha1
+        public string SHA1
         {
             get;
             set;
@@ -64,7 +64,7 @@ namespace Uhuru.BOSH.Agent.Objects
         /// <value>
         /// The blobstore_id.
         /// </value>
-        public string Blobstore_id
+        public string BlobstoreId
         {
             get;
             set;

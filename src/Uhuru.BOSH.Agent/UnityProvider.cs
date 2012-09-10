@@ -11,10 +11,11 @@ namespace Uhuru.BOSH.Agent
     /// <summary>
     /// The unity provider
     /// </summary>
-    public class UnityProvider
+    public class UnityProvider: IDisposable
     {
         private static volatile UnityProvider instance;
         private static object locker = new object();
+        private bool disposed = false;
         IUnityContainer unityContainer;
 
         private UnityProvider()
@@ -50,6 +51,30 @@ namespace Uhuru.BOSH.Agent
                 }
                 return instance;
             }
+        }
+    
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    unityContainer.Dispose();
+                }
+
+                disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~UnityProvider() // the finalizer
+        {
+            Dispose(false);
         }
     }
 }

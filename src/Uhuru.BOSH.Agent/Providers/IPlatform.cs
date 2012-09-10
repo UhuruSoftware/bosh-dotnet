@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Collections.ObjectModel;
 
 namespace Uhuru.BOSH.Agent.Providers
 {
@@ -14,13 +15,13 @@ namespace Uhuru.BOSH.Agent.Providers
 
         void UpdateLogging();
 
-        void UpdatePasswords(List<string> settings);
+        void UpdatePasswords(Collection<string> settings);
 
         string LookupDiskByCid(string cid);
 
         string GetDataDiskDeviceName();
 
-        void SettupNetworking();
+        void SetupNetworking();
 
     }
 }

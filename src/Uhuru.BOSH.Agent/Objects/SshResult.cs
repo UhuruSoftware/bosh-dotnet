@@ -23,7 +23,7 @@ namespace Uhuru.BOSH.Agent.Objects
         }
 
         [JsonProperty("ip")]
-        public string Ip
+        public string IP
         {
             get;
             set;
