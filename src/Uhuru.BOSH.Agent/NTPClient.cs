@@ -12,7 +12,7 @@ namespace Uhuru.BOSH.Agent
     using System.Globalization;
 
     // Leap indicator field values
-    public enum _LeapIndicator
+    public enum LeapIndicator
     {
         NoWarning,		// 0 - No warning
         LastMinute61,	// 1 - Last minute has 61 seconds
@@ -21,7 +21,7 @@ namespace Uhuru.BOSH.Agent
     }
 
     //Mode field values
-    public enum _Mode
+    public enum Mode
     {
         SymmetricActive,	// 1 - Symmetric active
         SymmetricPassive,	// 2 - Symmetric pasive
@@ -31,13 +31,33 @@ namespace Uhuru.BOSH.Agent
         Unknown				// 0, 6, 7 - Reserved
     }
 
-    // Stratum field values
-    public enum _Stratum
+
+    /// <summary>
+    /// Stratum field values
+    /// </summary>
+    public enum Stratum
     {
-        Unspecified,			// 0 - unspecified or unavailable
-        PrimaryReference,		// 1 - primary reference (e.g. radio-clock)
-        SecondaryReference,		// 2-15 - secondary reference (via NTP or SNTP)
-        Reserved				// 16-255 - reserved
+        /// <summary>
+        /// 0 - unspecified or unavailable
+        /// </summary>
+        Unspecified,
+
+        /// <summary>
+        /// 1 - primary reference (e.g. radio-clock)
+        /// </summary>
+        PrimaryReference,
+
+
+        /// <summary>
+        /// 2-15 - secondary reference (via NTP or SNTP)
+        /// </summary>
+        SecondaryReference,
+
+        /// <summary>
+        /// 16-255 - reserved
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1700:DoNotNameEnumValuesReserved")]
+        Reserved				
     }
 
     /// <summary>
@@ -139,7 +159,7 @@ namespace Uhuru.BOSH.Agent
     /// 
     /// </summary>
 
-    public class NTPClient
+    public class NtpClient
     {
         // NTP Data Structure Length
         private const byte NTPDataLength = 48;
@@ -154,7 +174,7 @@ namespace Uhuru.BOSH.Agent
         private const byte offTransmitTimestamp = 40;
 
         // Leap Indicator
-        public _LeapIndicator LeapIndicator
+        public LeapIndicator LeapIndicator
         {
             get
             {
@@ -162,12 +182,12 @@ namespace Uhuru.BOSH.Agent
                 byte val = (byte)(NTPData[0] >> 6);
                 switch (val)
                 {
-                    case 0: return _LeapIndicator.NoWarning;
-                    case 1: return _LeapIndicator.LastMinute61;
-                    case 2: return _LeapIndicator.LastMinute59;
+                    case 0: return LeapIndicator.NoWarning;
+                    case 1: return LeapIndicator.LastMinute61;
+                    case 2: return LeapIndicator.LastMinute59;
                     case 3: goto default;
                     default:
-                        return _LeapIndicator.Alarm;
+                        return LeapIndicator.Alarm;
                 }
             }
         }
@@ -184,7 +204,7 @@ namespace Uhuru.BOSH.Agent
         }
 
         // Mode
-        public _Mode Mode
+        public Mode Mode
         {
             get
             {
@@ -196,34 +216,34 @@ namespace Uhuru.BOSH.Agent
                     case 6: goto default;
                     case 7: goto default;
                     default:
-                        return _Mode.Unknown;
+                        return Mode.Unknown;
                     case 1:
-                        return _Mode.SymmetricActive;
+                        return Mode.SymmetricActive;
                     case 2:
-                        return _Mode.SymmetricPassive;
+                        return Mode.SymmetricPassive;
                     case 3:
-                        return _Mode.Client;
+                        return Mode.Client;
                     case 4:
-                        return _Mode.Server;
+                        return Mode.Server;
                     case 5:
-                        return _Mode.Broadcast;
+                        return Mode.Broadcast;
                 }
             }
         }
 
         // Stratum
-        public _Stratum Stratum
+        public Stratum Stratum
         {
             get
             {
                 byte val = (byte)NTPData[1];
-                if (val == 0) return _Stratum.Unspecified;
+                if (val == 0) return Stratum.Unspecified;
                 else
-                    if (val == 1) return _Stratum.PrimaryReference;
+                    if (val == 1) return Stratum.PrimaryReference;
                     else
-                        if (val <= 15) return _Stratum.SecondaryReference;
+                        if (val <= 15) return Stratum.SecondaryReference;
                         else
-                            return _Stratum.Reserved;
+                            return Stratum.Reserved;
             }
         }
 
@@ -267,23 +287,25 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        // Reference Identifier
-        public string ReferenceID
+        /// <summary>
+        /// Gets the reference id.
+        /// </summary>
+        public string ReferenceId
         {
             get
             {
                 string val = "";
                 switch (Stratum)
                 {
-                    case _Stratum.Unspecified:
-                        goto case _Stratum.PrimaryReference;
-                    case _Stratum.PrimaryReference:
+                    case Stratum.Unspecified:
+                        goto case Stratum.PrimaryReference;
+                    case Stratum.PrimaryReference:
                         val += (char)NTPData[offReferenceID + 0];
                         val += (char)NTPData[offReferenceID + 1];
                         val += (char)NTPData[offReferenceID + 2];
                         val += (char)NTPData[offReferenceID + 3];
                         break;
-                    case _Stratum.SecondaryReference:
+                    case Stratum.SecondaryReference:
                         switch (VersionNumber)
                         {
                             case 3:	// Version 3, Reference ID is an IPv4 address
@@ -368,10 +390,13 @@ namespace Uhuru.BOSH.Agent
         }
 
         // Reception Timestamp
-        public DateTime ReceptionTimestamp;
+        private DateTime ReceptionTimestamp;
 
-        // Round trip delay (in milliseconds)
-        public int RoundTripDelay
+       
+        /// <summary>
+        /// Gets the round trip delay (in milliseconds)
+        /// </summary>
+        public int RoundtripDelay
         {
             get
             {
@@ -391,7 +416,7 @@ namespace Uhuru.BOSH.Agent
         }
 
         // Compute date, given the number of milliseconds since January 1, 1900
-        private DateTime ComputeDate(ulong milliseconds)
+        private static DateTime ComputeDate(ulong milliseconds)
         {
             TimeSpan span = TimeSpan.FromMilliseconds((double)milliseconds);
             DateTime time = new DateTime(1900, 1, 1);
@@ -455,13 +480,16 @@ namespace Uhuru.BOSH.Agent
             TransmitTimestamp = DateTime.Now;
         }
 
-        public NTPClient(string host)
+        public NtpClient(string host)
         {
             TimeServer = host;
         }
 
-        // Connect to the time server and update system time
-        public void Connect(bool UpdateSystemTime)
+        /// <summary>
+        /// Connect to the time server and update system time
+        /// </summary>
+        /// <param name="updateSystemTime">if set to <c>true</c> [update system time].</param>
+        public void Connect(bool updateSystemTime)
         {
             try
             {
@@ -470,26 +498,29 @@ namespace Uhuru.BOSH.Agent
                 IPEndPoint EPhost = new IPEndPoint(hostadd.AddressList[0], 123);
 
                 //Connect the time server
-                UdpClient TimeSocket = new UdpClient();
-                TimeSocket.Connect(EPhost);
-
-                // Initialize data structure
-                Initialize();
-                TimeSocket.Send(NTPData, NTPData.Length);
-                NTPData = TimeSocket.Receive(ref EPhost);
-                if (!IsResponseValid())
+                using (UdpClient timeSocket = new UdpClient())
                 {
-                    throw new Exception("Invalid response from " + TimeServer);
+                    timeSocket.Connect(EPhost);
+
+                    // Initialize data structure
+                    Initialize();
+                    timeSocket.Send(NTPData, NTPData.Length);
+                    NTPData = timeSocket.Receive(ref EPhost);
+                    if (!IsResponseValid())
+                    {
+                        throw new InvalidOperationException("Invalid response from " + TimeServer);
+                    }
+                    ReceptionTimestamp = DateTime.Now;
+
                 }
-                ReceptionTimestamp = DateTime.Now;
             }
-            catch (SocketException e)
+            catch
             {
-                throw new Exception(e.Message);
+                throw;
             }
 
             // Update system time
-            if (UpdateSystemTime)
+            if (updateSystemTime)
             {
                 SetTime();
             }
@@ -498,7 +529,7 @@ namespace Uhuru.BOSH.Agent
         // Check if the response from server is valid
         public bool IsResponseValid()
         {
-            if (NTPData.Length < NTPDataLength || Mode != _Mode.Server)
+            if (NTPData.Length < NTPDataLength || Mode != Mode.Server)
             {
                 return false;
             }
@@ -516,16 +547,16 @@ namespace Uhuru.BOSH.Agent
             str = "Leap Indicator: ";
             switch (LeapIndicator)
             {
-                case _LeapIndicator.NoWarning:
+                case LeapIndicator.NoWarning:
                     str += "No warning";
                     break;
-                case _LeapIndicator.LastMinute61:
+                case LeapIndicator.LastMinute61:
                     str += "Last minute has 61 seconds";
                     break;
-                case _LeapIndicator.LastMinute59:
+                case LeapIndicator.LastMinute59:
                     str += "Last minute has 59 seconds";
                     break;
-                case _LeapIndicator.Alarm:
+                case LeapIndicator.Alarm:
                     str += "Alarm Condition (clock not synchronized)";
                     break;
             }
@@ -533,74 +564,58 @@ namespace Uhuru.BOSH.Agent
             str += "Mode: ";
             switch (Mode)
             {
-                case _Mode.Unknown:
+                case Mode.Unknown:
                     str += "Unknown";
                     break;
-                case _Mode.SymmetricActive:
+                case Mode.SymmetricActive:
                     str += "Symmetric Active";
                     break;
-                case _Mode.SymmetricPassive:
+                case Mode.SymmetricPassive:
                     str += "Symmetric Pasive";
                     break;
-                case _Mode.Client:
+                case Mode.Client:
                     str += "Client";
                     break;
-                case _Mode.Server:
+                case Mode.Server:
                     str += "Server";
                     break;
-                case _Mode.Broadcast:
+                case Mode.Broadcast:
                     str += "Broadcast";
                     break;
             }
             str += "\r\nStratum: ";
             switch (Stratum)
             {
-                case _Stratum.Unspecified:
-                case _Stratum.Reserved:
+                case Stratum.Unspecified:
+                case Stratum.Reserved:
                     str += "Unspecified";
                     break;
-                case _Stratum.PrimaryReference:
+                case Stratum.PrimaryReference:
                     str += "Primary Reference";
                     break;
-                case _Stratum.SecondaryReference:
+                case Stratum.SecondaryReference:
                     str += "Secondary Reference";
                     break;
             }
             str += "\r\nLocal time: " + TransmitTimestamp.ToString(CultureInfo.InvariantCulture);
             str += "\r\nPrecision: " + Precision.ToString(CultureInfo.InvariantCulture) + " ms";
             str += "\r\nPoll Interval: " + PollInterval.ToString(CultureInfo.InvariantCulture) + " s";
-            str += "\r\nReference ID: " + ReferenceID.ToString(CultureInfo.InvariantCulture);
+            str += "\r\nReference ID: " + ReferenceId.ToString(CultureInfo.InvariantCulture);
             str += "\r\nRoot Delay: " + RootDelay.ToString(CultureInfo.InvariantCulture) + " ms";
             str += "\r\nRoot Dispersion: " + RootDispersion.ToString(CultureInfo.InvariantCulture) + " ms";
-            str += "\r\nRound Trip Delay: " + RoundTripDelay.ToString(CultureInfo.InvariantCulture) + " ms";
+            str += "\r\nRound Trip Delay: " + RoundtripDelay.ToString(CultureInfo.InvariantCulture) + " ms";
             str += "\r\nLocal Clock Offset: " + LocalClockOffset.ToString(CultureInfo.InvariantCulture) + " ms";
             str += "\r\n";
 
             return str;
         }
 
-        // SYSTEMTIME structure used by SetSystemTime
-        [StructLayoutAttribute(LayoutKind.Sequential)]
-        private struct SYSTEMTIME
-        {
-            public short year;
-            public short month;
-            public short dayOfWeek;
-            public short day;
-            public short hour;
-            public short minute;
-            public short second;
-            public short milliseconds;
-        }
-
-        [DllImport("kernel32.dll")]
-        static extern bool SetLocalTime(ref SYSTEMTIME time);
-
+       
 
         // Set system time according to transmit timestamp
         private void SetTime()
         {
-            SYSTEMTIME st;
+            Uhuru.BOSH.Agent.NativeMethods.Systemtime st;
 
             DateTime trts = DateTime.Now.AddMilliseconds(LocalClockOffset);
             st.year = (short)trts.Year;
@@ -612,7 +627,7 @@ namespace Uhuru.BOSH.Agent
             st.second = (short)trts.Second;
             st.milliseconds = (short)trts.Millisecond;
 
-            SetLocalTime(ref st);
+            Uhuru.BOSH.Agent.NativeMethods.SetLocalTime(ref st);
         }
 
         // The URL of the time server we're connecting to

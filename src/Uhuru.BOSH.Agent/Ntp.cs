@@ -90,12 +90,12 @@ namespace Uhuru.BOSH.Agent
         /// </summary>
         /// <param name="timeServer">The time server.</param>
         /// <returns></returns>
-        public static Ntp GetNtpOffset(string timeServer)
+        public static Ntp GetNtpOffset(string timeserver)
         {
             Ntp currentNtp = new Ntp();
             try
             {
-                NTPClient ntpClient = new NTPClient(timeServer);
+                NtpClient ntpClient = new NtpClient(timeserver);
                 ntpClient.Connect(false);
                 currentNtp.offset = ntpClient.LocalClockOffset;
                 currentNtp.currentTime = DateTime.Now;

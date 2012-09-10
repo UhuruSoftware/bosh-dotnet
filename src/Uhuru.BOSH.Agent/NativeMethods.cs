@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Uhuru.BOSH.Agent.Message
+namespace Uhuru.BOSH.Agent
 {
     using System;
     using System.Collections.Generic;
@@ -32,6 +32,20 @@ namespace Uhuru.BOSH.Agent.Message
             internal long ExtentLength;
         }
 
+        // SYSTEMTIME structure used by SetSystemTime
+        [StructLayoutAttribute(LayoutKind.Sequential)]
+        internal struct Systemtime
+        {
+            public short year;
+            public short month;
+            public short dayOfWeek;
+            public short day;
+            public short hour;
+            public short minute;
+            public short second;
+            public short milliseconds;
+        }
+
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern IntPtr CreateFile(string lpFileName, int dwDesiredAccess, int dwShareMode, IntPtr lpSecurityAttributes, int dwCreationDisposition, int dwFlagsAndAttributes, IntPtr hTemplateFile);
 
@@ -43,5 +57,8 @@ namespace Uhuru.BOSH.Agent.Message
         [return : MarshalAs(UnmanagedType.Bool)]
         internal static extern bool CloseHandle(IntPtr hObject);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetLocalTime(ref Systemtime time);
     }
 }

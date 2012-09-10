@@ -44,7 +44,7 @@ namespace Uhuru.BOSH.Test.Unit
             string test = GetRubyObject(testState.GetValue("properties"));
             
 
-            List<string> ips = testState.GetIPs().ToList();
+            List<string> ips = testState.GetIPs.ToList();
 
             //Assert
             Assert.AreEqual(1, ips.Count);

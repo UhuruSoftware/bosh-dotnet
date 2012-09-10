@@ -14,7 +14,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// The ping message
     /// </summary>
-    class Ping : IMessage
+    public class Ping : IMessage
     {
         /// <summary>
         /// Processes ping message.

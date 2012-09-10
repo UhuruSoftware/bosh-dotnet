@@ -112,7 +112,7 @@ namespace Uhuru.BOSH.Agent
          private string GetTitle()
          {
              string title = string.Empty;
-             List<string> ips = Config.State.GetIPs().ToList();
+             List<string> ips = Config.State.GetIPs.ToList();
              if (ips.Count > 0)
              {
                  title = alertAttrib.Service + "(";

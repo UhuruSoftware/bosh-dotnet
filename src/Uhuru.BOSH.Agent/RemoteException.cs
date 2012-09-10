@@ -41,7 +41,7 @@ namespace Uhuru.BOSH.Agent
         }
 
         /// <summary>
-        /// Gets the backtrace.
+        /// Gets the back trace.
         /// </summary>
         public string Backtrace
         {
@@ -66,7 +66,7 @@ namespace Uhuru.BOSH.Agent
         /// Initializes a new instance of the <see cref="RemoteException"/> class.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="backtrace">The backtrace.</param>
+        /// <param name="backtrace">The back trace.</param>
         /// <param name="blob">The BLOB.</param>
         public RemoteException(string message, string backtrace, string blob)
         {
@@ -104,7 +104,7 @@ namespace Uhuru.BOSH.Agent
             string[] bscOptions = Config.BlobstoreOptions.ToArray();
             string bscProvider = Config.BlobstoreProvider;
 
-            Logger.Info("Storring blob");
+            Logger.Info("Storing blob");
             IClient blobStore = BlobstoreClient.Blobstore.CreateClient(bscProvider, bscOptions);
 
             Logger.Info(string.Format(CultureInfo.InvariantCulture, "Uploading blob for {0} to blobstore", message));
@@ -131,23 +131,30 @@ namespace Uhuru.BOSH.Agent
         public static RemoteException CreateRemoteException(Exception exception)
         {
             string blob = null;
-            if (exception.GetType() == typeof(MessageHandlerException))
+            if (exception != null)
             {
-                blob = (exception as MessageHandlerException).Blob;
-            }
+                if (exception.GetType() == typeof(MessageHandlerException))
+                {
+                    blob = (exception as MessageHandlerException).Blob;
+                }
 
-            return new RemoteException(exception.Message, exception.StackTrace, blob);
+                return new RemoteException(exception.Message, exception.StackTrace, blob);
+            }
+            else
+            {
+                return null;
+            }
         }
 
 
         internal Dictionary<string, object> ToHash()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(this.message);
         }
 
         internal static RemoteException From(AgentException aex)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(aex.ToString());
         }
     }
 }

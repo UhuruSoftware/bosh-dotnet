@@ -103,17 +103,21 @@ namespace Uhuru.BOSH.Agent
         /// <summary>
         /// Gets the existing ips in the state file.
         /// </summary>
-        /// <returns>Collection of ips</returns>
-        public Collection<string> GetIPs()
+        /// <returns>Collection of IPs</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "IPs")]
+        public Collection<string> GetIPs
         {
-            Collection<string> ips = new Collection<string>();
-
-            foreach (Network network in networks)
+            get
             {
-                ips.Add(network.IP);
-            }
+                Collection<string> ips = new Collection<string>();
 
-            return ips;
+                foreach (Network network in networks)
+                {
+                    ips.Add(network.IP);
+                }
+
+                return ips;
+            }
         }
 
 

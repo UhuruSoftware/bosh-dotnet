@@ -131,13 +131,13 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Message\BaseMessage.cs" />
     <Compile Include="Message\IMessage.cs" />
-    <Compile Include="Message\NativeMethods.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="Message\TestMessage.cs" />
     <Compile Include="MonitPerformance.cs" />
     <Compile Include="MonitSpec\MonitSpec.cs">
       <DependentUpon>MonitSpec.xsd</DependentUpon>
     </Compile>
-    <Compile Include="NTPClient.cs" />
+    <Compile Include="NtpClient.cs" />
     <Compile Include="Objects\CompileResult.cs" />
     <Compile Include="Objects\HandlerResult.cs" />
     <Compile Include="Objects\HeartbeatMessage.cs" />
@@ -190,7 +190,6 @@
     <Compile Include="Template.cs" />
     <Compile Include="UnityProvider.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="Version.cs" />
     <Compile Include="Message\Apply.cs" />
     <Compile Include="Message\CompilePackage.cs" />
     <Compile Include="Message\DiskUtil.cs" />

@@ -10,6 +10,7 @@ namespace Uhuru.BOSH.Agent
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
@@ -67,7 +68,7 @@ namespace Uhuru.BOSH.Agent
       ////end
         internal static void Enable(int interval, int p)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(string.Format(CultureInfo.InvariantCulture, "{0} {1}", interval.ToString(CultureInfo.InvariantCulture), p.ToString(CultureInfo.InvariantCulture)));
         }
     }
 }

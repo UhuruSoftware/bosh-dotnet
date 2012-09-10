@@ -29,6 +29,7 @@
       <Word>Monitrc</Word>
       <Word>vSphere</Word>
       <Word>AddModes</Word>
+      <Word>backtrace</Word>
     </Recognized>
     <DiscreteExceptions>
       <Term>vsphere</Term>
