@@ -6,8 +6,17 @@ using Newtonsoft.Json;
 
 namespace Uhuru.BOSH.Agent.Objects
 {
+    /// <summary>
+    /// SSH result JSON
+    /// </summary>
     public class SshResult
     {
+        /// <summary>
+        /// Gets or sets the command.
+        /// </summary>
+        /// <value>
+        /// The command.
+        /// </value>
         [JsonProperty("command")]
         public string Command
         {
@@ -15,6 +24,12 @@ namespace Uhuru.BOSH.Agent.Objects
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
         [JsonProperty("status")]
         public string Status
         {
@@ -22,6 +37,12 @@ namespace Uhuru.BOSH.Agent.Objects
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the IP.
+        /// </summary>
+        /// <value>
+        /// The IP.
+        /// </value>
         [JsonProperty("ip")]
         public string IP
         {

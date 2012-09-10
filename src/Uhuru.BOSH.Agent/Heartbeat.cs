@@ -132,7 +132,7 @@ namespace Uhuru.BOSH.Agent
             }
             heartBeatMessage.JobState = Monit.GetInstance().GetServiceGourpState();
             heartBeatMessage.Vitals = systemVitals;
-            heartBeatMessage.NtpMsg = new HeartbeatMessage.NtpMessage();
+            heartBeatMessage.NtpMsg = new NtpMessage();
             Ntp ntp = Ntp.GetNtpOffset();
             heartBeatMessage.NtpMsg.Offset = ntp.Offset.ToString(CultureInfo.InvariantCulture);
             heartBeatMessage.NtpMsg.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss", CultureInfo.InvariantCulture);

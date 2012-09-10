@@ -529,7 +529,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                     i++;
                     while (String.IsNullOrEmpty(fileContent[i]))
                     {
-                        jobManifest.Templates.Add(fileContent[i].Split(':')[0].Trim(), fileContent[i].Split(':')[1].Trim());
+                        jobManifest.AddTemplate(fileContent[i].Split(':')[0].Trim(), fileContent[i].Split(':')[1].Trim());
                         i++;
                     }
                 }
@@ -538,7 +538,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                     i++;
                     while (String.IsNullOrEmpty(fileContent[i]) || i == fileContent.Length)
                     {
-                        jobManifest.Packages.Add(fileContent[i].Split('-')[1].Trim());
+                        jobManifest.AddPackage(fileContent[i].Split('-')[1].Trim());
                         i++;
                     }
                 }

@@ -15,9 +15,9 @@ namespace Uhuru.BOSH.Agent.Objects
         /// Gets or sets the ip.
         /// </summary>
         /// <value>
-        /// The ip.
+        /// The iP.
         /// </value>
-        public string Ip { get; set; }
+        public string IP { get; set; }
 
         /// <summary>
         /// Gets or sets the name.

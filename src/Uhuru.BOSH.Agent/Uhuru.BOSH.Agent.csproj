@@ -144,7 +144,6 @@
     <Compile Include="Objects\Job.cs" />
     <Compile Include="Objects\JobManifest.cs" />
     <Compile Include="Objects\SshResult.cs" />
-    <Compile Include="Objects\SystemStatus.cs" />
     <Compile Include="Platforms\WindowsPlatform.cs" />
     <Compile Include="Platforms\Windows\Disk.cs" />
     <Compile Include="Platforms\Windows\WindowsNetwork.cs" />

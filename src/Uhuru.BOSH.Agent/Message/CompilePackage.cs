@@ -102,7 +102,7 @@ namespace Uhuru.BOSH.Agent.Message
                 this.Pack();
                 var uploadResult = this.Upload();
 
-                var result = new CompileResult() { result = uploadResult };
+                var result = new CompileResult() { Result = uploadResult };
                 return result;
             }
             catch (Exception e)
@@ -263,7 +263,7 @@ namespace Uhuru.BOSH.Agent.Message
             this.logger = new FileLogger(this.logFile);
         }
 
-        private CompileResult.UploadResult Upload()
+        private UploadResult Upload()
         {
             this.logger.Info("Uploading compiled package");
             string compiledBlobStoreId = blobStoreClient.Create(new FileInfo(compiledPackage));
@@ -281,7 +281,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             string compileLogId = blobStoreClient.Create(new FileInfo(logFile));
 
-            CompileResult.UploadResult res = new CompileResult.UploadResult()
+            UploadResult res = new UploadResult()
             {
                 BlobstoreId = compiledBlobStoreId,
                 CompileLogId = compileLogId,

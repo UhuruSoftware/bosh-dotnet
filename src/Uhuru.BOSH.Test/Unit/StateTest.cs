@@ -140,7 +140,7 @@ namespace Uhuru.BOSH.Test.Unit
             Network network = testState.Networks.First();
 
             //Assert
-            Assert.AreEqual("127.0.0.1", network.Ip);
+            Assert.AreEqual("127.0.0.1", network.IP);
             Assert.AreEqual("local", network.Name);
 
         }

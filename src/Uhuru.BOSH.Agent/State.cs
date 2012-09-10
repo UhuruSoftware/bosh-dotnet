@@ -110,7 +110,7 @@ namespace Uhuru.BOSH.Agent
 
             foreach (Network network in networks)
             {
-                ips.Add(network.Ip);
+                ips.Add(network.IP);
             }
 
             return ips;
@@ -211,7 +211,7 @@ namespace Uhuru.BOSH.Agent
                 {
                     Network network = new Network();
                     network.Name = net.First.Name;
-                    network.Ip = net.First["ip"].Value;
+                    network.IP = net.First["ip"].Value;
                     currentNetworks.Add(network);
                 }
             }

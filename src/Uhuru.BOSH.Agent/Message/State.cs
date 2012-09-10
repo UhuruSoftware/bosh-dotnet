@@ -46,7 +46,7 @@ namespace Uhuru.BOSH.Agent.Message
 
                 response.SetValue("job_state", GetJobState());
                 response.SetValue("bosh_protocol", "1"); // TODO: response["bosh_protocol"] = Bosh::Agent::BOSH_PROTOCOL
-                HeartbeatMessage.NtpMessage ntpMessage = new HeartbeatMessage.NtpMessage();
+                NtpMessage ntpMessage = new NtpMessage();
 
                 ntpMessage.Offset = Ntp.GetNtpOffset().Offset.ToString(CultureInfo.InvariantCulture);
                 ntpMessage.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss", CultureInfo.InvariantCulture);
