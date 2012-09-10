@@ -13,7 +13,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.IO;
     using Uhuru.BOSH.Agent.ApplyPlan.Errors;
     using Uhuru.Utilities;
-using Uhuru.BOSH.Agent.Objects;
+    using Uhuru.BOSH.Agent.Objects;
     using Newtonsoft.Json.Linq;
     using Uhuru.BOSH.Agent.Ruby;
     using System.Globalization;
@@ -83,15 +83,18 @@ using Uhuru.BOSH.Agent.Objects;
         private string version;
         private string checksum;
         private string blobstoreId;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification="JIRA UH-1201")]
         private dynamic configBinding;
         private dynamic jobProperties;
+        Monit monit;
+
         public Job(dynamic spec, dynamic jobProperties)
         {
-            // TODO: check to se if any king of IDicrionty
+            // TODO: check to se if any king of IDictionary
             // if (spec is IDictionary<,>)
 
             var required = new string[] { "name", "template", "version", "sha1", "blobstore_id" };
-            foreach(var requiredKey in required)
+            foreach (var requiredKey in required)
             {
                 if (spec[requiredKey] == null)
                 {
@@ -100,20 +103,28 @@ using Uhuru.BOSH.Agent.Objects;
             }
             this.jobProperties = jobProperties;
             baseDir = Config.BaseDir;
-            name = spec["name"].Value;
-            template = spec["template"].Value;
-            version = spec["version"].Value;
-            checksum = spec["sha1"] != null ? spec["sha1"].Value : null;
-            blobstoreId = spec["blobstore_id"].Value;
-            configBinding = spec["config_binding"] != null ? spec["config_binding"].Value : null;
-            installPath = Path.Combine(baseDir, "data", "jobs", template, version);
-            linkPath = Path.Combine(baseDir, "jobs", template);
+
+            Init(spec);
+
+            monit = Monit.GetInstance();
 
             string jobsPath = Path.Combine(baseDir, "jobs");
             if (!Directory.Exists(jobsPath))
             {
                 Directory.CreateDirectory(jobsPath);
             }
+        }
+
+        private void Init(dynamic spec)
+        {
+            name = spec["name"].Value;
+            template = spec["template"].Value;
+            version = spec["version"].Value;
+            checksum = spec["sha1"];
+            blobstoreId = spec["blobstore_id"].Value;
+            configBinding = spec["config_binding"] != null ? spec["config_binding"].Value : null;
+            installPath = Path.Combine(baseDir, "data", "jobs", template, version);
+            linkPath = Path.Combine(baseDir, "jobs", template);
         }
 
       ////def install
@@ -270,10 +281,10 @@ using Uhuru.BOSH.Agent.Objects;
             string properties = GetRubyObject(jobProperties);
             Logger.Info ("Object built " + properties);
 
-            foreach (var template in currentJobManifest.Templates)
+            foreach (var t in currentJobManifest.Templates)
             {
-                string templatePath = Path.Combine(installPath, "templates", template.Key);
-                string outputPath = Path.Combine(installPath, template.Value);
+                string templatePath = Path.Combine(installPath, "templates", t.Key);
+                string outputPath = Path.Combine(installPath, t.Value);
 
                 Logger.Info("Try to apply " + templatePath + " to " + outputPath);
 
@@ -283,11 +294,11 @@ using Uhuru.BOSH.Agent.Objects;
                     InstallFailed("Template does not exist " + templatePath);
                 }
 
-                Logger.Info("Running erb");
+                Logger.Info("Running ERB");
                 ErbTemplate erbTemplate = new ErbTemplate();
                 string outputFile = erbTemplate.Execute(templatePath, properties);
                 
-                Logger.Info("Writeing output file :" + outputFile);
+                Logger.Info("Writing output file :" + outputFile);
 
                 File.WriteAllText(outputPath, outputFile);
             }
@@ -298,7 +309,8 @@ using Uhuru.BOSH.Agent.Objects;
         public string GetRubyObject(dynamic jsonProperty)
         {
             StringBuilder currentObject = new StringBuilder();
-            if (jsonProperty.GetType() == typeof(JObject))
+            
+            if (jsonProperty.GetType() is JObject)
             {
                 currentObject.Append("{");
             }
@@ -307,7 +319,7 @@ using Uhuru.BOSH.Agent.Objects;
 
                 foreach (var child in jsonProperty.Children())
                 {
-                    if (child.GetType() == typeof(JValue))
+                    if (child.GetType() is JValue)
                     {
                         string childValue = child.ToString();
 
@@ -315,30 +327,36 @@ using Uhuru.BOSH.Agent.Objects;
                         childValue = childValue.Replace(@"\", @"\\");
                         return "\"" + childValue + "\"";
                     }
-                    if (child.GetType() == typeof(JProperty))
-                    {
-                        if (currentObject.ToString() != "{")
-                            currentObject.Append(", ");
-                        currentObject.Append(child.Name + ": ");
-                        currentObject.Append(GetRubyObject(child));
-
-                    }
+                    
+                    ProcessJProperty(ref currentObject, child);
 
                     //TODO IMPROVE JARAY
-                    if (child.GetType() == typeof(JArray))
+                    if (child.GetType() is JArray)
                         return "{}";
-                    if (child.GetType() == typeof(JObject))
+                    
+                    if (child.GetType() is JObject)
                     {
                         currentObject.Append(GetRubyObject(child));
                     }
                 }
 
             }
-            if (jsonProperty.GetType() == typeof(JObject))
+            if (jsonProperty.GetType() is JObject)
             {
                 currentObject.Append("}");
             }
             return currentObject.ToString();
+        }
+
+        private void ProcessJProperty(ref StringBuilder currentObject, dynamic child)
+        {
+            if (child.GetType() is JProperty)
+            {
+                if (currentObject.ToString() != "{")
+                    currentObject.Append(", ");
+                currentObject.Append(child.Name + ": ");
+                currentObject.Append(GetRubyObject(child));
+            }
         }
 
       ////def harden_permissions
@@ -359,10 +377,11 @@ using Uhuru.BOSH.Agent.Objects;
       ////  end
       ////end
 
-        private void HardenPermissions()
+        //TODO: JIRA UH-1203
+        private static void HardenPermissions()
         {
             // TODO: first determine the security level the bosh agent is running on 
-            Logger.Error("Not implemented: HardenPermissions");
+            Logger.Error("Not implemented: Harden Permissions");
         }
 
       ////# TODO: move from util here? (not being used anywhere else)
@@ -374,7 +393,7 @@ using Uhuru.BOSH.Agent.Objects;
         {
             // TODO: maybe this is just a Process start helper function
             Logger.Info("Running pre install script");
-            Monit.GetInstance().RunPreScripts(true);
+            this.monit.RunPreScripts(true);
             
             //Logger.Error("Not implemented: RunPostInstallHook");
         }
@@ -427,9 +446,10 @@ using Uhuru.BOSH.Agent.Objects;
       ////  Bosh::Agent::Util.create_symlink(out_file, link_path)
       ////end
 
-        private void InstallJobMonitrc()
+        //TODO: JIRA UH-1204
+        private static void InstallJobMonitrc()
         {
-            Logger.Error("Not implemented: InstallJobMonitrc");
+            Logger.Error("Not implemented: Install Job Monitrc");
         }
 
       ////# HACK
@@ -468,9 +488,10 @@ using Uhuru.BOSH.Agent.Objects;
       ////  result.strip
       ////end
 
-        private void AddModes()
+        //TODO: JIRA UH-1205
+        private static void AddModes()
         {
-            Logger.Error("Not implemented: AddModes");
+            Logger.Error("Not implemented: Add Modes");
         }
 
       ////def install_failed(message)
@@ -487,7 +508,7 @@ using Uhuru.BOSH.Agent.Objects;
       ////                            "'#{@name}': #{message}"
       ////end
 
-        private JobManifest LoadManifest(string jobManifestPath)
+        private static JobManifest LoadManifest(string jobManifestPath)
         {
             string[] fileContent = File.ReadAllLines(jobManifestPath);
             //dynamic job = JsonConvert.DeserializeObject(fileContent);
@@ -498,24 +519,24 @@ using Uhuru.BOSH.Agent.Objects;
             for (int i = 0; i < fileContent.Length; i++)
             {
                 //get name
-                if (fileContent[i].StartsWith("name"))
+                if (fileContent[i].StartsWith("name", StringComparison.OrdinalIgnoreCase))
                 {
                     jobManifest.Name = fileContent[i].Split(':')[1].Trim();
                 }
 
-                if (fileContent[i].StartsWith("templates"))
+                if (fileContent[i].StartsWith("templates", StringComparison.OrdinalIgnoreCase))
                 {
                     i++;
-                    while (fileContent[i] != string.Empty)
+                    while (String.IsNullOrEmpty(fileContent[i]))
                     {
                         jobManifest.Templates.Add(fileContent[i].Split(':')[0].Trim(), fileContent[i].Split(':')[1].Trim());
                         i++;
                     }
                 }
-                if (fileContent[i].StartsWith("packages"))
+                if (fileContent[i].StartsWith("packages", StringComparison.OrdinalIgnoreCase))
                 {
                     i++;
-                    while (fileContent[i] != string.Empty || i == fileContent.Length)
+                    while (String.IsNullOrEmpty(fileContent[i]) || i == fileContent.Length)
                     {
                         jobManifest.Packages.Add(fileContent[i].Split('-')[1].Trim());
                         i++;

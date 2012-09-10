@@ -24,7 +24,7 @@ namespace Uhuru.BOSH.Agent
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Util", Justification = "FxCop bug"), 
     System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Keeping name the same as VMWare's code")]
-    public class Util
+    public static class Util
     {
     ////class BindingHelper
     ////  attr_reader :name
@@ -206,7 +206,10 @@ namespace Uhuru.BOSH.Agent
     ////  end
 
     ////end
-        internal static dynamic conigBinding(dynamic spec)
+
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "spec", Justification="TODO: JIRA UH-1207")]
+        internal static dynamic configBinding(dynamic spec)
         {
             throw new NotImplementedException();
         }
@@ -244,10 +247,12 @@ namespace Uhuru.BOSH.Agent
                 string blobSHA1;
                 using (FileStream fs = fileInfo.Open(FileMode.Open))
                 {
-                    SHA1 sha = new SHA1CryptoServiceProvider();
-                    blobSHA1 = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-","");
+                    using (SHA1 sha = new SHA1CryptoServiceProvider())
+                    {
+                        blobSHA1 = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-", "");
+                    }
                 }
-                if (String.Compare(blobSHA1,checksum, true) != 0)
+                if (String.Compare(blobSHA1,checksum, StringComparison.OrdinalIgnoreCase) != 0)
                 {
                     throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Expected sha1: {0}, Downloaded sha1: {1}", checksum, blobSHA1));
                 }
@@ -262,7 +267,7 @@ namespace Uhuru.BOSH.Agent
             catch (Exception ex)
             {
                 Logger.Error("Failure unpacking blob.", ex.ToString());
-                throw ex;
+                throw;
             }
         }
 

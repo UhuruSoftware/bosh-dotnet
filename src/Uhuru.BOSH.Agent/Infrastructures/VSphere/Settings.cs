@@ -24,15 +24,9 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     /// </summary>
     public class Settings
     {
-        string CdromSettingsMountPoint
-        {
-            get
-            {
-                return Path.Combine(Config.BaseDir, "bosh", "settings");
-            }
-        }
-     
-
+        string baseDir;
+        string SettingsFile { get; set; }
+        string CdromSettingsMountPoint { get; set; }
 
     ////def initialize
     ////  logger                      = Bosh::Agent::Config.logger
@@ -45,7 +39,9 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
         /// </summary>
         public Settings()
         {
-
+            baseDir = Config.BaseDir;
+            SettingsFile = Config.SettingsFile;
+            CdromSettingsMountPoint = Path.Combine(baseDir, "bosh", "settings");
         }
 
     ////def load_settings
@@ -62,12 +58,12 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////end
         public dynamic LoadSettings()
         {
-            Logger.Info("Loading vsphere settings");
+            Logger.Info("Loading settings");
             LoadCDRomSettings();
 
             Logger.Info("Loading settings file");
             //YamlNode root = null;
-            string fileContent = File.ReadAllText(Config.SettingsFile);
+            string fileContent = File.ReadAllText(SettingsFile);
             //using (TextReader textReader = new StreamReader(Config.SettingsFile))
             //{
             //    YamlNode[] nodes = YamlNode.FromYaml(textReader);
@@ -123,7 +119,6 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////    "Failed to mount settings on #{@cdrom_settings_mount_point}: #{output}" unless $?.exitstatus == 0
     ////end
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands", Justification = "Suitable fur the current context.")]
         private void MountCDROM(string volumeName)
         {
             ProcessStartInfo info = new ProcessStartInfo();
@@ -135,27 +130,29 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
             int retryCount = 10;
             while (retryCount > 0)
             {
-                Process p = new Process();
-                p.StartInfo = info;
-                p.Start();
-                p.WaitForExit(60000);
-                if (!p.HasExited)
+                using (Process p = new Process())
                 {
-                    p.Kill();
-                    break;
-                }
-                else
-                {
-                    Logger.Debug(p.StandardOutput.ReadToEnd());
-                    if (p.ExitCode != 0)
+                    p.StartInfo = info;
+                    p.Start();
+                    p.WaitForExit(60000);
+                    if (!p.HasExited)
                     {
-                        retryCount--;
-                        Thread.Sleep(1000);
-                        continue;
+                        p.Kill();
+                        break;
                     }
                     else
                     {
-                        return;
+                        Logger.Debug(p.StandardOutput.ReadToEnd());
+                        if (p.ExitCode != 0)
+                        {
+                            retryCount--;
+                            Thread.Sleep(1000);
+                            continue;
+                        }
+                        else
+                        {
+                            return;
+                        }
                     }
                 }
             }
@@ -176,7 +173,7 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
     ////  `umount #{@cdrom_settings_mount_point} 2>&1`
     ////end
 
-        private void UnmountCDROM(string volumeName)
+        private void UnmountCDROM()
         {
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = "mountvol.exe";
@@ -187,27 +184,29 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
             int retryCount = 10;
             while (retryCount > 0)
             {
-                Process p = new Process();
-                p.StartInfo = info;
-                p.Start();
-                p.WaitForExit(60000);
-                if (!p.HasExited)
+                using (Process p = new Process())
                 {
-                    p.Kill();
-                    break;
-                }
-                else
-                {
-                    Logger.Debug(p.StandardOutput.ReadToEnd());
-                    if (p.ExitCode != 0)
+                    p.StartInfo = info;
+                    p.Start();
+                    p.WaitForExit(60000);
+                    if (!p.HasExited)
                     {
-                        retryCount--;
-                        Thread.Sleep(1000);
-                        continue;
+                        p.Kill();
+                        break;
                     }
                     else
                     {
-                        return;
+                        Logger.Debug(p.StandardOutput.ReadToEnd());
+                        if (p.ExitCode != 0)
+                        {
+                            retryCount--;
+                            Thread.Sleep(1000);
+                            continue;
+                        }
+                        else
+                        {
+                            return;
+                        }
                     }
                 }
             }
@@ -222,13 +221,13 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
 
         private void LoadCDRomSettings()
         {
-            Logger.Info("Loading cdrom settings");
+            Logger.Info("Loading CDROM settings");
 
             string volumeName = GetCdRomVolumeName();
 
-            if (volumeName.Equals(string.Empty, StringComparison.InvariantCultureIgnoreCase))
+            if (string.IsNullOrEmpty(volumeName))
             {
-                throw new LoadSettingsException("No bosh cdrom env");
+                throw new LoadSettingsException("No bosh CDROM ENV");
             }
 
             CreateMountPointDirectory();
@@ -238,26 +237,26 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
 
             try
             {
-                if (File.Exists(Config.SettingsFile))
+                if (File.Exists(SettingsFile))
                 {
-                    File.Delete(Config.SettingsFile);
+                    File.Delete(SettingsFile);
                 }
-                File.Copy(envPath, Config.SettingsFile, true);
+                File.Copy(envPath, SettingsFile, true);
 
-                File.SetAttributes(Config.SettingsFile, FileAttributes.Normal);
+                File.SetAttributes(SettingsFile, FileAttributes.Normal);
             }
             catch (Exception e)
             {
                 Logger.Error(e.ToString());
-                throw new LoadSettingsException("Failed to read/write env/settings.json");
+                throw new LoadSettingsException("Failed to read/write ENV/settings.json");
             }
             finally
             {
-                UnmountCDROM(volumeName);
+                UnmountCDROM();
             }
         }
 
-        private string GetCdRomVolumeName()
+        private static string GetCdRomVolumeName()
         {
             string volumeName = string.Empty;
             using (ManagementClass volume = new ManagementClass("Win32_Volume"))
@@ -267,7 +266,7 @@ namespace Uhuru.BOSH.Agent.Infrastructures.VSphere
                 {
                     if (mo["DriveType"] != null)
                     {
-                        if (mo["DriveType"].ToString().Equals("5", StringComparison.InvariantCultureIgnoreCase))
+                        if (mo["DriveType"].ToString().Equals("5", StringComparison.OrdinalIgnoreCase))
                         {
                             volumeName = mo["DeviceID"].ToString();
                             break;

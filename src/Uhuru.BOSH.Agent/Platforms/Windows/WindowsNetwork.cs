@@ -30,7 +30,7 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
                 string macAddress = network["mac"].Value;
                 Collection<string> macAddreses = GetExistingMacAddresses();
 
-                if (macAddreses.Contains(macAddress.ToLower()))
+                if (macAddreses.Contains(macAddress.ToUpperInvariant()))
                 {
                     Logger.Info("Trying to configure the NIC with the mac: " + macAddress);
 
@@ -52,18 +52,20 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
 
         }
 
-       private Collection<string> GetExistingMacAddresses()
+       private static Collection<string> GetExistingMacAddresses()
         {
             Logger.Info("Retrieving local machine MAC addresses");
             Collection<string> macAddresses = new Collection<string>();
-            ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration");
-            ManagementObjectCollection objMOC = objMC.GetInstances();
-
-            foreach (ManagementObject objMO in objMOC)
+            using (ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration"))
             {
-                if ((bool)objMO["IPEnabled"])
+                ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                foreach (ManagementObject objMO in objMOC)
                 {
-                    macAddresses.Add(objMO["MACAddress"].ToString().ToLower());
+                    if ((bool)objMO["IPEnabled"])
+                    {
+                        macAddresses.Add(objMO["MACAddress"].ToString().ToUpperInvariant());
+                    }
                 }
             }
             Logger.Info(string.Format(CultureInfo.InvariantCulture, "Found {0} MAC addresses ", macAddresses.Count.ToString(CultureInfo.InvariantCulture)));
@@ -71,34 +73,35 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
         }
 
 
-        private void SetIP(string ipAddress, string subnetMask, string macAddress)
+        private static void SetIP(string ipAddress, string subnetMask, string macAddress)
         {
-            ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration");
-            ManagementObjectCollection objMOC = objMC.GetInstances();
-
-            foreach (ManagementObject objMO in objMOC)
+            using (ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration"))
             {
-                if ((bool)objMO["IPEnabled"])
+                ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                foreach (ManagementObject objMO in objMOC)
                 {
-                    if (objMO["MACAddress"].ToString().ToLower().Equals(macAddress.ToLower()))
+                    if ((bool)objMO["IPEnabled"])
                     {
-                        Logger.Info(string.Format(CultureInfo.InvariantCulture, "Configuring new ip {0} with subnet mask {1} on mac {2}", ipAddress, subnetMask, macAddress));
-
-                        try
+                        if (objMO["MACAddress"].ToString().ToUpperInvariant().Equals(macAddress.ToUpperInvariant()))
                         {
-                            ManagementBaseObject setIP;
-                            ManagementBaseObject newIP =
-                                objMO.GetMethodParameters("EnableStatic");
+                            Logger.Info(string.Format(CultureInfo.InvariantCulture, "Configuring new ip {0} with subnet mask {1} on mac {2}", ipAddress, subnetMask, macAddress));
 
-                            newIP["IPAddress"] = new string[] { ipAddress };
-                            newIP["SubnetMask"] = new string[] { subnetMask };
+                            try
+                            {
+                                ManagementBaseObject newIP =
+                                    objMO.GetMethodParameters("EnableStatic");
 
-                            setIP = objMO.InvokeMethod("EnableStatic", newIP, null);
-                            Logger.Info("Done setting ip address");
-                        }
-                        catch (Exception)
-                        {
-                            throw;
+                                newIP["IPAddress"] = new string[] { ipAddress };
+                                newIP["SubnetMask"] = new string[] { subnetMask };
+
+                                objMO.InvokeMethod("EnableStatic", newIP, null);
+                                Logger.Info("Done setting ip address");
+                            }
+                            catch (Exception)
+                            {
+                                throw;
+                            }
                         }
                     }
                 }
@@ -110,33 +113,34 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
         /// </summary>
         /// <param name="gateway">The Gateway IP Address</param>
         /// <remarks>Requires a reference to the System.Management namespace</remarks>
-        private void SetGateway(string gateway, string macAddress)
+        private static void SetGateway(string gateway, string macAddress)
         {
-            ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration");
-            ManagementObjectCollection objMOC = objMC.GetInstances();
-
-            foreach (ManagementObject objMO in objMOC)
+            using (ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration"))
             {
-                if ((bool)objMO["IPEnabled"])
+                ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                foreach (ManagementObject objMO in objMOC)
                 {
-                    if (objMO["MACAddress"].ToString().ToLower().Equals(macAddress.ToLower()))
+                    if ((bool)objMO["IPEnabled"])
                     {
-                        Logger.Info(string.Format(CultureInfo.InvariantCulture, "Setting gateway {0} on mac {1}", gateway, macAddress));
-                        try
+                        if (objMO["MACAddress"].ToString().ToUpperInvariant().Equals(macAddress.ToUpperInvariant()))
                         {
-                            ManagementBaseObject setGateway;
-                            ManagementBaseObject newGateway =
-                                objMO.GetMethodParameters("SetGateways");
+                            Logger.Info(string.Format(CultureInfo.InvariantCulture, "Setting gateway {0} on mac {1}", gateway, macAddress));
+                            try
+                            {
+                                ManagementBaseObject newGateway =
+                                    objMO.GetMethodParameters("SetGateways");
 
-                            newGateway["DefaultIPGateway"] = new string[] { gateway };
-                            newGateway["GatewayCostMetric"] = new int[] { 1 };
+                                newGateway["DefaultIPGateway"] = new string[] { gateway };
+                                newGateway["GatewayCostMetric"] = new int[] { 1 };
 
-                            setGateway = objMO.InvokeMethod("SetGateways", newGateway, null);
-                            Logger.Info("Done setting ip address");
-                        }
-                        catch (Exception)
-                        {
-                            throw;
+                                objMO.InvokeMethod("SetGateways", newGateway, null);
+                                Logger.Info("Done setting ip address");
+                            }
+                            catch (Exception)
+                            {
+                                throw;
+                            }
                         }
                     }
                 }
@@ -149,30 +153,31 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
         /// <param name="NIC">NIC address</param>
         /// <param name="DNS">DNS server address</param>
         /// <remarks>Requires a reference to the System.Management namespace</remarks>
-        private void SetDNS(string DNS, string macAddress)
+        private static void SetDNS(string DNS, string macAddress)
         {
-            ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration");
-            ManagementObjectCollection objMOC = objMC.GetInstances();
-
-            foreach (ManagementObject objMO in objMOC)
+            using (ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration"))
             {
-                if ((bool)objMO["IPEnabled"])
+                ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                foreach (ManagementObject objMO in objMOC)
                 {
-                    if (objMO["MACAddress"].ToString().ToLower().Equals(macAddress.ToLower()))
+                    if ((bool)objMO["IPEnabled"])
                     {
-                        Logger.Info(string.Format(CultureInfo.InvariantCulture, "Setting DNS {0} for mac {1}", DNS, macAddress));
-                        try
+                        if (objMO["MACAddress"].ToString().ToUpperInvariant().Equals(macAddress.ToUpperInvariant()))
                         {
-                            ManagementBaseObject newDNS =
-                                objMO.GetMethodParameters("SetDNSServerSearchOrder");
-                            newDNS["DNSServerSearchOrder"] = DNS.Split(',');
-                            ManagementBaseObject setDNS =
+                            Logger.Info(string.Format(CultureInfo.InvariantCulture, "Setting DNS {0} for mac {1}", DNS, macAddress));
+                            try
+                            {
+                                ManagementBaseObject newDNS =
+                                    objMO.GetMethodParameters("SetDNSServerSearchOrder");
+                                newDNS["DNSServerSearchOrder"] = DNS.Split(',');
                                 objMO.InvokeMethod("SetDNSServerSearchOrder", newDNS, null);
-                            Logger.Info("Done setting DNS address");
-                        }
-                        catch (Exception)
-                        {
-                            throw;
+                                Logger.Info("Done setting DNS address");
+                            }
+                            catch (Exception)
+                            {
+                                throw;
+                            }
                         }
                     }
                 }
@@ -185,30 +190,31 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
         /// <param name="priWINS">Primary WINS server address</param>
         /// <param name="secWINS">Secondary WINS server address</param>
         /// <remarks>Requires a reference to the System.Management namespace</remarks>
-        private void SetWINS(string priWINS, string secWINS, string macAddress)
+        private static void SetWINS(string priWINS, string secWINS, string macAddress)
         {
-            ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration");
-            ManagementObjectCollection objMOC = objMC.GetInstances();
-
-            foreach (ManagementObject objMO in objMOC)
+            using (ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration"))
             {
-                if ((bool)objMO["IPEnabled"])
-                {
-                    if (objMO["MACAddress"].ToString().ToLower().Equals(macAddress.ToLower()))
-                    {
-                        try
-                        {
-                            ManagementBaseObject setWINS;
-                            ManagementBaseObject wins =
-                            objMO.GetMethodParameters("SetWINSServer");
-                            wins.SetPropertyValue("WINSPrimaryServer", priWINS);
-                            wins.SetPropertyValue("WINSSecondaryServer", secWINS);
+                ManagementObjectCollection objMOC = objMC.GetInstances();
 
-                            setWINS = objMO.InvokeMethod("SetWINSServer", wins, null);
-                        }
-                        catch (Exception)
+                foreach (ManagementObject objMO in objMOC)
+                {
+                    if ((bool)objMO["IPEnabled"])
+                    {
+                        if (objMO["MACAddress"].ToString().ToUpperInvariant().Equals(macAddress.ToUpperInvariant()))
                         {
-                            throw;
+                            try
+                            {
+                                ManagementBaseObject wins =
+                                objMO.GetMethodParameters("SetWINSServer");
+                                wins.SetPropertyValue("WINSPrimaryServer", priWINS);
+                                wins.SetPropertyValue("WINSSecondaryServer", secWINS);
+
+                                objMO.InvokeMethod("SetWINSServer", wins, null);
+                            }
+                            catch (Exception)
+                            {
+                                throw;
+                            }
                         }
                     }
                 }

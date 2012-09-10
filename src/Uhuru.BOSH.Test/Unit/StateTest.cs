@@ -44,7 +44,7 @@ namespace Uhuru.BOSH.Test.Unit
             string test = GetRubyObject(testState.GetValue("properties"));
             
 
-            List<string> ips = testState.GetIps().ToList();
+            List<string> ips = testState.GetIPs().ToList();
 
             //Assert
             Assert.AreEqual(1, ips.Count);
@@ -110,9 +110,9 @@ namespace Uhuru.BOSH.Test.Unit
             //Assert
             Assert.AreEqual("micro", currentJob.Name);
             Assert.AreEqual("0.5-dev", currentJob.Version);
-            Assert.AreEqual("d5941f9a113489e8bc14adb61d3bb619cd9566bd", currentJob.Sha1);
+            Assert.AreEqual("d5941f9a113489e8bc14adb61d3bb619cd9566bd", currentJob.SHA1);
             Assert.AreEqual("micro", currentJob.Template);
-            Assert.AreEqual("da4dea43-fa56-4a4a-bb18-dba8961d0f6f", currentJob.Blobstore_id);
+            Assert.AreEqual("da4dea43-fa56-4a4a-bb18-dba8961d0f6f", currentJob.BlobstoreId);
             
         }
 

@@ -10,6 +10,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Collections.ObjectModel;
 
     /// <summary>
     /// TODO: Update summary.
@@ -38,7 +39,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         }
 
 
-        public List<Package> Packages
+        public Collection<Package> Packages
         {
             get
             {
@@ -48,7 +49,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
         private dynamic deployment;
         private Job job;
-        private List<Package> packages;
+        private Collection<Package> packages;
         private dynamic spec;
         private dynamic configBinding;
 
@@ -94,7 +95,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             this.spec = spec;
             this.deployment = spec["deployment"];
             this.job = null;
-            this.packages = new List<Package>();
+            this.packages = new Collection<Package>();
             //this.configBinding = Util.conigBinding(spec);
 
             dynamic jobSpec = spec["job"];
