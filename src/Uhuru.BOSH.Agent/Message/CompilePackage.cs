@@ -17,12 +17,19 @@ namespace Uhuru.BOSH.Agent.Message
     using Newtonsoft.Json;
     using Uhuru.BOSH.Agent.Errors;
     using System.Diagnostics;
+    using System.Globalization;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
     public class CompilePackage : IMessage
     {
+        /// <summary>
+        /// Determines whether [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
             return true;
@@ -32,10 +39,16 @@ namespace Uhuru.BOSH.Agent.Message
         dynamic blobStoreOptions;
         BlobstoreClient.Clients.IClient blobStoreClient;
         string blobStoreId;
+        
+        //TODO Implement sha1 verification
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         string sha1;
         string packageName;
         string packageVersion;
         dynamic dependencies;
+
+        //TODO Implement Jira UH-1199
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         int maxDiskUsage = 90;
         string compileBase;
         string installBase;
@@ -46,6 +59,11 @@ namespace Uhuru.BOSH.Agent.Message
         string installDir;
         string compiledPackage;
 
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
             //Initialize
@@ -90,7 +108,7 @@ namespace Uhuru.BOSH.Agent.Message
             catch (Exception e)
             {
                 this.logger.Warning("Uncaught exception: ", e.ToString());
-                throw new MessageHandlerException("Uncaught exception in CompilePackage.", e);
+                throw new MessageHandlerException("Uncaught exception in Compile Package.", e);
             }
             finally
             {
@@ -122,7 +140,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             foreach (dynamic dependency in dependencies)
             {
-                this.logger.Warning("TODO : install dependencies");
+                this.logger.Warning("TODO : install dependencies for " + dependency.ToString());
             }
         }
 
@@ -192,7 +210,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             if (File.Exists(packagingExecutive))
             {
-                logger.Info("Compileing " + this.packageName + " " + this.packageVersion);
+                logger.Info("Compiling " + this.packageName + " " + this.packageVersion);
 
                 var pi = new ProcessStartInfo(packagingExecutive);
 
@@ -214,7 +232,8 @@ namespace Uhuru.BOSH.Agent.Message
 
                 if (pr.ExitCode != 0)
                 {
-                    new MessageHandlerException("Compile Package Failure (exit code: " + pr.ExitCode + ")", output);
+                    throw(new MessageHandlerException("Compile Package Failure (exit code: " + pr.ExitCode + ")", output));
+                    
                 }
 
                 this.logger.Info(output);
@@ -252,13 +271,13 @@ namespace Uhuru.BOSH.Agent.Message
             string compiledSha1;
             using (FileStream fs = File.OpenRead(compiledPackage))
             {
-                using (SHA1 sha1 = new SHA1CryptoServiceProvider())
+                using (SHA1 sha1CryptoService = new SHA1CryptoServiceProvider())
                 {
-                    compiledSha1 = BitConverter.ToString(sha1.ComputeHash(fs)).Replace("-", "").ToLower();
+                    compiledSha1 = BitConverter.ToString(sha1CryptoService.ComputeHash(fs)).Replace("-", "").ToUpperInvariant();
                 }
             }
 
-            this.logger.Info("Uploaded " + this.packageName + " " + this.packageVersion + " (sha1: " + compiledSha1 + ", blobstore_id: " + compiledBlobStoreId + ")");
+            this.logger.Info("Uploaded " + this.packageName + " " + this.packageVersion + " (sha1: " + compiledSha1 + ", blobstore id: " + compiledBlobStoreId + ")");
 
             string compileLogId = blobStoreClient.Create(new FileInfo(logFile));
 

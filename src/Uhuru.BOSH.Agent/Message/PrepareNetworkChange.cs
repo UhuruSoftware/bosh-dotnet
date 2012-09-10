@@ -6,19 +6,20 @@
 
 namespace Uhuru.BOSH.Agent.Message
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    //TODO Jira - UH-1209
+    //using System;
+    //using System.Collections.Generic;
+    //using System.Linq;
+    //using System.Text;
 
-    /// <summary>
-    /// TODO: Update summary.
-    /// </summary>
-    public class PrepareNetworkChange
-    {
-        public static bool Process(string[] args)
-        {
-            return true;
-        }
-    }
+    ///// <summary>
+    ///// TODO: Update summary.
+    ///// </summary>
+    //public class PrepareNetworkChange
+    //{
+    //    public static bool Process(string[] args)
+    //    {
+    //        return true;
+    //    }
+    //}
 }

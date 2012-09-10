@@ -17,45 +17,29 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Globalization;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Unmount Disk message
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Unmount", Justification = "FxCop Bug")]
-    public class UnmountDisk : Base, IMessage
+    public class UnmountDisk :  IMessage
     {
+
+
         /// <summary>
-        /// Gets a value indicating whether [long running].
+        /// Determines whether the message [is long running].
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [long running]; otherwise, <c>false</c>.
-        /// </value>
-       
-
-        public void Unmount(dynamic args)
-        {
-
-        }
-
-      ////def unmount(args)
-      ////  cid = args.first
-      ////  disk = Bosh::Agent::Config.platform.lookup_disk_by_cid(cid)
-      ////  partition = "#{disk}1"
-
-      ////  if DiskUtil.mount_entry(partition)
-      ////    @block, @mountpoint = DiskUtil.mount_entry(partition).split
-      ////    DiskUtil.umount_guard(@mountpoint)
-      ////    logger.info("Unmounted #{@block} on #{@mountpoint}")
-      ////    return {:message => "Unmounted #{@block} on #{@mountpoint}" }
-      ////  else
-      ////    # TODO: should we raise MessageHandlerError here?
-      ////    return {:message => "Unknown mount for partition: #{partition}"}
-      ////  end
-      ////end
-
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
             return true;
         }
 
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
             Logger.Info("Processing unmount disk :" + args.ToString());
@@ -67,7 +51,7 @@ namespace Uhuru.BOSH.Agent.Message
             {
                 DiskUtil.UnmountGuard(mountEntry);
                 UnmountMessage unmountMessage = new UnmountMessage();
-                unmountMessage.Message = string.Format(CultureInfo.InvariantCulture, "Unmounted {0} on {1}", mountEntry, diskId);
+                unmountMessage.Message = string.Format(CultureInfo.InvariantCulture, "done unmount {0} on {1}", mountEntry, diskId);
                 return unmountMessage;
             }
             else
@@ -78,10 +62,10 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public class UnmountMessage
+        internal class UnmountMessage
         {
-            [JsonProperty("message")]
-            public string Message
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode"), JsonProperty("message")]
+            internal string Message
             {
                 get;
                 set;

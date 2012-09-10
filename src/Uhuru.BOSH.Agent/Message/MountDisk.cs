@@ -18,7 +18,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class MountDisk : Base, IMessage
+    public class MountDisk : IMessage
     {
         string cid;
 
@@ -42,8 +42,8 @@ namespace Uhuru.BOSH.Agent.Message
             if (Config.Configure)
             {
                 UpdateSettings();
-                Logger.Info("Current settings :" + Settings.ToString());
-                Logger.Info("MountDisk: {0} - {1}", cid, Settings["disks"].ToString());
+                Logger.Info("Current settings :" + BaseMessage.Settings.ToString());
+                Logger.Info("MountDisk: {0} - {1}", cid, BaseMessage.Settings["disks"].ToString());
 
                 return SetupDisk();
             }
@@ -54,7 +54,7 @@ namespace Uhuru.BOSH.Agent.Message
         /// <summary>
         /// Updates the settings.
         /// </summary>
-        public void UpdateSettings()
+        public static void UpdateSettings()
         {
             Config.Settings = Config.Infrastructure.LoadSettings();
             Logger.Info("Settings :" + Config.Settings.ToString());
@@ -67,8 +67,8 @@ namespace Uhuru.BOSH.Agent.Message
         {
 
             int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid), CultureInfo.InvariantCulture);
-            
-            Logger.Info("Setup disk settings: " + Settings.ToString());
+
+            Logger.Info("Setup disk settings: " + BaseMessage.Settings.ToString());
 
             if (!DiskUtil.DiskHasPartition(diskId))
             {
@@ -93,15 +93,15 @@ namespace Uhuru.BOSH.Agent.Message
         /// Mounts the persistent disk.
         /// </summary>
         /// <param name="diskId">Id of the disk.</param>
-        public void MountPersistentDisk(int diskId)
+        public static void MountPersistentDisk(int diskId)
         {
-            string storeMountPoint = Path.Combine(BaseDir, "store");
+            string storeMountPoint = Path.Combine(BaseMessage.BaseDir, "store");
             string mountpoint;
 
             if (DiskUtil.IsMountPoint(storeMountPoint))
             {
                 Logger.Info("Mounting persistent disk store migration target");
-                mountpoint = Path.Combine(BaseDir, "store_migraton_target");
+                mountpoint = Path.Combine(BaseMessage.BaseDir, "store_migraton_target");
             }
             else
             {

@@ -16,27 +16,32 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Globalization;
 
     /// <summary>
-    /// TODO: Update summary.
+    /// Get state message
     /// </summary>
-    public class State : Base , IMessage
+    public class State : IMessage
     {
 
-        //public static State Process(string[] args)
-        //{
-        //    return new State();
-        //}
+        private Monit monit = null;
 
-        public object GetState()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="State"/> class.
+        /// </summary>
+        public State()
+        {
+            monit = Monit.GetInstance();
+        }
+
+        private object GetState()
         {
             try
             {
                 Agent.State response = Config.State;
                 Logger.Info(String.Format(CultureInfo.InvariantCulture, "Agent state: {0}", response.ToString()));
 
-                if (Settings != null)
+                if (BaseMessage.Settings != null)
                 {
-                    response.SetValue("agent_id", Settings["agent_id"]);
-                    response.SetValue("vm", Settings["vm"]);
+                    response.SetValue("agent_id", BaseMessage.Settings["agent_id"]);
+                    response.SetValue("vm", BaseMessage.Settings["vm"]);
                 }
 
                 response.SetValue("job_state", GetJobState());
@@ -56,18 +61,29 @@ namespace Uhuru.BOSH.Agent.Message
             }
         }
 
-        public string GetJobState()
+        private string GetJobState()
         {
 
-            string serviceState = Monit.GetInstance().GetServiceGourpState();
+            string serviceState = this.monit.GetServiceGourpState();
             return serviceState;
         }
 
+        /// <summary>
+        /// Determines whether the message [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
             return false;
         }
 
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
             return GetState();
