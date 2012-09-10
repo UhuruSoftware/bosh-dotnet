@@ -32,9 +32,12 @@ namespace Uhuru.BOSH.Agent.Platforms
             return Disk.LookupDiskByCid(cid);
         }
 
-        public string GetDataDiskDeviceName()
+        public string GetDataDiskDeviceName
         {
-            return Disk.GetDataDiskDeviceName;
+            get
+            {
+                return Disk.GetDataDiskDeviceName;
+            }
         }
 
         public void SetupNetworking()

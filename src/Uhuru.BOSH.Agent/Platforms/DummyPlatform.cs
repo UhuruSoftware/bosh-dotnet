@@ -37,14 +37,15 @@ namespace Uhuru.BOSH.Agent.Platforms
             throw new NotImplementedException();
         }
 
-        public string GetDataDiskDeviceName()
-        {
-            return string.Empty;
-        }
-
         public void SetupNetworking()
         {
             
+        }
+
+
+        string IPlatform.GetDataDiskDeviceName
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }

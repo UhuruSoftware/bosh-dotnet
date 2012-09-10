@@ -138,7 +138,7 @@ namespace Uhuru.BOSH.Agent
 
         private void SetupDiskData()
         {   
-            int dataDiskId = int.Parse(Config.Platform.GetDataDiskDeviceName(), CultureInfo.InvariantCulture);
+            int dataDiskId = int.Parse(Config.Platform.GetDataDiskDeviceName, CultureInfo.InvariantCulture);
 
             Logger.Info("Creating partition on drive " + dataDiskId);
 
