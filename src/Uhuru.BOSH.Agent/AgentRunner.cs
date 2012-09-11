@@ -22,9 +22,9 @@ using System.IO;
     public class AgentRunner
     {
 ////  BOSH_APP = BOSH_APP_USER = BOSH_APP_GROUP = "vcap"
-        string BOSH_APP  = "vcap";
-        string BOSH_APP_USER = "vcap";
-        string BOSH_APP_GROUP = "vcap";
+       // string BOSH_APP  = "vcap";
+       // string BOSH_APP_USER = "vcap";
+       // string BOSH_APP_GROUP = "vcap";
         private string configFile = @"c:\vcap\bosh\settings.json";
 ////  class << self
 ////    def run(options = {})

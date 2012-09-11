@@ -118,7 +118,7 @@ namespace Uhuru.BOSH.Agent
     ////                       "vitals" => vitals,
     ////                       "ntp" => Bosh::Agent::NTP.offset)
     ////end
-        private string GetHearbeatPayload()
+        private static string GetHearbeatPayload()
         {
             HeartbeatMessage heartBeatMessage = new HeartbeatMessage();
             

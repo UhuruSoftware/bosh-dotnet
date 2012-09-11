@@ -39,6 +39,10 @@ namespace Uhuru.BOSH.Agent
     ////  @logger        = Config.logger
     ////end
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "user", Justification = "Not implemented"), 
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "port", Justification = "Not implemented"), 
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "password", Justification = "Not implemented")
+        , System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "host", Justification = "Not implemented")]
         public AlertProcessor(string host, string port, string user, string password)
         {
             throw new NotImplementedException("And it will never be...");
@@ -51,6 +55,7 @@ namespace Uhuru.BOSH.Agent
         ////  @server = EM.start_server(@host, @port, Bosh::Agent::SmtpServer, :user => @smtp_user, :password => @smtp_password, :processor => self)
         ////  @logger.info "Now accepting SMTP connections on address #{@host}, port #{@port}"
         ////end
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "Not implemented")]
         public void Start()
         {
             throw new NotImplementedException();

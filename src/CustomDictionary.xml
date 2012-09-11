@@ -30,9 +30,16 @@
       <Word>vSphere</Word>
       <Word>AddModes</Word>
       <Word>backtrace</Word>
+      <Word>Erb</Word>
+      <Word>Tarball</Word>
+      <Word>Mbus</Word>
+      <Word>replyto</Word>
     </Recognized>
     <DiscreteExceptions>
       <Term>vsphere</Term>
+      <Term>heartbeat</Term>
+      <Term>heartbeatprocessor</Term>
+      <Term>replyto</Term>
     </DiscreteExceptions>
   </Words>
   <Acronyms>

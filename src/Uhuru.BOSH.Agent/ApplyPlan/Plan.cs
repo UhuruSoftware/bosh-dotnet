@@ -51,6 +51,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private Job job;
         private Collection<Package> packages;
         private dynamic spec;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification="TODO: Not used yet")]
         private dynamic configBinding;
 
 

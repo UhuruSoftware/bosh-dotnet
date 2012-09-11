@@ -26,9 +26,9 @@ namespace Uhuru.BOSH.Agent
         const int DEFAULT_SSHD_MONITOR_INTERVAL = 30;
         const int DEFAULT_SSHD_START_DELAY = 30;
 
-        public const string BOSH_APP = "vcap";
-        public const string BOSH_APP_USER = "vcap";
-        public const string BOSH_APP_GROUP = "vcap";
+        //public const string BOSH_APP = "vcap";
+        //public const string BOSH_APP_USER = "vcap";
+        //public const string BOSH_APP_GROUP = "vcap";
 
         private static IPlatform platform = null;
 
@@ -201,7 +201,7 @@ namespace Uhuru.BOSH.Agent
 
         public static void Setup(dynamic config, bool firstDeployment)
         {
-            Logger.Info("Running settup");
+            Logger.Info("Running setup");
             //YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
             Config.SystemRoot = @"c:\"; //TODO system root
 
@@ -302,7 +302,6 @@ namespace Uhuru.BOSH.Agent
         {
             get
             {
-
                 try
                 {
                     return UnityProvider.GetInstance.GetProvider<IInfrastructure>();
@@ -311,8 +310,6 @@ namespace Uhuru.BOSH.Agent
                 {
                     throw new UnknownInfrastructure(ex);
                 }
-
-                
             }
         }
 
@@ -333,7 +330,7 @@ namespace Uhuru.BOSH.Agent
             return Uhuru.Utilities.Credentials.GenerateCredential(length);
         }
 
-        public static string DefaultIp
+        public static string DefaultIP
         {
             get
             {

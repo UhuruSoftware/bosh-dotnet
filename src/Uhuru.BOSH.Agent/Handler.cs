@@ -19,6 +19,7 @@ namespace Uhuru.BOSH.Agent
     using System.Globalization;
     using Uhuru.BOSH.Agent.Message;
     using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
     /// <summary>
     /// TODO: Update summary.
@@ -34,12 +35,12 @@ namespace Uhuru.BOSH.Agent
         public Dictionary<string, string> Processors
         {
             get;
-            set;
+            private set;
         }
 
         public static void Start()
         {
-            Logger.Info("Starting Agent MBus Handler");
+            Logger.Info("Starting Agent Mbus Handler");
             new Handler().StartHandler();
         }
 
@@ -54,7 +55,7 @@ namespace Uhuru.BOSH.Agent
         public Handler()
         {
             this.AgentId = Config.AgentId;
-            this.NatsUri = Config.MessageBus;
+            this.NatsUri = new Uri(Config.MessageBus);
             this.BaseDir = Config.BaseDir;
 
             // Alert processing
@@ -67,8 +68,8 @@ namespace Uhuru.BOSH.Agent
 
             this.Lock = new Mutex();
 
-            this.Results = new List<HandlerResult>();
-            this.LongRunningAgentTask = new List<string>();
+            this.Results = new Collection<HandlerResult>();
+            this.LongRunningAgentTask = new Collection<string>();
             this.RestartingAgent = false;
 
             this.NatsFailCount = 0;
@@ -77,10 +78,10 @@ namespace Uhuru.BOSH.Agent
             this.Sessions = new Dictionary<string, object>();
             this.SessionReplyMap = new Dictionary<string, object>();
 
-            this.FindMessageProcessors();
+            FindMessageProcessors();
         }
 
-        private void FindMessageProcessors()
+        private static void FindMessageProcessors()
         {
             
             //messageConsts = Message.
@@ -96,11 +97,17 @@ namespace Uhuru.BOSH.Agent
             //@logger.info("Message processors: #{@processors.inspect}")
         }
 
-        public IMessage Lookup(string method)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase", Justification="TODO Methods are lower case")]
+        public static IMessage Lookup(string method)
         {
+            if (string.IsNullOrEmpty(method))
+            {
+                throw new ArgumentNullException(method);
+            }
+
             //TODO 
             Logger.Info("Processing :" + method);
-            switch (method.ToLower())
+            switch (method.ToLower(CultureInfo.InvariantCulture))
             {
                 case "ping":
                     return new Ping();
@@ -135,6 +142,9 @@ namespace Uhuru.BOSH.Agent
          //   return this.Processors[method];
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "s", Justification="TODO Not implemented"),
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "action", Justification = "TODO Not implemented"),
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "TODO Not implemented")]
         private void Trap(string s, Action action)
         {
             //throw new NotImplementedException();
@@ -155,7 +165,7 @@ namespace Uhuru.BOSH.Agent
                         do
                         {
                             this.Nats = new Reactor();
-                            this.Nats.OnConnect += new EventHandler<ReactorErrorEventArgs>(Nats_OnConnect);
+                            this.Nats.OnConnect += new EventHandler<ReactorErrorEventArgs>(NatsOnConnect);
                             this.Nats.OnError += new EventHandler<ReactorErrorEventArgs>(Nats_OnError);
                             try
                             {
@@ -228,11 +238,11 @@ namespace Uhuru.BOSH.Agent
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
 
-        public void Nats_OnConnect(object sender, EventArgs e)
+        public void NatsOnConnect(object sender, EventArgs e)
         {
             try
             {
-                string subscription = string.Format("agent.{0}", this.AgentId);
+                string subscription = string.Format(CultureInfo.InvariantCulture, "agent.{0}", this.AgentId);
 
                 this.Nats.Subscribe(subscription, (string msg, string reply, string subject) =>
                     {
@@ -254,7 +264,7 @@ namespace Uhuru.BOSH.Agent
             if (interval > 0)
             {
                 this.HeartBeatProcessor.Enable(interval);
-                Logger.Info(string.Format("Heartbeats are enabled and will be sent every {0} seconds", interval));
+                Logger.Info(string.Format(CultureInfo.InvariantCulture, "Heartbeats are enabled and will be sent every {0} seconds", interval));
             }
             else
             {
@@ -262,13 +272,13 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        public void SetupSshdMonitor()
+        public static void SetupSshdMonitor()
         {
             int interval = Convert.ToInt32(Config.SshdMonitorInterval);
             if (interval > 0)
             {
                 SshdMonitor.Enable(interval, Config.SshdStartDelay);
-                Logger.Info(string.Format(CultureInfo.InvariantCulture, "sshd monitor is enabled, interval of {0} and start delay of {0} seconds", interval, Config.SshdStartDelay));
+                Logger.Info(string.Format(CultureInfo.InvariantCulture, "sshd monitor is enabled, interval of {0} and start delay of {1} seconds", interval, Config.SshdStartDelay));
             }
             else
             {
@@ -286,7 +296,7 @@ namespace Uhuru.BOSH.Agent
                 //string aux = msg.ToString();
                 //msg = YamlMapping.FromYaml(aux.Replace(" !!int", string.Empty))[0];
                 
-                if (msg["reply_to"] == null)
+                if (String.IsNullOrEmpty(msg["reply_to"]))
                 {
                     Logger.Info("Missing reply_to in: {0}", json);
                     return;
@@ -294,7 +304,7 @@ namespace Uhuru.BOSH.Agent
 
                 Logger.Info("Message: {0}", json);
 
-                if (this.Credentials != null)
+                if (!string.IsNullOrEmpty(this.Credentials))
                 {
                     msg = Decrypt(msg);
                     if (msg == null)
@@ -307,12 +317,12 @@ namespace Uhuru.BOSH.Agent
                 string method = msg["method"].Value;
                 dynamic args = msg["arguments"];
 
-                if (method == "get_state")
+                if (method.Equals("get_state", StringComparison.OrdinalIgnoreCase))
                 {
                     method = "state";
                 }
 
-                IMessage processor = this.Lookup(method);
+                IMessage processor = Lookup(method);
 
                 if (processor != null)
                 {
@@ -321,11 +331,11 @@ namespace Uhuru.BOSH.Agent
                             ProcessInThread(processor, replyTo, method, args);
                         });
                 }
-                else if (method == "get_task")
+                else if (method.Equals("get_task", StringComparison.OrdinalIgnoreCase))
                 {
                     HandleGetTask(replyTo, (JsonConvert.DeserializeObject(args.ToString(), typeof(string[])) as string[])[0]);
                 }
-                else if (method == "shutdown")
+                else if (method.Equals("shutdown", StringComparison.OrdinalIgnoreCase))
                 {
                     HandleShutdown(replyTo);
                 }
@@ -387,7 +397,7 @@ namespace Uhuru.BOSH.Agent
                         if (Config.Configure != null && (method == "prepare_network_change"))
                         {
                             // todo: vladi: fix payload
-                            this.Publish(replyTo, payload, () => this.PostPrepareNetworkChange());
+                            this.Publish(replyTo, payload, () => PostPrepareNetworkChange());
                         }
                         else
                         {
@@ -417,8 +427,8 @@ namespace Uhuru.BOSH.Agent
                 HandlerResult rs = this.Results.FirstOrDefault(r => r.AgentTaskId == agentTaskId);
                 if (rs != null)
                 {
-                    DateTime time = rs.Time;
-                    string taskId = rs.AgentTaskId;
+                    // DateTime time = rs.Time;
+                    // string taskId = rs.AgentTaskId;
                     string result = rs.Result;
                     // todo: vladi: fix result serialization
                     this.Publish(replyTo, result.ToString());
@@ -445,6 +455,7 @@ namespace Uhuru.BOSH.Agent
                 });
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "unencrypted", Justification="TODO Not used yet")]
         public void Publish(string replyTo, string payload, SimpleCallback block)
         {
             Logger.Info("reply_to: {0}: payload: {1}", replyTo, payload);
@@ -552,12 +563,12 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        public string GenerateAgentTaskId()
+        public static string GenerateAgentTaskId()
         {
             return Guid.NewGuid().ToString("N");
         }
 
-        public void PostPrepareNetworkChange()
+        public static void PostPrepareNetworkChange()
         {
             if (Config.Configure != null)
             {
@@ -581,7 +592,7 @@ namespace Uhuru.BOSH.Agent
 
         public void HandleShutdown(string replyTo)
         {
-            Logger.Info("Shutting down {0} connection", Config.MessageBus.ToUpper());
+            Logger.Info("Shutting down {0} connection", Config.MessageBus.ToUpper(CultureInfo.InvariantCulture));
             string payload = "{:value => \"shutdown\"}";
 
             if (Config.Configure != null)
@@ -613,15 +624,20 @@ namespace Uhuru.BOSH.Agent
 
         public Dictionary<string, object> Decrypt(Dictionary<string, object> msg)
         {
+            if (msg == null)
+            {
+                throw new ArgumentNullException("msg");
+            }
+
             if (msg["session_id"] == null)
             {
-                Logger.Info("Missing session_id in {0}", msg.ToString());
+                Logger.Info("Missing session ID in {0}", msg.ToString());
                 return null;
             }
 
             if (msg["encrypted_data"] == null)
             {
-                Logger.Info("Missing encrypted_data in {0}", msg.ToString());
+                Logger.Info("Missing encrypted data in {0}", msg.ToString());
                 return null;
             }
 
@@ -650,7 +666,7 @@ namespace Uhuru.BOSH.Agent
             return msg;
         }
 
-        public void LogEncryptionError(Exception ex)
+        public static void LogEncryptionError(Exception ex)
         {
             Logger.Info("Encryption Error: {0}", ex);
         }
@@ -665,18 +681,16 @@ namespace Uhuru.BOSH.Agent
 
             // todo: vladi: fix payload;
             payload = @"{
-                ""session_id"" => session_id,
+                ""session_id"" => " + sessionId+ @",
                 ""encrypted_data"" => encryption_handler.encrypt(payload)""}";
 
             return payload;
         }
 
-        
-        
 
-        public Dictionary<string, object> SessionReplyMap { get; set; }
+        public Dictionary<string, object> SessionReplyMap { get; private set; }
 
-        public Dictionary<string, object> Sessions { get; set; }
+        public Dictionary<string, object> Sessions { get; private set; }
 
         public string Credentials { get; set; }
 
@@ -684,9 +698,9 @@ namespace Uhuru.BOSH.Agent
 
         public bool RestartingAgent { get; set; }
 
-        public List<string> LongRunningAgentTask { get; set; }
+        public Collection<string> LongRunningAgentTask { get; private set; }
 
-        public List<HandlerResult> Results { get; set; }
+        public Collection<HandlerResult> Results { get; private set; }
 
         public Mutex Lock { get; set; }
 
@@ -702,13 +716,13 @@ namespace Uhuru.BOSH.Agent
 
         public string BaseDir { get; set; }
 
-        public string NatsUri { get; set; }
+        public Uri NatsUri { get; set; }
 
         public string AgentId { get; set; }
 
         public AlertProcessor Processor { get; set; }
 
-        public HeartbeatProcessor HeartBeatProcessor;
+        public HeartbeatProcessor HeartBeatProcessor { get; set; }
 
         class Ping : IMessage
         {
@@ -723,6 +737,7 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification="TODO Not used yet")]
         class Noop :IMessage
         {
             public object Process(dynamic args)

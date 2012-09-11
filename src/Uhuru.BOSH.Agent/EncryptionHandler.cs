@@ -8,13 +8,13 @@ namespace Uhuru.BOSH.Agent
     public class EncryptionHandler
     {
         private string p;
-        private string p_2;
+        private string p2;
 
-        public EncryptionHandler(string p, string p_2)
+        public EncryptionHandler(string p, string p2)
         {
             // TODO: Complete member initialization
             this.p = p;
-            this.p_2 = p_2;
+            this.p2 = p2;
         }
 
         public string SessionId { get; set; }

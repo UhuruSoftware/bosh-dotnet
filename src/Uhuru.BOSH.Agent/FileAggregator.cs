@@ -20,7 +20,7 @@ using System.IO;
     {
         public FileAggregator()
         {
-            this.UsedDirs = new List<string>();
+            this.UsedDirectories = new List<string>();
         }
 
         // Generates a tarball including all the requested entries
@@ -36,7 +36,7 @@ using System.IO;
                 string outDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
                 Directory.CreateDirectory(outDir);
 
-                this.UsedDirs.Add(outDir);
+                this.UsedDirectories.Add(outDir);
 
                 CopyFiles(tmpDir);
 
@@ -58,7 +58,7 @@ using System.IO;
 
         public void Cleanup()
         {
-            foreach (string dir in this.UsedDirs)
+            foreach (string dir in this.UsedDirectories)
             {
                 if (Directory.Exists(dir))
                 {
@@ -109,12 +109,12 @@ using System.IO;
             return copied;
         }
 
-        private string Realpath(string path)
+        private static string Realpath(string path)
         {
             return Path.GetFullPath(path);
         }
 
-        public IList<string> UsedDirs { get; set; }
+        private IList<string> UsedDirectories;
 
         public FileMatcher Matcher { get; set; }
     }

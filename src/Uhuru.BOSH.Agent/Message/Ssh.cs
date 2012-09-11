@@ -64,7 +64,7 @@ namespace Uhuru.BOSH.Agent.Message
                 Logger.Error("Failed to create user " + ex.ToString());
                 sshResult.Status = "failed";
             }
-            sshResult.IP = Config.DefaultIp;
+            sshResult.IP = Config.DefaultIP;
 
 
             return sshResult;
