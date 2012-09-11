@@ -20,8 +20,7 @@ namespace Uhuru.BOSH.Agent.Message
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Util", Justification = "FxCop Bug")]
-    public class DiskUtil
+    public static class DiskUtil
     {
         static string BaseDir
         {
@@ -38,7 +37,7 @@ namespace Uhuru.BOSH.Agent.Message
         /// <returns></returns>
         public static string MountEntry(int diskId)
         {
-            Logger.Info("Checkin mount entry");
+            Logger.Info("Checking mount entry");
 
             int diskIndex = GetDiskIndexForDiskId(diskId);
 
@@ -55,26 +54,27 @@ EXIT", diskIndex);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
-            Process p = new Process();
-            p.StartInfo = info;
-            p.Start();
-            p.WaitForExit(60000);
-            if (!p.HasExited)
+            using (Process p = new Process())
             {
-                p.Kill();
-                return null;
-            }
-            else
-            {
-                string output = p.StandardOutput.ReadToEnd(); 
-                Logger.Warning(output);
-                if (output.Contains(@"C:\vcap\store\"))
-                    //TODO imeplemnt block and mount point
-                    return @"C:\vcap\store\";
-                else
+                p.StartInfo = info;
+                p.Start();
+                p.WaitForExit(60000);
+                if (!p.HasExited)
+                {
+                    p.Kill();
                     return null;
+                }
+                else
+                {
+                    string output = p.StandardOutput.ReadToEnd();
+                    Logger.Warning(output);
+                    if (output.Contains(@"C:\vcap\store\"))
+                        //TODO imeplemnt block and mount point
+                        return @"C:\vcap\store\";
+                    else
+                        return null;
+                }
             }
-            
         }
 
         static int GUARD_RETRIES = 600;
@@ -108,35 +108,37 @@ EXIT", diskIndex);
 
             while (unmountAttempts > 0)
             {
-                Process p = new Process();
-                p.StartInfo = info;
-                p.Start();
-                p.WaitForExit(60000);
-                if (!p.HasExited)
+                using (Process p = new Process())
                 {
-                    p.Kill();
-                    Logger.Debug(p.StandardOutput.ReadToEnd());
-                    Logger.Error("Failed to umount {0}", mountPoint);
-                    throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to umount {0}", mountPoint));
-                }
-                else
-                {
-                    if (p.ExitCode != 0)
+                    p.StartInfo = info;
+                    p.Start();
+                    p.WaitForExit(60000);
+                    if (!p.HasExited)
                     {
-                        unmountAttempts--;
-                        Thread.Sleep(GUARD_SLEEP);
-                        continue;
+                        p.Kill();
+                        Logger.Debug(p.StandardOutput.ReadToEnd());
+                        Logger.Error("Failed to unmount {0}", mountPoint);
+                        throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to unmount {0}", mountPoint));
                     }
                     else
                     {
-                        Logger.Debug(p.StandardOutput.ReadToEnd());
-                        return;
+                        if (p.ExitCode != 0)
+                        {
+                            unmountAttempts--;
+                            Thread.Sleep(GUARD_SLEEP);
+                            continue;
+                        }
+                        else
+                        {
+                            Logger.Debug(p.StandardOutput.ReadToEnd());
+                            return;
+                        }
                     }
                 }
             }
 
-            Logger.Error("Failed to umount {0}", mountPoint);
-            throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to umount {0}", mountPoint));
+            Logger.Error("Failed to unmount {0}", mountPoint);
+            throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to unmount {0}", mountPoint));
 
             ////  loop do
             ////    umount_output = `umount #{mountpoint} 2>&1`
@@ -164,6 +166,8 @@ EXIT", diskIndex);
         /// <param name="disk">The disk.</param>
         /// <param name="partition">The partition.</param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "partition", Justification = "TODO: Method Not implemented"), 
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "disk", Justification = "TODO: Method Not implemented")]
         public static bool EnsureNoPartition(string disk, string partition)
         {
             throw new NotImplementedException();
@@ -197,6 +201,8 @@ EXIT", diskIndex);
         /// <param name="disk">The disk.</param>
         /// <param name="partition">The partition.</param>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "partition", Justification = "TODO: Method Not implemented"), 
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "disk", Justification = "TODO: Method Not implemented")]
         public static string LookupPartition(string disk, string partition)
         {
             throw new NotImplementedException();
@@ -207,39 +213,44 @@ EXIT", diskIndex);
         /// Gets the usage.
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<string, object> GetUsage()
+        public static Dictionary<string, object> GetUsage
         {
-            Dictionary<string, object> result = new Dictionary<string, object>();
-            result.Add("system", null);
-            result.Add("ephemeral", null);
-
-            string dataDir = Path.Combine(BaseDir, "data").TrimEnd(new char[] { '\\' }).ToLower();
-            string storeDir = Path.Combine(BaseDir, "store").TrimEnd(new char[] { '\\' }).ToLower();
-
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Volume");
-
-            foreach (ManagementObject queryObj in searcher.Get())
+            get
             {
-                string caption = queryObj["Caption"].ToString().TrimEnd(new char[] { '\\' }).ToLower();
-                if (caption == "c:")
+                Dictionary<string, object> result = new Dictionary<string, object>();
+                result.Add("system", null);
+                result.Add("ephemeral", null);
+
+                string dataDir = Path.Combine(BaseDir, "data").TrimEnd(new char[] { '\\' }).ToUpperInvariant();
+                string storeDir = Path.Combine(BaseDir, "store").TrimEnd(new char[] { '\\' }).ToUpperInvariant();
+
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM Win32_Volume"))
                 {
-                    result["system"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture));
-                    continue;
-                }
-                else if (caption == dataDir)
-                {
-                    result["ephemeral"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture));
-                    continue;
-                }
-                else if (caption == storeDir)
-                {
-                    result.Add("persistent", CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture)));
-                    continue;
+
+                    foreach (ManagementObject queryObj in searcher.Get())
+                    {
+                        string caption = queryObj["Caption"].ToString().TrimEnd(new char[] { '\\' }).ToUpperInvariant();
+                        if (caption == "C:")
+                        {
+                            result["system"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture));
+                            continue;
+                        }
+                        else if (caption == dataDir)
+                        {
+                            result["ephemeral"] = CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture));
+                            continue;
+                        }
+                        else if (caption == storeDir)
+                        {
+                            result.Add("persistent", CalculateDiskUsage(UInt64.Parse(queryObj["Capacity"].ToString(), CultureInfo.InvariantCulture), UInt64.Parse(queryObj["FreeSpace"].ToString(), CultureInfo.InvariantCulture)));
+                            continue;
+                        }
+
+                    }
                 }
 
+                return result;
             }
-
-            return result;
         }
 
         /// <summary>
@@ -272,19 +283,21 @@ EXIT", diskIndex, label);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
 
-            Process p = new Process();
-            p.StartInfo = info;
-            p.Start();
-            p.WaitForExit(60000);
-            if (!p.HasExited)
+            using (Process p = new Process())
             {
-                p.Kill();
-                return -1;
-            }
-            else
-            {
-                Logger.Warning(p.StandardOutput.ReadToEnd());
-                return p.ExitCode;
+                p.StartInfo = info;
+                p.Start();
+                p.WaitForExit(60000);
+                if (!p.HasExited)
+                {
+                    p.Kill();
+                    return -1;
+                }
+                else
+                {
+                    Logger.Warning(p.StandardOutput.ReadToEnd());
+                    return p.ExitCode;
+                }
             }
         }
 
@@ -349,27 +362,29 @@ EXIT", diskIndex, mountPath);
             int retryCount = 10;
             while (retryCount > 0)
             {
-                Process p = new Process();
-                p.StartInfo = info;
-                p.Start();
-                p.WaitForExit(60000);
-                if (!p.HasExited)
+                using (Process p = new Process())
                 {
-                    p.Kill();
-                    return -1;
-                }
-                else
-                {
-                    if (p.ExitCode != 0)
+                    p.StartInfo = info;
+                    p.Start();
+                    p.WaitForExit(60000);
+                    if (!p.HasExited)
                     {
-                        retryCount--;
-                        Thread.Sleep(1000);
-                        continue;
+                        p.Kill();
+                        return -1;
                     }
                     else
                     {
-                        Logger.Warning(p.StandardOutput.ReadToEnd());
-                        return p.ExitCode;
+                        if (p.ExitCode != 0)
+                        {
+                            retryCount--;
+                            Thread.Sleep(1000);
+                            continue;
+                        }
+                        else
+                        {
+                            Logger.Warning(p.StandardOutput.ReadToEnd());
+                            return p.ExitCode;
+                        }
                     }
                 }
             }
@@ -386,6 +401,11 @@ EXIT", diskIndex, mountPath);
         /// </returns>
         public static bool IsMountPoint(string path)
         {
+            if(string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             char[] trimChars = { '\\' };
             int retryCount = 10;
 
@@ -395,7 +415,7 @@ EXIT", diskIndex, mountPath);
                 {
                     foreach (ManagementObject queryObj in search.Get())
                     {
-                        if (queryObj["Caption"].ToString().TrimEnd(trimChars).Equals(path.TrimEnd(trimChars), StringComparison.InvariantCultureIgnoreCase))
+                        if (queryObj["Caption"].ToString().TrimEnd(trimChars).Equals(path.TrimEnd(trimChars), StringComparison.OrdinalIgnoreCase))
                         {
                             Logger.Debug("{0} is mount point.", path);
                             return true;
@@ -473,6 +493,11 @@ EXIT", diskIndex, mountPath);
         /// <returns></returns>
         public static string GetVolumeDeviceId(string mountPoint)
         {
+            if (string.IsNullOrEmpty(mountPoint))
+            {
+                throw new ArgumentNullException("mountPoint");
+            }
+
             char[] trimChars = { '\\' };
 
             int retryCount = 10;
@@ -484,9 +509,9 @@ EXIT", diskIndex, mountPath);
                     ManagementObjectCollection moc = volume.GetInstances();
                     foreach (ManagementObject mo in moc)
                     {
-                        if (mo["Caption"].ToString().TrimEnd(trimChars).Equals(mountPoint.TrimEnd(trimChars), StringComparison.InvariantCultureIgnoreCase))
+                        if (mo["Caption"].ToString().TrimEnd(trimChars).Equals(mountPoint.TrimEnd(trimChars), StringComparison.OrdinalIgnoreCase))
                         {
-                            Logger.Debug("Found VolumeId {0} for mount point {1}", mo["DeviceID"].ToString(), mountPoint);
+                            Logger.Debug("Found Volume ID {0} for mount point {1}", mo["DeviceID"].ToString(), mountPoint);
                             return mo["DeviceID"].ToString();
                         }
                     }
@@ -508,7 +533,7 @@ EXIT", diskIndex, mountPath);
                     ManagementObjectCollection moc = volume.GetInstances();
                     foreach (ManagementObject mo in moc)
                     {
-                        if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCultureIgnoreCase))
+                        if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
                         {
                             return int.Parse(mo["Index"].ToString(), CultureInfo.InvariantCulture);
                         }

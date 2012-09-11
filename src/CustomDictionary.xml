@@ -34,6 +34,8 @@
       <Word>Tarball</Word>
       <Word>Mbus</Word>
       <Word>replyto</Word>
+      <Word>Unmonitor</Word>
+      <Word>Unmonitoring</Word>
     </Recognized>
     <DiscreteExceptions>
       <Term>vsphere</Term>
@@ -56,6 +58,7 @@
       <Acronym>AWS</Acronym>
       <Acronym>BOSH</Acronym>
       <Acronym>ERB</Acronym>
+      <Acronym>CPU</Acronym>
     </CasingExceptions>
   </Acronyms>
 </Dictionary>

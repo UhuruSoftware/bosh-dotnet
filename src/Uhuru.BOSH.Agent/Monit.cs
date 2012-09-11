@@ -22,7 +22,7 @@ using System.Threading;
     /// TODO: Update summary.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Monit", Justification = "FxCop Bug")]
-    public class Monit
+    public class Monit : IDisposable
     {
    //// BUFSIZE = (32 * 1024)
    //// NUM_RETRY_MONIT_INCARNATION = 60
@@ -36,6 +36,7 @@ using System.Threading;
 
         private static volatile Monit instance;
         private bool enabled = false;
+        private bool disposed = false;
         
         private Monit() {
 
@@ -54,7 +55,7 @@ using System.Threading;
             {
                 lock (locker)
                 {
-                    if (jobDefinitionDirectory != string.Empty)
+                    if (!string.IsNullOrEmpty(jobDefinitionDirectory))
                     {
                         jobDefDirectory = jobDefinitionDirectory;
                     }
@@ -317,7 +318,7 @@ using System.Threading;
             }
         }
 
-         public object RunPreScripts(bool start)
+         public object RunPrescripts(bool start)
          {
              object result = 0;
              lock (locker)
@@ -489,9 +490,12 @@ using System.Threading;
    ////       "swap" => { "percent" => swap["percent"], "kb" => swap["kilobyte"] }
    ////     }
    ////   end
-        public Vitals GetVitals()
+        public Vitals GetVitals
         {
-            return monitPerformance.GetVitals();
+            get
+            {
+                return monitPerformance.GetVitals;
+            }
         }
 
    ////   def service_group_state(num_retries=10)
@@ -513,27 +517,30 @@ using System.Threading;
    ////     logger.info("Unable to determine job state: #{e}")
    ////     "unknown"
    ////   end
-        public string GetServiceGourpState()
+        public string GetServiceGroupState
         {
-            if (!enabled)
+            get
             {
-                Logger.Info("Heartbeat is disabled");
+                if (!enabled)
+                {
+                    Logger.Info("Heartbeat is disabled");
+                    return "running";
+                }
+
+                foreach (KeyValuePair<string, ServiceControllerStatus> service in serviceControllers)
+                {
+                    if (service.Value == ServiceControllerStatus.StartPending)
+                    {
+                        return "starting";
+                    }
+                    else if (service.Value != ServiceControllerStatus.Running)
+                    {
+                        return "failing";
+                    }
+                }
+
                 return "running";
             }
-
-            foreach (KeyValuePair<string, ServiceControllerStatus> service in serviceControllers )
-            {
-                if (service.Value == ServiceControllerStatus.StartPending)
-                {
-                    return "starting";
-                }
-                else if (service.Value != ServiceControllerStatus.Running)
-                {
-                    return "failing";
-                }
-            }
-
-            return "running";
         }
 
    //// end
@@ -600,5 +607,29 @@ using System.Threading;
    ////   end
 
    //// end
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    this.monitPerformance.Dispose();
+                }
+
+                disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~Monit() // the finalizer
+        {
+            Dispose(false);
+        }
     }
 }

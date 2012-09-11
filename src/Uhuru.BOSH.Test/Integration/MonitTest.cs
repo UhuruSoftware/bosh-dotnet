@@ -38,14 +38,14 @@ namespace Uhuru.BOSH.Test.Integration
             Monit monit = Monit.GetInstance(@"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Resources\Monit");
 
             //Act
-            Vitals vitals = monit.GetVitals();
+            Vitals vitals = monit.GetVitals;
 
             //Assert
             Assert.IsNotNull(vitals.CPU);
             Assert.IsNotNull(vitals.CPU.Sys);
             Assert.IsNotNull(vitals.Disk);
             Assert.IsNotNull(vitals.Load);
-            Assert.IsNotNull(vitals.Mem);
+            Assert.IsNotNull(vitals.Memory);
 
         }
     }

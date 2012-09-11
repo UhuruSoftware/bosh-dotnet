@@ -7,15 +7,19 @@ using System.IO;
 using System.ComponentModel;
 using Microsoft.VisualBasic.Devices;
 using Newtonsoft.Json;
+using System.Globalization;
+using System.Collections.ObjectModel;
+using Uhuru.BOSH.Agent.Objects;
 
 namespace Uhuru.BOSH.Agent
 {
-    public class MonitPerformance
+    public class MonitPerformance : IDisposable
     {
         PerformanceCounter cpuCounter = null;
         PerformanceCounter userCpuCounter = null;
         PerformanceCounter ramCounter = null;
         double totalMemory;
+        bool disposed = false;
 
         public MonitPerformance()
         {
@@ -40,43 +44,44 @@ namespace Uhuru.BOSH.Agent
 
         }
 
-        public Vitals GetVitals()
+        public Vitals GetVitals
         {
-            Vitals result = new Vitals();
-
-            return result;
-            //Populate CPU
-            result.CPU = new Vitals.CPUInfo();
-            double userCpuCount = userCpuCounter.NextValue();
-            result.CPU.Sys = (Math.Round(cpuCounter.NextValue() - userCpuCount, 2)).ToString();
-            result.CPU.User = Math.Round(userCpuCount,2).ToString(); 
-
-            //Populate RAM
-            result.Mem = new Vitals.MemInfo();
-            double availableMemory = ramCounter.NextValue();
-            double usedPercentage = 100 - (availableMemory * 100 / totalMemory);
-            result.Mem.Kb = Math.Round(totalMemory - availableMemory, 2).ToString();
-            result.Mem.Percent = Math.Round(usedPercentage, 2).ToString();
-
-            //Populate load
-            result.Load = new List<string>();
-            result.Load.Add(Math.Round(ComputeAverage(1), 2).ToString());
-            result.Load.Add(Math.Round(ComputeAverage(5), 2).ToString());
-            result.Load.Add(Math.Round(ComputeAverage(15), 2).ToString());
-
-            //Populate disk
-            result.Disk = new Vitals.DiskInfo();
-            int disku = GetDiskUsagePercentege("C:\\");
-            if (disku != 0)
+            get
             {
-                result.Disk.SystemDisk = new Vitals.DiskInfo.SystemDiskInfo();
-                result.Disk.SystemDisk.Percent = disku.ToString();
-            }
+                Vitals result = new Vitals();
 
-            return result;
+                //Populate CPU
+                result.CPU = new CPUInfo();
+                double userCpuCount = this.userCpuCounter.NextValue();
+                result.CPU.Sys = (Math.Round(this.cpuCounter.NextValue() - userCpuCount, 2)).ToString(CultureInfo.InvariantCulture);
+                result.CPU.User = Math.Round(userCpuCount, 2).ToString(CultureInfo.InvariantCulture);
+
+                //Populate RAM
+                result.Memory = new MemoryInfo();
+                double availableMemory = this.ramCounter.NextValue();
+                double usedPercentage = 100 - (availableMemory * 100 / this.totalMemory);
+                result.Memory.KB = Math.Round(this.totalMemory - availableMemory, 2).ToString(CultureInfo.InvariantCulture);
+                result.Memory.Percent = Math.Round(usedPercentage, 2).ToString(CultureInfo.InvariantCulture);
+
+                //Populate load
+                result.LoadAdd(Math.Round(ComputeAverage(1), 2).ToString(CultureInfo.InvariantCulture));
+                result.LoadAdd(Math.Round(ComputeAverage(5), 2).ToString(CultureInfo.InvariantCulture));
+                result.LoadAdd(Math.Round(ComputeAverage(15), 2).ToString(CultureInfo.InvariantCulture));
+
+                //Populate disk
+                result.Disk = new DiskInfo();
+                int disku = GetDiskUsagePercentege("C:\\");
+                if (disku != 0)
+                {
+                    result.Disk.SystemDisk = new SystemDiskInfo();
+                    result.Disk.SystemDisk.Percent = disku.ToString(CultureInfo.InvariantCulture);
+                }
+
+                return result;
+            }
         }
 
-        private int GetDiskUsagePercentege(string driveName)
+        private static int GetDiskUsagePercentege(string driveName)
         {
             int result = 0;
 
@@ -95,7 +100,7 @@ namespace Uhuru.BOSH.Agent
         }
 
 
-        private double ComputeAverage(int minutes)
+        private static double ComputeAverage(int minutes)
         {
             Process[] allProcesses = Process.GetProcesses();
 
@@ -123,69 +128,62 @@ namespace Uhuru.BOSH.Agent
             return average / i;
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    this.cpuCounter.Dispose();
+                    this.ramCounter.Dispose();
+                    this.userCpuCounter.Dispose();
+                }
+
+                disposed = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~MonitPerformance() // the finalizer
+        {
+            Dispose(false);
+        }
     }
 
     [JsonObject("vitals")]
     public class Vitals
     {
         [JsonProperty("load")]
-        public List<string> Load { get; set; }
+        public Collection<string> Load { get; private set; }
 
         [JsonProperty("cpu")]
-        public CPUInfo CPU;
+        public CPUInfo CPU { get { return cpu; } set { cpu = value; } }
+
+        private CPUInfo cpu;
 
         [JsonProperty("mem")]
-        public MemInfo Mem;
+        public MemoryInfo Memory { get { return memory; } set { memory = value; } }
+
+        private MemoryInfo memory;
 
         [JsonProperty("disk")]
-        public DiskInfo Disk;
+        public DiskInfo Disk { get { return disk; } set { disk = value; } }
 
-        public class CPUInfo
+        private DiskInfo disk;
+
+        public Vitals()
         {
-            [JsonProperty("user")]
-            public string User;
-
-            [JsonProperty("sys")]
-            public string Sys;
-
-            [JsonProperty("wait")]
-            public string Wait;
+            Load = new Collection<string>();
         }
 
-        public class MemInfo
+        public void LoadAdd(string value)
         {
-            [JsonProperty("percent")]
-            public string Percent;
-            [JsonProperty("kb")]
-            public string Kb;
-        }
-
-        public class DiskInfo
-        {
-            [JsonProperty("system")]
-            public SystemDiskInfo SystemDisk;
-
-            [JsonProperty("ephemeral")]
-            public EphemeralDiskInfo EphemeralDisk;
-
-            [JsonProperty("persistent")]
-            public PersistantDiskInfo PersistantDisk;
-
-            public class SystemDiskInfo
-            {
-                [JsonProperty("percent")]
-                public string Percent;
-            }
-            public class EphemeralDiskInfo
-            {
-                [JsonProperty("percent")]
-                public string Percent;
-            }
-            public class PersistantDiskInfo
-            {
-                [JsonProperty("percent")]
-                public string PersistantPercent;
-            }
+            Load.Add(value);
         }
     }
 }

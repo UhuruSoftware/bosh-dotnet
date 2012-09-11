@@ -39,10 +39,10 @@ namespace Uhuru.BOSH.Agent
     ////  @logger        = Config.logger
     ////end
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "user", Justification = "Not implemented"), 
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "port", Justification = "Not implemented"), 
-        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "password", Justification = "Not implemented")
-        , System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "host", Justification = "Not implemented")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "user", Justification = "TODO: Not implemented"),
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "port", Justification = "TODO: Not implemented"),
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "password", Justification = "TODO: Not implemented")
+        , System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "host", Justification = "TODO: Not implemented")]
         public AlertProcessor(string host, string port, string user, string password)
         {
             throw new NotImplementedException("And it will never be...");

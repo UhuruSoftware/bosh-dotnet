@@ -30,6 +30,7 @@ using System.ServiceModel.Web;
         ////end
 
         int serverPort;
+        bool disposed = false;
 
         public int ServerPort
         {
@@ -71,9 +72,23 @@ using System.ServiceModel.Web;
 
         public void Dispose()
         {
-            if (this.host != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
             {
-                this.host.Close();
+                if (disposing)
+                {
+                    if (this.host != null)
+                    {
+                        this.host.Close();
+                    }
+                }
+
+                disposed = true;
             }
         }
     }
@@ -88,6 +103,7 @@ using System.ServiceModel.Web;
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     class Controller : IController
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "TODO: Not implemented")]
         HttpHandler httpHandler;
 
         public void Initialize(HttpHandler handler)
@@ -106,6 +122,9 @@ using System.ServiceModel.Web;
             throw new NotImplementedException();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "json", Justification = "TODO: Not implemented"), 
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "TODO: Not implemented"), 
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "TODO: Not implemented")]
         private System.ServiceModel.Channels.Message HandleMessage(string json)
         {
             throw new NotImplementedException();

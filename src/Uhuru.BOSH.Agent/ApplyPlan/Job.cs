@@ -393,7 +393,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         {
             // TODO: maybe this is just a Process start helper function
             Logger.Info("Running pre install script");
-            this.monit.RunPreScripts(true);
+            this.monit.RunPrescripts(true);
             
             //Logger.Error("Not implemented: RunPostInstallHook");
         }

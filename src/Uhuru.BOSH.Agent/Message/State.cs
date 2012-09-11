@@ -64,7 +64,7 @@ namespace Uhuru.BOSH.Agent.Message
         private string GetJobState()
         {
 
-            string serviceState = this.monit.GetServiceGourpState();
+            string serviceState = this.monit.GetServiceGroupState;
             return serviceState;
         }
 

@@ -20,7 +20,9 @@ using System.Timers;
     public class HeartbeatProcessor
     {
         private Timer timer = null;
-        public static int pending;
+
+        public static int Pending { get { return pending; } set { pending = value; } }
+        private static int pending;
     ////MAX_OUTSTANDING_HEARTBEATS = 2
 
     ////def enable(interval)
@@ -75,7 +77,7 @@ using System.Timers;
     ////end
         void Beat()
         {
-            Logger.Info("Timer hartbeat");
+            Logger.Info("Timer heartbeat");
 
             try
             {

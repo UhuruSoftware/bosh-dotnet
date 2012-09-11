@@ -96,7 +96,7 @@ using Uhuru.NatsClient;
 
         private object RunDrainScript()
         {
-            object result =this.monit.RunPreScripts(false);
+            object result =this.monit.RunPrescripts(false);
             
             return result;
             //return "0";

@@ -139,11 +139,17 @@
     </Compile>
     <Compile Include="NtpClient.cs" />
     <Compile Include="Objects\CompileResult.cs" />
+    <Compile Include="Objects\CPUInfo.cs" />
+    <Compile Include="Objects\DiskInfo.cs" />
+    <Compile Include="Objects\EphemeralDiskInfo.cs" />
     <Compile Include="Objects\HandlerResult.cs" />
     <Compile Include="Objects\HeartbeatMessage.cs" />
     <Compile Include="Objects\Job.cs" />
     <Compile Include="Objects\JobManifest.cs" />
+    <Compile Include="Objects\MemoryInfo.cs" />
+    <Compile Include="Objects\PersistentDiskInfo.cs" />
     <Compile Include="Objects\SshResult.cs" />
+    <Compile Include="Objects\SystemDiskInfo.cs" />
     <Compile Include="Platforms\WindowsPlatform.cs" />
     <Compile Include="Platforms\Windows\Disk.cs" />
     <Compile Include="Platforms\Windows\WindowsNetwork.cs" />

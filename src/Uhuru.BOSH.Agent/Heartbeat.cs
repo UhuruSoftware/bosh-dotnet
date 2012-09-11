@@ -98,7 +98,7 @@ namespace Uhuru.BOSH.Agent
         void MessageDelivered()
         {
             Logger.Debug("Heartbeat delivered");
-            HeartbeatProcessor.pending--;
+            HeartbeatProcessor.Pending--;
         }
     ////def heartbeat_payload
     ////  job_state = Bosh::Agent::Monit.service_group_state
@@ -122,7 +122,7 @@ namespace Uhuru.BOSH.Agent
         {
             HeartbeatMessage heartBeatMessage = new HeartbeatMessage();
             
-            Vitals systemVitals = Monit.GetInstance().GetVitals();
+            Vitals systemVitals = Monit.GetInstance().GetVitals;
             
             heartBeatMessage.Job = Config.State.Job != null ? Config.State.Job.Name : null;
             dynamic stateHash = Config.State.ToHash();
@@ -130,7 +130,7 @@ namespace Uhuru.BOSH.Agent
             {
                 heartBeatMessage.Index = Convert.ToInt32(stateHash["index"].Value);
             }
-            heartBeatMessage.JobState = Monit.GetInstance().GetServiceGourpState();
+            heartBeatMessage.JobState = Monit.GetInstance().GetServiceGroupState;
             heartBeatMessage.Vitals = systemVitals;
             heartBeatMessage.NtpMsg = new NtpMessage();
             Ntp ntp = Ntp.GetNtpOffset();
