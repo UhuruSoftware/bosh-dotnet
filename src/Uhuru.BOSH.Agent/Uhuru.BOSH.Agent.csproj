@@ -52,7 +52,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
@@ -125,7 +125,7 @@
     <Compile Include="Errors\LoadSettingsException.cs" />
     <Compile Include="Errors\MessageHandlerException.cs" />
     <Compile Include="Errors\StateException.cs" />
-    <Compile Include="Errors\UnknownInfrastructure.cs" />
+    <Compile Include="Errors\UnknownInfrastructureException.cs" />
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
     <Compile Include="GlobalSuppressions.cs" />

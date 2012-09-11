@@ -217,7 +217,7 @@ namespace Uhuru.BOSH.Agent
         {
             Logger.Info("Loading settings");
 
-            this.settings = Config.Infrastructure.LoadSettings();
+            this.settings = Config.Infrastructure().LoadSettings();
             Config.Settings = this.settings;
 
             Logger.Info("Loaded settings :" + this.settings.ToString());

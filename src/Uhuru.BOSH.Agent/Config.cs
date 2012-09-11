@@ -199,18 +199,13 @@ namespace Uhuru.BOSH.Agent
         }
 
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         public static void Setup(dynamic config, bool firstDeployment)
         {
             Logger.Info("Running setup");
-            //YamlMappingNode root = (YamlMappingNode)config.Documents[0].RootNode;
             Config.SystemRoot = @"c:\"; //TODO system root
 
             Config.Configure =firstDeployment;
-            //Config.Configure = config["configure"] == null ? true : config["configure"];
-            //Config.Configure = root.GetString("configure");
-
-            
-            //Config.BaseDir = root.GetString("base_dir") == null ? DEFAULT_BASE_DIR : root.GetChild("base_dir").ToString();
             if (!Config.Configure)
             {
                 Logger.Info("Bosh agent not in configure mode");
@@ -227,44 +222,16 @@ namespace Uhuru.BOSH.Agent
                 Config.MessageBus = "nats://localhost:4222";
                 Config.BlobstoreOptions = null;
             }
-            //Config.AgentId = root.GetString("agent_id");
-
-            
-            //Config.MessageBus = root.GetString("mbus");
-
-            
-            //Config.BlobstoreOptions = new Collection<string>(){root.GetString("blobstore_options")};
-
             Config.BlobstoreProvider = config["blobstore_provider"] != null ? config["blobstore_provider"].Value : null;
-            //Config.BlobstoreProvider = root.GetString("blobstore_provider");
-
             Config.InfrastructureName = "Windows"; //TODO Always windows, from unity
-            
-            //Config.InfrastructureName = root.GetString("infrastructure_name");
-
             Config.PlatformName = "vcap"; //TODO From unity
-            //Config.PlatformName = root.GetString("platform_name");
-
-           
-            //Config.SystemRoot = root.GetString("root_dir") ?? "/";
-
             Config.ProcessAlerts = true; //TODO from commandline
-            //Config.ProcessAlerts = root.GetBool("process_alerts");
-
             Config.SmtpPort = "2852"; //TODO from commandline
-            //Config.SmtpPort = root.GetString("smtp_port");
             Config.SmtpUser = "vcap";
             Config.SmtpPassword = RandomPassword(8);
-
             Config.HeartbeatInterval = 60; //TODO from commandline
-            //root.GetString("heartbeat_interval");
-
             Config.SshdMonitorInterval = config["sshd_monitor_interval"] != null ? int.Parse(config["sshd_monitor_interval"].Value) : DEFAULT_SSHD_MONITOR_INTERVAL;
-
             Config.SshdStartDelay = config["sshd_start_delay"] != null ? int.Parse(config["sshd_start_delay"].Value) : DEFAULT_SSHD_START_DELAY;
-
-            //Config.SshdStartDelay = root.GetInt("sshd_start_delay") ?? DEFAULT_SSHD_START_DELAY;
-
             Config.SshdMonitorEnabled = config["sshd_monitor_enabled"] != null ? config["sshd_monitor_enabled"].Value : false;
             //Config.SshdMonitorEnabled = root.GetString("sshd_monitor_enabled");
 
@@ -274,11 +241,7 @@ namespace Uhuru.BOSH.Agent
             //}
 
             Config.SettingsFile = Path.Combine(Config.BaseDir, "bosh", "settings.json");
-
-            //Config.Credentials = root.GetString("credentials");
-
             Config.Settings = GetSettings(Config.SettingsFile);
-
             Config.State = new State(Path.Combine(Config.BaseDir, "bosh", "state.yml"));
             Logger.Info("Configuration done!");
         }
@@ -298,18 +261,15 @@ namespace Uhuru.BOSH.Agent
         /// <summary>
         /// Gets the current infrastructure.
         /// </summary>
-        public static IInfrastructure Infrastructure
+        public static IInfrastructure Infrastructure()
         {
-            get
+            try
             {
-                try
-                {
-                    return UnityProvider.GetInstance.GetProvider<IInfrastructure>();
-                }
-                catch (Exception ex)
-                {
-                    throw new UnknownInfrastructure(ex);
-                }
+                return UnityProvider.GetInstance.GetProvider<IInfrastructure>();
+            }
+            catch (Exception ex)
+            {
+                throw new UnknownInfrastructureException(ex);
             }
         }
 

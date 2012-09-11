@@ -73,7 +73,7 @@ namespace Uhuru.BOSH.Agent.Message
                 Logger.Info("The new spec contains networks element");
                 foreach (dynamic network in this.newSpec["networks"])
                 {
-                    dynamic networkSettings = Config.Infrastructure.GetNetworkSettings(network.Name, network.Value);
+                    dynamic networkSettings = Config.Infrastructure().GetNetworkSettings(network.Name, network.Value);
                     if (networkSettings != string.Empty)
                         throw new NotImplementedException();
                     Logger.Info("Platform does not require additional settings");

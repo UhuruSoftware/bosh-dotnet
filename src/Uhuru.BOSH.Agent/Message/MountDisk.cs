@@ -56,7 +56,7 @@ namespace Uhuru.BOSH.Agent.Message
         /// </summary>
         public static void UpdateSettings()
         {
-            Config.Settings = Config.Infrastructure.LoadSettings();
+            Config.Settings = Config.Infrastructure().LoadSettings();
             Logger.Info("Settings :" + Config.Settings.ToString());
         }
 

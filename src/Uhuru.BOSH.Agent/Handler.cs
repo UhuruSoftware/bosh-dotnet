@@ -286,16 +286,13 @@ using System.Collections.ObjectModel;
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         public void HandleMessage(string json)
         {
             try
             {
                 dynamic msg = JsonConvert.DeserializeObject(json);
 
-                //TODO Improve this functionality. This hack is needed for removing !!int values
-                //string aux = msg.ToString();
-                //msg = YamlMapping.FromYaml(aux.Replace(" !!int", string.Empty))[0];
-                
                 if (String.IsNullOrEmpty(msg["reply_to"]))
                 {
                     Logger.Info("Missing reply_to in: {0}", json);
@@ -303,14 +300,10 @@ using System.Collections.ObjectModel;
                 }
 
                 Logger.Info("Message: {0}", json);
-
-                if (!string.IsNullOrEmpty(this.Credentials))
+                msg = CheckCredentials(msg);
+                if (msg == null)
                 {
-                    msg = Decrypt(msg);
-                    if (msg == null)
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 string replyTo = msg["reply_to"].Value;
@@ -350,6 +343,19 @@ using System.Collections.ObjectModel;
             {
                 Logger.Warning("Failed to parse message: {0}: {1}", json, ex.ToString());
             }
+        }
+
+        private object CheckCredentials(dynamic msg)
+        {
+            if (!string.IsNullOrEmpty(this.Credentials))
+            {
+                msg = Decrypt(msg);
+                if (msg == null)
+                {
+                    return null;
+                }
+            }
+            return msg;
         }
 
         private void ProcessInThread(IMessage processor, string replyTo, string method, object args)
