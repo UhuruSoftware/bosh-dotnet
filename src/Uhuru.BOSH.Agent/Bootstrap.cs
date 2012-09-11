@@ -26,7 +26,7 @@ namespace Uhuru.BOSH.Agent
     {
         private IPlatform platform;
         // private Infrastructure settings;
-        private Dictionary<string, string> settings;
+        private dynamic settings;
 
         ////    def initialize
         ////      FileUtils.mkdir_p(File.join(base_dir, 'bosh'))
@@ -36,23 +36,11 @@ namespace Uhuru.BOSH.Agent
         public Bootstrap()
         {
             Logger.Info("Starting bootstrap");
-            Directory.CreateDirectory(Path.Combine(this.BaseDir, "bosh"));
+            Directory.CreateDirectory(Path.Combine(BaseDir, "bosh"));
             this.platform = Config.Platform;
         }
 
-        ////    def logger
-        ////      Bosh::Agent::Config.logger
-        ////    end
-
-        object logger
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        string BaseDir
+        static string BaseDir
         {
             get
             {
@@ -60,11 +48,11 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        string SotrePath
+        static string SotrePath
         {
             get
             {
-                return Path.Combine(this.BaseDir, "store");
+                return Path.Combine(BaseDir, "store");
             }
         }
 
@@ -105,7 +93,7 @@ namespace Uhuru.BOSH.Agent
 
             if (Config.Settings != null)
             {
-                UpdateIptables();
+                UpdateIPTables();
                 UpdatePasswords();
                 UpdateAgentId();
                 UpdateCredentials();
@@ -138,7 +126,7 @@ namespace Uhuru.BOSH.Agent
 
         private void SetupDiskData()
         {   
-            int dataDiskId = int.Parse(Config.Platform.GetDataDiskDeviceName, CultureInfo.InvariantCulture);
+            int dataDiskId = int.Parse(this.platform.GetDataDiskDeviceName, CultureInfo.InvariantCulture);
 
             Logger.Info("Creating partition on drive " + dataDiskId);
 
@@ -163,43 +151,41 @@ namespace Uhuru.BOSH.Agent
         private void UpdateTime()
         {
             Logger.Info("Updating time");
-            if (Config.Settings["ntp"] == null)
+            if (this.settings["ntp"] == null)
             {
                 Logger.Warning("no ntp-servers configured");
                 return;
             }
 
-            foreach (dynamic ntpServer in Config.Settings["ntp"])
+            foreach (dynamic ntpServer in this.settings["ntp"])
             {
                 Ntp ntp = Ntp.GetNtpOffset(ntpServer.Value);
                 Logger.Info("Current time offset is :" + ntp.Offset + " to time server " + ntpServer); //TODO update time
             }
-            
-             
         }
 
         private void SetupNetwork()
         {
-            Config.Platform.SetupNetworking();
+            this.platform.SetupNetworking();
         }
 
         private void UpdateBlobStore()
         {
             Logger.Info("Setting blob store provider");
-            Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
+            Config.BlobstoreProvider = this.settings["blobstore"]["plugin"].Value;
             Logger.Info("Set blob store provider to : " + Config.BlobstoreProvider);
 
             // TODO: analyze if a merge is necessary
-            Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
+            Config.BlobstoreOptions = this.settings["blobstore"]["properties"];
         }
 
         private void UpdateMbus()
         {
-            Config.MessageBus = Config.Settings["mbus"].Value;
+            Config.MessageBus = this.settings["mbus"].Value;
             Logger.Info("Setting message bus endpoint to to " + Config.MessageBus);
         }
 
-        private void UpdateHostname()
+        private static void UpdateHostname()
         {
             string newHostName = Config.AgentId;
 
@@ -231,9 +217,10 @@ namespace Uhuru.BOSH.Agent
         {
             Logger.Info("Loading settings");
 
-            Config.Settings = Config.Infrastructure.LoadSettings();
+            this.settings = Config.Infrastructure.LoadSettings();
+            Config.Settings = this.settings;
 
-            Logger.Info("Loaded settings :" + Config.Settings.ToString());
+            Logger.Info("Loaded settings :" + this.settings.ToString());
         }
 
         ////    def iptables(cmd)
@@ -244,7 +231,9 @@ namespace Uhuru.BOSH.Agent
         ////      output
         ////    end
 
-        public void IpTables(string cmd)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "cmd", Justification = "TODO: JIRA UH-1211"), 
+        System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "TODO: JIRA UH-1211")]
+        public void IPTables(string cmd)
         {
             // Consider using an alternative on windows, i.e. "ROUTE" command
             throw new NotImplementedException();
@@ -274,9 +263,9 @@ namespace Uhuru.BOSH.Agent
         ////      end
         ////    end
 
-        public void UpdateIptables()
+        public void UpdateIPTables()
         {
-            if (Config.Settings["iptables"] == null)
+            if (this.settings["iptables"] == null)
             {
                 Logger.Info("No Ip table found in the config, skipping ip tables update");
                 return;
@@ -292,13 +281,13 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdatePasswords()
         {
-            if (Config.Settings["env"] != null && Config.Settings["env"].Count > 0)
+            if (this.settings["env"] != null && this.settings["env"].Count > 0)
             {
                 throw new NotImplementedException();
             }
             else 
             {
-                Logger.Info("No env settings detects, skipping password update process");
+                Logger.Info("No ENV settings detects, skipping password update process");
             }
             
         }
@@ -311,7 +300,7 @@ namespace Uhuru.BOSH.Agent
         {
             
             Logger.Info("Updating agent Id");
-            Config.AgentId = Config.Settings["agent_id"].Value;
+            Config.AgentId = this.settings["agent_id"].Value;
             Logger.Info("New agent id is :" + Config.AgentId);
         }
 
@@ -326,13 +315,13 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateCredentials()
         {
-            if (Config.Settings["env"] != null && Config.Settings["env"].Count > 0)
+            if (this.settings["env"] != null && this.settings["env"].Count > 0)
             {
                 throw new NotImplementedException();
             }
             else
             {
-                Logger.Info("No env settings detects, skipping credential update process");
+                Logger.Info("No ENV settings detects, skipping credential update process");
             }
         }
 
@@ -426,19 +415,21 @@ namespace Uhuru.BOSH.Agent
         ////      File.readlines('/proc/meminfo').first.split(/\s+/)[1].to_i
         ////    end
 
-        long MemTotal()
+        static long MemTotal()
         {
             ObjectQuery winQuery = new ObjectQuery("SELECT * FROM Win32_LogicalMemoryConfiguration");
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery);
-
-            foreach (ManagementObject item in searcher.Get())
+            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(winQuery))
             {
-                return (long)item["TotalPhysicalMemory"];
+
+                foreach (ManagementObject item in searcher.Get())
+                {
+                    return (long)item["TotalPhysicalMemory"];
+                }
             }
             return -1;
         }
 
-        void SetupDataSys()
+        static void SetupDataSys()
         {
             string dataSysDirectory = Path.Combine(BaseDir, "data", "sys");
             if(!Directory.Exists(dataSysDirectory))
@@ -487,7 +478,7 @@ namespace Uhuru.BOSH.Agent
         ////      end
         ////    end
 
-        void SetupTemp()
+        static void SetupTemp()
         {
             string agentTmpDir = Path.Combine(BaseDir, "data", "tmp");
             if (!Directory.Exists(agentTmpDir))
@@ -505,6 +496,7 @@ namespace Uhuru.BOSH.Agent
         ////      %x[chmod 0700 /var/tmp]
         ////    end
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "TODO: JIRA UH-1211")]
         void TempPermissiosn()
         {
             // todo: maybe not necessary for windows
@@ -525,15 +517,15 @@ namespace Uhuru.BOSH.Agent
 
         void MountPersistentDisk()
         {
-            if (Config.Settings["disks"]["persistent"].Count > 0)
+            if (this.settings["disks"]["persistent"].Count > 0)
             {
-                if (Config.Settings["disks"]["persistent"].Count > 1)
+                if (this.settings["disks"]["persistent"].Count > 1)
                 {
                     throw new FatalBoshException("Fatal: more than one persistent disk on boot");
                 }
                 else
                 {
-                    string storeDiskId = Config.Settings["disks"]["persistent"][0].Value;
+                    string storeDiskId = this.settings["disks"]["persistent"][0].Value;
                     if (!string.IsNullOrEmpty(storeDiskId))
                     {
                         Config.Platform.MountPersistentDisk(int.Parse(storeDiskId, CultureInfo.InvariantCulture));
@@ -593,6 +585,7 @@ namespace Uhuru.BOSH.Agent
 
         ////    end
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification="TODO: JIRA UH-1211")]
         void HardenPermissions()
         {
             // Most of the code doesn't apply to Windows systems.
@@ -604,6 +597,7 @@ namespace Uhuru.BOSH.Agent
         ////        File.open(file, 'w') { |fh| fh.puts(BOSH_APP_USER) }
         ////      end
         ////    end
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification="TODO: JIRA UH-1211")]
         void SetupCronToAllow()
         {
             // Analyze what steps are required for Windows.
