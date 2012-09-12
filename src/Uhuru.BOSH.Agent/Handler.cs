@@ -293,7 +293,7 @@ using System.Collections.ObjectModel;
             {
                 dynamic msg = JsonConvert.DeserializeObject(json);
 
-                if (String.IsNullOrEmpty(msg["reply_to"]))
+                if (String.IsNullOrEmpty(msg["reply_to"].ToString()))
                 {
                     Logger.Info("Missing reply_to in: {0}", json);
                     return;

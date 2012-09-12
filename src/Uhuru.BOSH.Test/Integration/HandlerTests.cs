@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using Uhuru.NatsClient;
 using Newtonsoft.Json;
+using Uhuru.BOSH.Agent.Objects;
 
 namespace Uhuru.BOSH.Test.Unit
 {
@@ -64,5 +65,47 @@ namespace Uhuru.BOSH.Test.Unit
             Console.WriteLine("iseste");
         }
 
+        [TestMethod]
+        public void TC003_test_aa()
+        {
+            JobManifest testjobManifest = LoadManifest(@"E:\_me\job.MF");
+        }
+
+        private static JobManifest LoadManifest(string jobManifestPath)
+        {
+            string[] fileContent = File.ReadAllLines(jobManifestPath);
+            //dynamic job = JsonConvert.DeserializeObject(fileContent);
+            JobManifest jobManifest = new JobManifest();
+
+
+            for (int i = 0; i < fileContent.Length; i++)
+            {
+                //get name
+                if (fileContent[i].StartsWith("name", StringComparison.OrdinalIgnoreCase))
+                {
+                    jobManifest.Name = fileContent[i].Split(':')[1].Trim();
+                }
+
+                if (fileContent[i].StartsWith("templates", StringComparison.OrdinalIgnoreCase))
+                {
+                    i++;
+                    while (!String.IsNullOrEmpty(fileContent[i]))
+                    {
+                        jobManifest.AddTemplate(fileContent[i].Split(':')[0].Trim(), fileContent[i].Split(':')[1].Trim());
+                        i++;
+                    }
+                }
+                if (fileContent[i].StartsWith("packages", StringComparison.OrdinalIgnoreCase))
+                {
+                    i++;
+                    while (!String.IsNullOrEmpty(fileContent[i]) || i == fileContent.Length)
+                    {
+                        jobManifest.AddPackage(fileContent[i].Split('-')[1].Trim());
+                        i++;
+                    }
+                }
+            }
+            return jobManifest;
+        }
     }
 }

@@ -120,7 +120,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             name = spec["name"].Value;
             template = spec["template"].Value;
             version = spec["version"].Value;
-            checksum = spec["sha1"];
+            checksum = spec["sha1"].Value;
             blobstoreId = spec["blobstore_id"].Value;
             configBinding = spec["config_binding"] != null ? spec["config_binding"].Value : null;
             installPath = Path.Combine(baseDir, "data", "jobs", template, version);
@@ -306,20 +306,26 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
         }
 
+        /// <summary>
+        /// Gets the ruby object.
+        /// </summary>
+        /// <param name="jsonProperty">The JSON property.</param>
+        /// <returns></returns>
         public string GetRubyObject(dynamic jsonProperty)
         {
             StringBuilder currentObject = new StringBuilder();
-            
-            if (jsonProperty.GetType() is JObject)
+            bool isJobject = false;
+            if (jsonProperty is JObject)
             {
                 currentObject.Append("{");
+                isJobject = true;
             }
             if ((jsonProperty as JContainer).Children().Count() != 0)
             {
 
                 foreach (var child in jsonProperty.Children())
                 {
-                    if (child.GetType() is JValue)
+                    if (child is JValue)
                     {
                         string childValue = child.ToString();
 
@@ -331,17 +337,17 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                     ProcessJProperty(ref currentObject, child);
 
                     //TODO IMPROVE JARAY
-                    if (child.GetType() is JArray)
+                    if (child is JArray)
                         return "{}";
                     
-                    if (child.GetType() is JObject)
+                    if (child is JObject)
                     {
                         currentObject.Append(GetRubyObject(child));
                     }
                 }
 
             }
-            if (jsonProperty.GetType() is JObject)
+            if (isJobject) 
             {
                 currentObject.Append("}");
             }
@@ -350,7 +356,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
         private void ProcessJProperty(ref StringBuilder currentObject, dynamic child)
         {
-            if (child.GetType() is JProperty)
+            if (child is JProperty)
             {
                 if (currentObject.ToString() != "{")
                     currentObject.Append(", ");
@@ -512,7 +518,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         {
             string[] fileContent = File.ReadAllLines(jobManifestPath);
             //dynamic job = JsonConvert.DeserializeObject(fileContent);
-
             JobManifest jobManifest = new JobManifest();
 
 
@@ -527,7 +532,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                 if (fileContent[i].StartsWith("templates", StringComparison.OrdinalIgnoreCase))
                 {
                     i++;
-                    while (String.IsNullOrEmpty(fileContent[i]))
+                    while (!String.IsNullOrEmpty(fileContent[i]))
                     {
                         jobManifest.AddTemplate(fileContent[i].Split(':')[0].Trim(), fileContent[i].Split(':')[1].Trim());
                         i++;
@@ -536,7 +541,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                 if (fileContent[i].StartsWith("packages", StringComparison.OrdinalIgnoreCase))
                 {
                     i++;
-                    while (String.IsNullOrEmpty(fileContent[i]) || i == fileContent.Length)
+                    while (!String.IsNullOrEmpty(fileContent[i]) || i == fileContent.Length)
                     {
                         jobManifest.AddPackage(fileContent[i].Split('-')[1].Trim());
                         i++;
