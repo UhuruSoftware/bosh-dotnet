@@ -42,7 +42,7 @@ namespace Uhuru.BOSH.Agent.WindowsService
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            this.ServiceName = "DeaWindowsService";
+            this.ServiceName = "BOSHWindowsService";
         }
 
         #endregion

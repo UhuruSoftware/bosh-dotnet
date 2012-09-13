@@ -40,6 +40,9 @@ using System.IO;
 ////      @logger     = Bosh::Agent::Config.logger
 ////    end
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AgentRunner"/> class.
+        /// </summary>
         public AgentRunner()
         {
             

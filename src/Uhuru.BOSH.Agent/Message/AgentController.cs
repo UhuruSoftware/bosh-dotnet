@@ -7,11 +7,8 @@
 namespace Uhuru.BOSH.Agent.Message
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-using System.ServiceModel;
-using System.ServiceModel.Web;
+    using System.ServiceModel;
+    using System.ServiceModel.Web;
 
     /// <summary>
     /// TODO: Update summary.
@@ -32,6 +29,12 @@ using System.ServiceModel.Web;
         int serverPort;
         bool disposed = false;
 
+        /// <summary>
+        /// Gets or sets the server port.
+        /// </summary>
+        /// <value>
+        /// The server port.
+        /// </value>
         public int ServerPort
         {
             get { return serverPort; }
@@ -40,11 +43,18 @@ using System.ServiceModel.Web;
         WebServiceHost host;
         HttpHandler httpHandler;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AgentController"/> class.
+        /// </summary>
+        /// <param name="handler">The http handler.</param>
         public AgentController(HttpHandler handler)
         {
             httpHandler = handler;
         }
 
+        /// <summary>
+        /// Starts this instance.
+        /// </summary>
         public void Start()
         {
             if (this.serverPort == 0)
@@ -65,17 +75,27 @@ using System.ServiceModel.Web;
             this.host.Open();
         }
 
+        /// <summary>
+        /// Stops this instance.
+        /// </summary>
         public void Stop()
         {
             this.host.Close();
         }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposed)

@@ -139,25 +139,6 @@ EXIT", diskIndex);
 
             Logger.Error("Failed to unmount {0}", mountPoint);
             throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to unmount {0}", mountPoint));
-
-            ////  loop do
-            ////    umount_output = `umount #{mountpoint} 2>&1`
-
-            ////    if $?.exitstatus == 0
-            ////      break
-            ////    elsif umount_attempts != 0 && umount_output =~ /device is busy/
-            ////      #when umount2 syscall fails and errno == EBUSY, umount.c outputs:
-            ////      # "umount: %s: device is busy.\n"
-            ////      sleep GUARD_SLEEP
-            ////      umount_attempts -= 1
-            ////    else
-            ////      raise Bosh::Agent::MessageHandlerError,
-            ////        "Failed to umount #{mountpoint}: #{umount_output}"
-            ////    end
-            ////  end
-
-            ////  attempts = GUARD_RETRIES - umount_attempts
-            ////  logger.info("umount_guard #{mountpoint} succeeded (#{attempts})")
         }
 
         /// <summary>
@@ -210,9 +191,8 @@ EXIT", diskIndex);
         }
 
         /// <summary>
-        /// Gets the usage.
+        /// Gets the disk usage.
         /// </summary>
-        /// <returns></returns>
         public static Dictionary<string, object> GetUsage
         {
             get
@@ -254,10 +234,10 @@ EXIT", diskIndex);
         }
 
         /// <summary>
-        /// Creates the primary partition.
+        /// Creates primary partition.
         /// </summary>
         /// <param name="diskId">Id of the disk.</param>
-        /// <param name="label">The label.</param>
+        /// <param name="label">The disk label.</param>
         /// <returns></returns>
         public static int CreatePrimaryPartition(int diskId, string label)
         {
@@ -522,6 +502,11 @@ EXIT", diskIndex, mountPath);
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets the disk index for disk id.
+        /// </summary>
+        /// <param name="diskId">The SCSI disk id.</param>
+        /// <returns>Disk Index</returns>
         public static int GetDiskIndexForDiskId(int diskId)
         {
             int retryCount = 10;

@@ -137,6 +137,8 @@ using System.Collections.ObjectModel;
                     return new TestMessage();
                 case "migrate_disk":
                     return new MigrateDisk();
+                case "prepare_network_change":
+                    return new PrepareNetworkChange();
             }
             return null;
          //   return this.Processors[method];
@@ -578,21 +580,13 @@ using System.Collections.ObjectModel;
         {
             if (Config.Configure != null)
             {
-                string udevFile = "/etc/udev/rules.d/70-persistent-net.rules";
-
-                if (File.Exists(udevFile))
-                {
-                    Logger.Info("deleting 70-persistent-net.rules - again");
-                    File.Delete(udevFile);
-                }
-
                 Logger.Info("Removing settings.json");
                 string settingsFile = Config.SettingsFile;
                 File.Delete(settingsFile);
             }
 
             Logger.Info("Halt after networking change");
-            // todo: vladi: implement halt/restart?
+            System.Diagnostics.Process.Start("shutdown.exe", "/l /y /c /t:0");
         }
 
 

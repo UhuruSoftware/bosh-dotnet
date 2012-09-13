@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Net.NetworkInformation;
 using Uhuru.Utilities;
 using System.Globalization;
+using System.Threading;
 
 namespace Uhuru.BOSH.Agent.Platforms.Windows
 {
@@ -56,20 +57,31 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
         {
             Logger.Info("Retrieving local machine MAC addresses");
             Collection<string> macAddresses = new Collection<string>();
+            int retryCount = 30;
+
             using (ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration"))
             {
-                ManagementObjectCollection objMOC = objMC.GetInstances();
-
-                foreach (ManagementObject objMO in objMOC)
+                while (retryCount > 0)
                 {
-                    if ((bool)objMO["IPEnabled"])
+                    ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                    foreach (ManagementObject objMO in objMOC)
                     {
-                        macAddresses.Add(objMO["MACAddress"].ToString().ToUpperInvariant());
+                        if ((bool)objMO["IPEnabled"])
+                        {
+                            macAddresses.Add(objMO["MACAddress"].ToString().ToUpperInvariant());
+                            retryCount = 0;
+                        }
+                    }
+                    if (macAddresses.Count == 0)
+                    {
+                        Thread.Sleep(5000);
+                        retryCount--;
                     }
                 }
             }
             Logger.Info(string.Format(CultureInfo.InvariantCulture, "Found {0} MAC addresses ", macAddresses.Count.ToString(CultureInfo.InvariantCulture)));
-           return macAddresses;
+            return macAddresses;
         }
 
 

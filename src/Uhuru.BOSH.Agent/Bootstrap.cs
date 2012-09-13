@@ -18,6 +18,7 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Message;
     using Uhuru.BOSH.Agent.Errors;
     using System.Globalization;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// TODO: Update summary.
@@ -91,7 +92,7 @@ namespace Uhuru.BOSH.Agent
             LoadSettings();
             // Logger.Info("Loaded settings: {0}", this.settings.ToString());
 
-            if (Config.Settings != null)
+            if (this.settings != null)
             {
                 UpdateIPTables();
                 UpdatePasswords();
@@ -128,23 +129,28 @@ namespace Uhuru.BOSH.Agent
         {   
             int dataDiskId = int.Parse(this.platform.GetDataDiskDeviceName, CultureInfo.InvariantCulture);
 
-            Logger.Info("Creating partition on drive " + dataDiskId);
-
-            if (DiskUtil.CreatePrimaryPartition(dataDiskId, "data") != 0)
-            {
-                Logger.Error("Could not create partition on drive " + dataDiskId);
-            }
             string dataDir = Path.Combine(BaseDir, "data");
             if (!Directory.Exists(dataDir))
             {
                 Directory.CreateDirectory(dataDir);
             }
 
-            if (DiskUtil.MountPartition(dataDiskId, dataDir) != 0)
+            if (!DiskUtil.DiskHasPartition(dataDiskId))
             {
-                Logger.Error("Could not mount disk " + dataDiskId + " to " + dataDir);
+                Logger.Info("Creating partition on drive " + dataDiskId);
+                if (DiskUtil.CreatePrimaryPartition(dataDiskId, "data") != 0)
+                {
+                    Logger.Error("Could not create partition on drive " + dataDiskId);
+                }
             }
 
+            if (!DiskUtil.IsMountPoint(dataDir))
+            {
+                if (DiskUtil.MountPartition(dataDiskId, dataDir) != 0)
+                {
+                    Logger.Error("Could not mount disk " + dataDiskId + " to " + dataDir);
+                }
+            }
             SetupDataSys();
         }
 
@@ -525,10 +531,11 @@ namespace Uhuru.BOSH.Agent
                 }
                 else
                 {
-                    string storeDiskId = this.settings["disks"]["persistent"][0].Value;
-                    if (!string.IsNullOrEmpty(storeDiskId))
+                    string cid = ((Dictionary<string, int>)(JsonConvert.DeserializeObject<Dictionary<string, int>>(this.settings["disks"]["persistent"].ToString()))).Keys.FirstOrDefault();
+                    string diskId = this.platform.LookupDiskByCid(cid);
+                    if (!string.IsNullOrEmpty(cid))
                     {
-                        Config.Platform.MountPersistentDisk(int.Parse(storeDiskId, CultureInfo.InvariantCulture));
+                        this.platform.MountPersistentDisk(int.Parse(diskId, CultureInfo.InvariantCulture));
                     }
                 }
             }
