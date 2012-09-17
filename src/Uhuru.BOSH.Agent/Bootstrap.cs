@@ -289,7 +289,7 @@ namespace Uhuru.BOSH.Agent
         {
             if (this.settings["env"] != null && this.settings["env"].Count > 0)
             {
-                throw new NotImplementedException();
+                this.platform.UpdatePasswords(this.settings);
             }
             else 
             {
@@ -321,9 +321,12 @@ namespace Uhuru.BOSH.Agent
 
         public void UpdateCredentials()
         {
-            if (this.settings["env"] != null && this.settings["env"].Count > 0)
+            if (this.settings["env"]["bosh"]["credentials"] != null)
             {
-                throw new NotImplementedException();
+                if (this.settings["env"]["bosh"]["credentials"].Count > 0)
+                {
+                    throw new NotImplementedException();
+                }
             }
             else
             {
