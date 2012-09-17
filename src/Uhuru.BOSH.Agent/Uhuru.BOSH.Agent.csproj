@@ -99,6 +99,7 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Management" />
     <Reference Include="System.ServiceModel" />
@@ -155,6 +156,7 @@
     <Compile Include="Objects\SystemDiskInfo.cs" />
     <Compile Include="Platforms\WindowsPlatform.cs" />
     <Compile Include="Platforms\Windows\Disk.cs" />
+    <Compile Include="Platforms\Windows\Password.cs" />
     <Compile Include="Platforms\Windows\WindowsNetwork.cs" />
     <Compile Include="Providers\IInfrastructure.cs" />
     <Compile Include="Infrastructures\AWSInfrastructure.cs" />

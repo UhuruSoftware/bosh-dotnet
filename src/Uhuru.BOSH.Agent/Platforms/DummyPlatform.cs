@@ -27,7 +27,7 @@ namespace Uhuru.BOSH.Agent.Platforms
         {
         }
 
-        public void UpdatePasswords(Collection<string> settings)
+        public void UpdatePasswords(dynamic settings)
         {
             throw new NotImplementedException();
         }
