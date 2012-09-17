@@ -36,7 +36,6 @@ namespace Uhuru.BOSH.Agent.Message
         string packageName;
         string packageVersion;
         dynamic dependencies;
-        int maxDiskUsage = 90;
         string compileBase;
         string installBase;
         string sourceFile;
@@ -45,6 +44,14 @@ namespace Uhuru.BOSH.Agent.Message
         FileLogger logger;
         string installDir;
         string compiledPackage;
+        /// <summary>
+        /// The maximum amount of disk percentage that can be used during
+        /// compilation before an error will be thrown.  This is to prevent
+        /// package compilation throwing arbitrary errors when disk space runs
+        /// out.
+        /// The max percentage of disk that can be used in compilation.
+        /// </summary>
+        double maxDiskUsagePercent;
 
         public object Process(dynamic args)
         {
@@ -69,6 +76,8 @@ namespace Uhuru.BOSH.Agent.Message
             this.compileDir = Path.Combine(compileBase, packageName);
             this.installDir = Path.Combine(installBase, packageName, packageVersion);
             this.compiledPackage = sourceFile + ".compiled";
+
+            this.maxDiskUsagePercent = 90.0;
 
             return this.Start();
         }
@@ -141,7 +150,7 @@ namespace Uhuru.BOSH.Agent.Message
 
         private void UnpackSourcePackage()
         {
-            if(Directory.Exists(this.compileDir))
+            if (Directory.Exists(this.compileDir))
             {
                 Directory.Delete(this.compileDir, true);
             }
@@ -149,7 +158,7 @@ namespace Uhuru.BOSH.Agent.Message
 
             var sourceFileInfo = new FileInfo(this.sourceFile);
 
-            
+
             string tarFile = Path.ChangeExtension(this.sourceFile, "tar");
             string tgzFile = Path.ChangeExtension(this.sourceFile, "tgz");
 
@@ -176,6 +185,14 @@ namespace Uhuru.BOSH.Agent.Message
             }
             Directory.CreateDirectory(this.installDir);
             // TODO: check if enough disk is available
+
+            Alphaleonis.Win32.Filesystem.DiskSpaceInfo diskSpace = Alphaleonis.Win32.Filesystem.Volume.GetDiskFreeSpace(this.compileBase);
+            double usedDiskPercent = 100.0 * (double)(diskSpace.TotalNumberOfBytes - diskSpace.TotalNumberOfFreeBytes) / (double)diskSpace.TotalNumberOfBytes;
+            if (usedDiskPercent > this.maxDiskUsagePercent)
+            {
+                throw new MessageHandlerException("Compiler Package Failure. Current disk usage " +
+                    usedDiskPercent.ToString() + "% is grater then " + this.maxDiskUsagePercent.ToString() + "%");
+            }
 
             // Default PATHEXT env var
             string[] execExtensions = new string[] { ".com", ".exe", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".msc", ".ps1" };
