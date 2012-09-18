@@ -1,3 +1,5 @@
+REM dont remove this line
+
 echo off
 
 set testexe=mstest.exe
