@@ -31,7 +31,8 @@ goto exit
 :runtest
 @echo Running tests...
 
-call "%mstest%" /testcontainer:..\bin\Uhuru.BOSH.Test.dll /category:"Unit|Integration" /resultsfile:testrun.trx
+::category:"Unit|Integration"
+call "%mstest%" /testcontainer:..\bin\Uhuru.BOSH.Test.dll /test:"TC002_InvalidNtpServer" /resultsfile:testrun.trx
 
 
 :exit

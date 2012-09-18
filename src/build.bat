@@ -3,14 +3,14 @@ REM dont remove this line
 echo off
 
 set buildexe=msbuild.exe
-set firstdir="%windir%\microsoft.net"
+set firstdir="%windir%\microsoft.net\Framework\v4.0.30319"
 set msbuild=msbuild.exe
 
 for /F "tokens=*" %%F in ('dir %firstdir%\%buildexe% /s /b') do (
 	@echo %%F
 	if exist "%%F" (
 		@echo Using msbuild found here: %%F
-		set buildexe=%%F
+		set msbuild=%%F
 		goto runbuild
 	)
 )
