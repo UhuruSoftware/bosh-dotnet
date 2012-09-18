@@ -18,6 +18,7 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.BOSH.Agent.Errors;
     using System.Diagnostics;
     using System.Globalization;
+    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// TODO: Update summary.
@@ -145,9 +146,20 @@ namespace Uhuru.BOSH.Agent.Message
         {
             this.logger.Info("Installing dependencies");
 
-            foreach (dynamic dependency in dependencies)
+            foreach (JProperty dependency in this.dependencies)
             {
-                this.logger.Warning("TODO : install dependencies for " + dependency.ToString());
+                string depPackageName = dependency.Name;
+
+                this.logger.Info("Installing dependency: " + depPackageName + " " + dependency.ToString());
+                string depBlobstoreId = dependency.Value["blobstore_id"].Value<string>();
+                string depSha1 = dependency.Value["sha1"].Value<string>();
+                string depInstallDir = Path.Combine(this.installBase, depPackageName, dependency["version"].Value<string>());
+
+                Util.UnpackBlob(depBlobstoreId, depSha1, depInstallDir);
+
+                string packageLinkDestination = Path.Combine(Config.BaseDir, "packages", depPackageName);
+
+                Util.CreateSymLink(depInstallDir, packageLinkDestination);
             }
         }
 
@@ -200,7 +212,6 @@ namespace Uhuru.BOSH.Agent.Message
                 Directory.Delete(this.installDir, true);
             }
             Directory.CreateDirectory(this.installDir);
-            // TODO: check if enough disk is available
 
             Alphaleonis.Win32.Filesystem.DiskSpaceInfo diskSpace = Alphaleonis.Win32.Filesystem.Volume.GetDiskFreeSpace(this.compileBase);
             double usedDiskPercent = 100.0 * (double)(diskSpace.TotalNumberOfBytes - diskSpace.TotalNumberOfFreeBytes) / (double)diskSpace.TotalNumberOfBytes;
