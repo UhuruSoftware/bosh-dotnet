@@ -10,7 +10,7 @@ namespace Uhuru.BOSH.Agent.Message
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-using Uhuru.NatsClient;
+    using Uhuru.NatsClient;
     using Uhuru.Utilities;
     using Uhuru.BOSH.Agent.Errors;
     using System.Threading;

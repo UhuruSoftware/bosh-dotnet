@@ -18,6 +18,9 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Errors;
     using System.Diagnostics;
     using System.Globalization;
+    using Microsoft.Win32;
+    using System.Security.AccessControl;
+    using System.Security.Principal;
 
     /// <summary>
     /// TODO: Update summary.
@@ -92,12 +95,35 @@ namespace Uhuru.BOSH.Agent
 
         internal static void CreateSymLink(string installPath, string linkPath)
         {
+            // TODO: replace this with the native call from AlphaFS libarary
+            // Alphaleonis.Win32.Filesystem.File.CreateSymbolicLink(linkPath, installPath, Alphaleonis.Win32.Filesystem.SymbolicLinkTarget.Directory);
+
             Process p = Process.Start("cmd.exe", String.Format(CultureInfo.InvariantCulture, "/c mklink /D {0} {1}", linkPath, installPath));
             p.WaitForExit();
             if (p.ExitCode != 0)
             {
                 Logger.Error(String.Format(CultureInfo.InvariantCulture, "Failed creating symbolic link between {0} and {1}", installPath, linkPath));
             }
+        }
+
+        internal static RegistryKey SetupUhuruKey()
+        {
+            RegistryKey softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", true);
+            RegistryKey uhuruSubKey = softwareKey.OpenSubKey("Uhuru", true);
+            if (uhuruSubKey == null)
+            {
+                softwareKey.CreateSubKey("Uhuru");
+                uhuruSubKey = softwareKey.OpenSubKey("Uhuru", true);
+            }
+            
+
+            RegistryKey uhuruCloudTargetsSubKey = uhuruSubKey.OpenSubKey("BoshAgent", true);
+            if (uhuruCloudTargetsSubKey == null)
+            {
+                uhuruSubKey.CreateSubKey("BoshAgent");
+                uhuruCloudTargetsSubKey = uhuruSubKey.OpenSubKey("BoshAgent", true);
+            }
+            return uhuruCloudTargetsSubKey;
         }
     }
 }

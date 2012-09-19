@@ -21,10 +21,9 @@ namespace Uhuru.BOSH.Agent.Platforms
             throw new NotImplementedException();
         }
 
-        // TODO: JIRA UH-1206
-        public void UpdatePasswords(Collection<string> settings)
+        public void UpdatePasswords(dynamic settings)
         {
-            throw new NotImplementedException();
+            Password.Update(settings);
         }
 
         public string LookupDiskByCid(string cid)

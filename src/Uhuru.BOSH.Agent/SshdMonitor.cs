@@ -11,6 +11,10 @@ namespace Uhuru.BOSH.Agent
     using System.Linq;
     using System.Text;
     using System.Globalization;
+    using System.ServiceProcess;
+    using Uhuru.Utilities;
+    using System.Threading;
+    using Uhuru.BOSH.Agent.Errors;
 
     /// <summary>
     /// TODO: Update summary.
@@ -21,6 +25,20 @@ namespace Uhuru.BOSH.Agent
       ////def ok_to_stop?
       ////  Config.sshd_monitor_enabled && @start_time && (Time.now - @start_time) > @start_delay
       ////end
+
+        private static string serviceName = "KpyM Telnet SSH Server v1.19c";
+        static DateTime startTime;
+        static TimeSpan startDelay;
+        private static object locker = new object();
+        private static System.Timers.Timer timer;
+
+        public static bool OkToStop
+        {
+            get
+            {
+                return (Config.SshdMonitorEnabled && (DateTime.Now.Subtract(startTime) > startDelay));
+            }
+        }
 
       ////def test_service(status)
       ////  success = false
@@ -33,6 +51,37 @@ namespace Uhuru.BOSH.Agent
       ////  success
       ////end
 
+        public static bool TestService(string status)
+        {
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new ArgumentNullException("status");
+            }
+
+            using (ServiceController sc = new ServiceController(serviceName))
+            {
+                int retryCount = 10;
+                while (retryCount > 0)
+                {
+                    sc.Refresh();
+                    if ((status.Equals("stop") && sc.Status == ServiceControllerStatus.Stopped) || status.Equals("running") && sc.Status == ServiceControllerStatus.Running)
+                    {
+                        return true;
+                    }
+                    else if ((status.Equals("stop") && sc.Status == ServiceControllerStatus.StopPending) || status.Equals("running") && sc.Status == ServiceControllerStatus.StartPending)
+                    {
+                        retryCount--;
+                        Thread.Sleep(1000);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
+
       ////def start_sshd
       ////  @lock.synchronize do
       ////    %x[service ssh start]
@@ -42,6 +91,27 @@ namespace Uhuru.BOSH.Agent
       ////    @logger.info("started sshd #{@start_time}")
       ////  end
       ////end
+
+        public static void StartSshd()
+        {
+            lock (locker)
+            {
+                using (ServiceController sc = new ServiceController(serviceName))
+                {
+                    if (sc.Status == ServiceControllerStatus.Stopped)
+                    {
+                        Logger.Warning("SSHD Service already started");
+                        sc.Start();
+                    }
+                    startTime = DateTime.Now;
+                    Logger.Info("Started sshd " + startTime.ToString(CultureInfo.InvariantCulture));
+                }
+                if (!TestService("running"))
+                {
+                    throw new BoshException("Failed to start sshd");
+                }
+            }
+        }
 
       ////def stop_sshd
       ////  @lock.synchronize do
@@ -56,6 +126,31 @@ namespace Uhuru.BOSH.Agent
       ////  end
       ////end
 
+        public static void StopSshd()
+        {
+            lock (locker)
+            {
+                if (!OkToStop)
+                {
+                    return;
+                }
+                Logger.Info("Stopping sshd");
+                using (ServiceController sc = new ServiceController(serviceName))
+                {
+                    if (sc.Status == ServiceControllerStatus.Running)
+                    {
+                        Logger.Warning("SSHD Service already stopped");
+                        sc.Stop();
+                    }
+                    startTime = DateTime.MinValue;
+                }
+                if (!TestService("stop"))
+                {
+                    throw new BoshException("Failed to stop sshd");
+                }
+            }
+        }
+
       ////def enable(interval, start_delay)
       ////  @logger = Config.logger
       ////  @lock = Mutex.new
@@ -66,9 +161,25 @@ namespace Uhuru.BOSH.Agent
       ////    EventMachine.defer { stop_sshd } if SshdMonitor.ok_to_stop?
       ////  end
       ////end
-        internal static void Enable(int interval, int p)
+
+
+        public static void Enable(int interval, int delay)
         {
-            throw new NotImplementedException(string.Format(CultureInfo.InvariantCulture, "{0} {1}", interval.ToString(CultureInfo.InvariantCulture), p.ToString(CultureInfo.InvariantCulture)));
+            startTime = DateTime.MinValue;
+            startDelay = TimeSpan.FromSeconds(delay);
+
+            timer = new System.Timers.Timer(TimeSpan.FromSeconds(interval).Milliseconds);
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(timer_Elapsed);
+            timer.Enabled = false;
+            //timer.Enabled = true; TODO: do we need to enable this?
+        }
+
+        static void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (OkToStop)
+            {
+                StopSshd();
+            }
         }
     }
 }

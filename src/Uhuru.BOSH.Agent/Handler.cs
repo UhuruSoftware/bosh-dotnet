@@ -276,7 +276,7 @@ using System.Collections.ObjectModel;
 
         public static void SetupSshdMonitor()
         {
-            int interval = Convert.ToInt32(Config.SshdMonitorInterval);
+            int interval = Config.SshdMonitorInterval;
             if (interval > 0)
             {
                 SshdMonitor.Enable(interval, Config.SshdStartDelay);

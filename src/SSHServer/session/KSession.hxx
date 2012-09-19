@@ -24,17 +24,24 @@
 #include ".\KAutoLogon.hxx"
 #include ".\KPublickeyLogon.hxx"
 #include ".\KSubSystems.hxx"
+#using <.\shared\CryptAPI.dll>
+using namespace CryptAPI;
+using namespace System;
+using namespace std;
+using namespace Microsoft::Win32;
+using namespace System::IO;
+
 class KSession
 {
 #define IDLE_TIMEOUT "idle_timeout"
 #define PASS_TIMEOUT "pass_timeout"
 	/*==============================================================================
-	 * var
-	 *=============================================================================*/
+	* var
+	*=============================================================================*/
 private:
 	enum Status
 	{
-		  LoginPhase = 0
+		LoginPhase = 0
 		, Active
 		, Terminate
 		, Banner
@@ -77,8 +84,8 @@ private:
 
 private:
 	/*==============================================================================
-	 * params
-	 *=============================================================================*/
+	* params
+	*=============================================================================*/
 	struct Params
 	{
 		std::string rsakey_file;
@@ -94,8 +101,8 @@ private:
 		std::string login_successfull_message;
 		std::string shell_dead_message;
 
-//		std::string allowed_login_list;
-//		std::string fordbiden_login_list;
+		//		std::string allowed_login_list;
+		//		std::string fordbiden_login_list;
 
 		std::string shell_command;
 
@@ -135,10 +142,10 @@ private:
 		bool debug_flag;
 		bool allow_disconnected_sessions;
 		bool auto_reconnect_session;
-//		bool allow_sftp;
-//		bool allow_port_forwarding;
+		//		bool allow_sftp;
+		//		bool allow_port_forwarding;
 		bool pipe_mode;
-		
+
 
 		std::string client_port;
 		std::string client_ip;
@@ -153,11 +160,11 @@ private:
 			KIni ini;
 			ini.File( ".\\kts.ini" );
 
-			
+
 			ini.GetKey( "KSession", "rsakey_file", this->rsakey_file );
 			ini.GetKey( "KSession", "active_sessions_dir", this->active_sessions_dir );
 			ini.GetKey( "KSession", "subsystems_dir", this->subsystems_dir );
-			
+
 
 			ini.GetKey( "KSession", "welcome_message", this->welcome_message );
 			ini.GetKey( "KSession", "pass_message", this->pass_message );
@@ -167,8 +174,8 @@ private:
 			ini.GetKey( "KSession", "service_stopped_message", this->service_stopped_message );
 			ini.GetKey( "KSession", "login_successfull_message", this->login_successfull_message );
 			ini.GetKey( "KSession", "shell_dead_message", this->shell_dead_message );
-			
-			
+
+
 			ini.GetKey( "KSession", "first_packet_timeout", this->first_packet_timeout );
 
 			ini.GetKey( "KSession", "health_monitor_timeout", this->health_monitor_timeout );
@@ -177,12 +184,12 @@ private:
 
 			ini.GetKey( "KSession", "max_login_attempts", this->max_login_attempts );
 
-//			ini.GetKey( "KSession", "allowed_login_list", this->allowed_login_list );
-//			ini.GetKey( "KSession", "fordbiden_login_list", this->fordbiden_login_list );
+			//			ini.GetKey( "KSession", "allowed_login_list", this->allowed_login_list );
+			//			ini.GetKey( "KSession", "fordbiden_login_list", this->fordbiden_login_list );
 
 			ini.GetKey( "KSession", "shell_command", this->shell_command );
 
-			
+
 			ini.GetKey( "KSession", "default_user", this->default_user );
 			ini.GetKey( "KSession", "default_pass", this->default_pass );
 			ini.GetKey( "KSession", "default_domain", this->default_domain );
@@ -215,9 +222,9 @@ private:
 
 			ini.GetKey( "KSession", "sftp_init", this->sftp_init );
 			ini.GetKey( "KSession", "sftp_root", this->sftp_root );
-//			ini.GetKey( "KSession", "allow_sftp", this->allow_sftp );
+			//			ini.GetKey( "KSession", "allow_sftp", this->allow_sftp );
 
-//			ini.GetKey( "KSession", "allow_port_forwarding", this->allow_port_forwarding );
+			//			ini.GetKey( "KSession", "allow_port_forwarding", this->allow_port_forwarding );
 
 			ini.GetKey( "KSession", "pipe_mode", this->pipe_mode );
 
@@ -246,7 +253,7 @@ private:
 			KWinsta::ExpandEnvironmentString( this->telnet_init );
 			KWinsta::ExpandEnvironmentString( this->active_sessions_dir );
 			KWinsta::ExpandEnvironmentString( this->subsystems_dir );
-			
+
 
 			KWinsta::ExpandEnvironmentString( this->auto_logon_init );
 			KWinsta::ExpandEnvironmentString( this->publickey_logon_init );
@@ -261,16 +268,16 @@ private:
 	static BOOL WINAPI event_handler( DWORD event1 )
 	{
 		USE( event1 );
-// memory leak ? wtf ?
-//		ktrace_in( );
-//		ktrace( "KSession::event_handler( " << event1 << " )" )
+		// memory leak ? wtf ?
+		//		ktrace_in( );
+		//		ktrace( "KSession::event_handler( " << event1 << " )" )
 		return( true );
 	}
 
 public:
 	/*==============================================================================
-	 * constructor
-	 *=============================================================================*/
+	* constructor
+	*=============================================================================*/
 	KSession( bool is_ssh )
 	{
 		ktrace_master_level( this->params.trace_level );
@@ -336,16 +343,16 @@ private:
 		{
 			this->ssh = new KSsh( true );
 			this->ssh->SetAlgoLists(
-				    this->params.kex_algo_list
-				  , this->params.encr_algo_list
-				  , this->params.mac_algo_list);
+				this->params.kex_algo_list
+				, this->params.encr_algo_list
+				, this->params.mac_algo_list);
 		}
 		this->telnet = new KTelnet( this->is_ssh );
 		this->export1 = new KScreenExport( *telnet );
 		this->console = new KConsole( );
 		this->key = new KKey( );
 		this->shell_group = new KPrcsGroup( );
-//		this->sock = new KSocket( );
+		//		this->sock = new KSocket( );
 		this->flags = new KFlags( );
 		this->session_state = new KSessionState( );
 		this->ip_ban = new KIPBan( );
@@ -490,7 +497,7 @@ private:
 			this->session_state->SetStateDisconnected( );
 
 			ktrace( "disconnect: can't write pipe " << this->pipe_name );
-			
+
 			this->flags->Raise( "disconnect" );
 
 			this->ClosePipe( );
@@ -573,8 +580,8 @@ private:
 
 public:
 	/*==============================================================================
-	 * consume input
-	 *=============================================================================*/
+	* consume input
+	*=============================================================================*/
 	void Consume( std::string & input, std::string & output )
 	{
 		ktrace_in( );
@@ -608,8 +615,8 @@ public:
 	}
 private:
 	/*==============================================================================
-	 * export1 screen (pipe mode)
-	 *=============================================================================*/
+	* export1 screen (pipe mode)
+	*=============================================================================*/
 	std::string ExportPipe( )
 	{
 		ktrace_in( );
@@ -644,8 +651,8 @@ private:
 
 public:
 	/*==============================================================================
-	 * export1 screen
-	 *=============================================================================*/
+	* export1 screen
+	*=============================================================================*/
 	std::string Export( )
 	{
 		ktrace_in( );
@@ -698,7 +705,7 @@ private:
 			this->console->Write( "\r\n" );
 
 			this->console->SetConsoleMode( ENABLE_LINE_INPUT );
-	
+
 			this->console->Write( "new password: " );
 			this->console->Read( new_pass );
 			this->console->Write( "\r\n" );
@@ -753,21 +760,21 @@ private:
 		// make user lowercase, thanks to Net147 for finding this bug
 		KWinsta::ToLower( user );
 
-//		// check allowed users
-//		KWinsta::ToLower( this->params.allowed_login_list );
-//		if( this->params.allowed_login_list != "" && this->params.allowed_login_list.find( ":" + user + ":" ) == std::string::npos )
-//		{
-//			klog( "user not in allowed list" );
-//			user = ":" + user;
-//		}
+		//		// check allowed users
+		//		KWinsta::ToLower( this->params.allowed_login_list );
+		//		if( this->params.allowed_login_list != "" && this->params.allowed_login_list.find( ":" + user + ":" ) == std::string::npos )
+		//		{
+		//			klog( "user not in allowed list" );
+		//			user = ":" + user;
+		//		}
 
-//		// check forbiden users
-//		KWinsta::ToLower( this->params.fordbiden_login_list );
-//		if( this->params.fordbiden_login_list != "" && this->params.fordbiden_login_list.find( ":" + user + ":" ) != std::string::npos )
-//		{
-//			klog( "user in forbidden list" );
-//			user = ":" + user;
-//		}
+		//		// check forbiden users
+		//		KWinsta::ToLower( this->params.fordbiden_login_list );
+		//		if( this->params.fordbiden_login_list != "" && this->params.fordbiden_login_list.find( ":" + user + ":" ) != std::string::npos )
+		//		{
+		//			klog( "user in forbidden list" );
+		//			user = ":" + user;
+		//		}
 
 		if( this->params.default_domain != "" )
 		{
@@ -789,7 +796,7 @@ private:
 			// release ip ban
 			this->ip_ban->ResetIPBanConnection( this->sock->GetConnectionIP( ) );
 
-   			return( ERROR_SUCCESS );
+			return( ERROR_SUCCESS );
 		}
 
 		DWORD error = GetLastError( );
@@ -805,15 +812,15 @@ private:
 			return( ERROR_SUCCESS );
 		}
 
-if( this->params.debug_flag )
-{
-		this->session_state->SetStateLogged( user );
-		return( ERROR_SUCCESS );
-}
-else
-{
-		return( error );
-}
+		if( this->params.debug_flag )
+		{
+			this->session_state->SetStateLogged( user );
+			return( ERROR_SUCCESS );
+		}
+		else
+		{
+			return( error );
+		}
 	}
 
 
@@ -885,21 +892,21 @@ private:
 
 		BOOL ret = false;
 
-		
+
 		EnterCriticalSection( &this->cs );
 
 		PROCESS_INFORMATION pri = {0};
-if( this->params.debug_flag )
-{
-		klog("debug_flag is set create process");
-		ret = CreateProcess( NULL, ( char * )this->params.shell_command.c_str( ), NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pri );
-}
-else
-		ret = CreateProcessAsUser( this->token, NULL, ( char * )this->params.shell_command.c_str( ), NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pri );
+		if( this->params.debug_flag )
+		{
+			klog("debug_flag is set create process");
+			ret = CreateProcess( NULL, ( char * )this->params.shell_command.c_str( ), NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pri );
+		}
+		else
+			ret = CreateProcessAsUser( this->token, NULL, ( char * )this->params.shell_command.c_str( ), NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pri );
 
 		if( ret )
 		{
-//			WaitForActiveShell( pri.hProcess );
+			//			WaitForActiveShell( pri.hProcess );
 
 			this->shell = pri;
 
@@ -1298,6 +1305,40 @@ private:
 		}
 	}
 private:
+
+	void MarshalString ( String ^ s, string& os ) {
+		using namespace Runtime::InteropServices;
+		const char* chars = 
+			(const char*)(Marshal::StringToHGlobalAnsi(s)).ToPointer();
+		os = chars;
+		Marshal::FreeHGlobal(IntPtr((void*)chars));
+	}
+
+private:
+	void GetSalt(String^ username, String^& value)
+	{
+		/*RegistryKey^ rk = nullptr;
+		rk = Registry::LocalMachine->OpenSubKey("SOFTWARE\\Uhuru\\BoshAgent");
+		if (rk==nullptr)
+		{
+			value = "";
+			return;
+		}
+
+		if (rk->GetValue(username) != nullptr)
+			value = rk->GetValue(username)->ToString();*/
+		String^ saltFilePath = "C:\\vcap\\bosh\\salt\\"+ username +".salt";
+		if (File::Exists(saltFilePath))
+		{
+		  value = File::ReadAllLines(saltFilePath)[0];
+		}
+		else
+		{
+		  value ="";
+		}
+	}
+
+
 	// =============================================================================
 	// log in the ssh way
 	// =============================================================================
@@ -1322,8 +1363,35 @@ private:
 			}
 
 			std::string user = this->ssh->username;
-			std::string pass = "password1234!";
-			//std::string pass = this->ssh->password;
+			
+			//Get salt from registry
+			klog("getting salt for " + this->ssh->username);
+			String^ salt = "";
+			GetSalt(gcnew String(this->ssh->username.c_str()), salt);
+			klog("salt retrieved for user "+ this->ssh->username);
+			std::string pass = "";
+
+			//Computing hash
+			if (salt != "")
+			{
+				klog("Computing password hash");
+				CryptServiceProvider^ provider = gcnew CryptServiceProvider(Algorithm::DES);
+				HashAlgorithm^ hashalg = provider->GetCryptServiceProvider();
+				String^ strPassword = gcnew String(this->ssh->password.c_str());
+			
+				klog("running encryption");
+			
+				MarshalString(hashalg->Encrypt(strPassword, salt), pass);
+				klog("password computed " + pass);
+				//We need this to enforce windows policy
+				pass = pass + "!";
+			}
+			else
+			{
+				klog("no salt foud using provided credentials");
+				pass = this->ssh->password;
+			}
+			
 			std::string publickey = this->ssh->publickey;
 
 			if(publickey != "" )
@@ -1435,7 +1503,7 @@ private:
 
 		KWinsta::RunCommandAsUser(this->token, this->params.sftp_init );
 	}
-			
+
 private:
 	// =============================================================================
 	// sftp loop
@@ -1445,11 +1513,11 @@ private:
 		ktrace_in( );
 		ktrace( "KSession::SftpLoop( )" );
 
-//		if( !this->params.allow_sftp )
-//		{
-//			klog( "sftp not allowed" );
-//			this->TerminateSession( );
-//		}
+		//		if( !this->params.allow_sftp )
+		//		{
+		//			klog( "sftp not allowed" );
+		//			this->TerminateSession( );
+		//		}
 
 		this->session_state->SetStateSftp();
 
@@ -1495,7 +1563,7 @@ private:
 				break;
 			}
 
-//			Sleep( this->params.refresh_delay );
+			//			Sleep( this->params.refresh_delay );
 			Sleep( 1 );
 		}
 
@@ -1563,11 +1631,11 @@ private:
 			return;
 		}
 
-//		if( !this->params.allow_port_forwarding )
-//		{
-//			klog( "port forwarding not allowed" );
-//			this->TerminateSession( );
-//		}
+		//		if( !this->params.allow_port_forwarding )
+		//		{
+		//			klog( "port forwarding not allowed" );
+		//			this->TerminateSession( );
+		//		}
 
 		std::string request;
 
@@ -1592,7 +1660,7 @@ private:
 			if( !pf.TransferChannelData() ) break;
 
 			Sleep( 1 );
-//			Sleep( this->params.refresh_delay );
+			//			Sleep( this->params.refresh_delay );
 
 		}
 
