@@ -76,6 +76,8 @@ namespace Uhuru.BOSH.Agent.Message
                 Uhuru.Utilities.WindowsVCAPUsers.CreateUser(userName, password);
                 sshResult.Status = "success";
                 Logger.Info("Created user for SSH");
+                SshdMonitor.StartSshd();
+
             }
             catch (Exception ex)
             {
@@ -83,7 +85,6 @@ namespace Uhuru.BOSH.Agent.Message
                 sshResult.Status = "failed";
             }
             sshResult.IP = Config.DefaultIP;
-
 
             return sshResult;
         }
@@ -119,19 +120,18 @@ namespace Uhuru.BOSH.Agent.Message
             {
                 WindowsVCAPUsers.DeleteUser(userName);
                 Logger.Info("Deleted user for SSH");
-                
                 File.Delete(Path.Combine(Config.BaseDir, "bosh","salt", userName + ".salt"));
                 Logger.Info("Deleted salt file");
 
                 sshResult.Status = "success";
-
+                SshdMonitor.StopSshd();
             }
             catch (Exception ex)
             {
                 Logger.Error("Failed to delete user " + ex.ToString());
                 sshResult.Status = "failed";
             }
-
+            
             sshResult.IP = null;            
             return sshResult;
         }

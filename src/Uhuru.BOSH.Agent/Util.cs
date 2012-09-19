@@ -95,6 +95,9 @@ namespace Uhuru.BOSH.Agent
 
         internal static void CreateSymLink(string installPath, string linkPath)
         {
+            // TODO: replace this with the native call from AlphaFS libarary
+            // Alphaleonis.Win32.Filesystem.File.CreateSymbolicLink(linkPath, installPath, Alphaleonis.Win32.Filesystem.SymbolicLinkTarget.Directory);
+
             Process p = Process.Start("cmd.exe", String.Format(CultureInfo.InvariantCulture, "/c mklink /D {0} {1}", linkPath, installPath));
             p.WaitForExit();
             if (p.ExitCode != 0)

@@ -26,7 +26,7 @@ namespace Uhuru.BOSH.Agent.Providers
         /// Updates the passwords.
         /// </summary>
         /// <param name="settings">The settings.</param>
-        void UpdatePasswords(Collection<string> settings);
+        void UpdatePasswords(dynamic settings);
 
         /// <summary>
         /// Lookups the disk by cid.
