@@ -18,6 +18,9 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Errors;
     using System.Diagnostics;
     using System.Globalization;
+    using Microsoft.Win32;
+    using System.Security.AccessControl;
+    using System.Security.Principal;
 
     /// <summary>
     /// TODO: Update summary.
@@ -101,6 +104,26 @@ namespace Uhuru.BOSH.Agent
             {
                 Logger.Error(String.Format(CultureInfo.InvariantCulture, "Failed creating symbolic link between {0} and {1}", installPath, linkPath));
             }
+        }
+
+        internal static RegistryKey SetupUhuruKey()
+        {
+            RegistryKey softwareKey = Registry.LocalMachine.OpenSubKey("SOFTWARE", true);
+            RegistryKey uhuruSubKey = softwareKey.OpenSubKey("Uhuru", true);
+            if (uhuruSubKey == null)
+            {
+                softwareKey.CreateSubKey("Uhuru");
+                uhuruSubKey = softwareKey.OpenSubKey("Uhuru", true);
+            }
+            
+
+            RegistryKey uhuruCloudTargetsSubKey = uhuruSubKey.OpenSubKey("BoshAgent", true);
+            if (uhuruCloudTargetsSubKey == null)
+            {
+                uhuruSubKey.CreateSubKey("BoshAgent");
+                uhuruCloudTargetsSubKey = uhuruSubKey.OpenSubKey("BoshAgent", true);
+            }
+            return uhuruCloudTargetsSubKey;
         }
     }
 }
