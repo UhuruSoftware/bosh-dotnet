@@ -13,6 +13,9 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.BOSH.Agent.Objects;
     using Uhuru.Utilities;
     using Newtonsoft.Json;
+    using System.Globalization;
+    using Microsoft.Win32;
+    using System.IO;
 
     /// <summary>
     /// TODO: Update summary.
@@ -20,11 +23,22 @@ namespace Uhuru.BOSH.Agent.Message
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Ssh", Justification = "FxCop Bug")]
     public class Ssh : IMessage 
     {
+        /// <summary>
+        /// Determines whether the message [is long running].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is long running]; otherwise, <c>false</c>.
+        /// </returns>
         public bool IsLongRunning()
         {
            return false;
         }
 
+        /// <summary>
+        /// Processes the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
         public object Process(dynamic args)
         {
             string sshType = args[0].Value.ToString();
@@ -48,7 +62,11 @@ namespace Uhuru.BOSH.Agent.Message
         {
             
             string userName = parm["user"].Value;
-            string password = "password1234!";//parm["password"].Value;
+            
+            //Needed to enforce windows password rules 
+            string password = string.Format(CultureInfo.InvariantCulture, "{0}!", parm["password"].Value);
+            SaveSaltInFile(userName, password.Substring(0, 2));
+
             Logger.Info("Setting up SSH with user:" + userName +" and password: " + password);
 
             SshResult sshResult = new SshResult();
@@ -71,6 +89,18 @@ namespace Uhuru.BOSH.Agent.Message
             return sshResult;
         }
 
+        private static void SaveSaltInFile(string user, string salt)
+        {
+            string saltDirPath = Path.Combine(Config.BaseDir, "bosh", "salt");
+            if (!Directory.Exists(saltDirPath))
+            {
+                Directory.CreateDirectory(saltDirPath);
+            }
+            File.WriteAllText(Path.Combine(saltDirPath, user + ".salt"), salt);            
+        }
+
+       
+
         /// <summary>
         /// Clean the SSH.
         /// </summary>
@@ -89,8 +119,11 @@ namespace Uhuru.BOSH.Agent.Message
             try
             {
                 WindowsVCAPUsers.DeleteUser(userName);
-                sshResult.Status = "success";
                 Logger.Info("Deleted user for SSH");
+                File.Delete(Path.Combine(Config.BaseDir, "bosh","salt", userName + ".salt"));
+                Logger.Info("Deleted salt file");
+
+                sshResult.Status = "success";
                 SshdMonitor.StopSshd();
             }
             catch (Exception ex)
