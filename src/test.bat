@@ -32,7 +32,7 @@ goto exit
 @echo Running tests...
 
 ::category:"Unit|Integration"
+del testrun.trx
 call "%mstest%" /testcontainer:..\bin\Uhuru.BOSH.Test.dll /test:"TC002_InvalidNtpServer" /resultsfile:testrun.trx
-
 
 :exit
