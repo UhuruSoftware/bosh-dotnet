@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Management;
 using System.Collections.ObjectModel;
-using System.Net.NetworkInformation;
-using Uhuru.Utilities;
 using System.Globalization;
+using System.Management;
 using System.Threading;
+using Newtonsoft.Json;
+using Uhuru.Utilities;
 
 namespace Uhuru.BOSH.Agent.Platforms.Windows
 {
-    public class WindowsNetwork
+    public static class WindowsNetwork
     {
-        public WindowsNetwork()
-        {
-
-        }
-
-        public void SetupNetwork()
+        public static void SetupNetwork()
         {
             
             //List<string> macAddresses = GetMacAddresses().ToList();
@@ -42,15 +35,13 @@ namespace Uhuru.BOSH.Agent.Platforms.Windows
                     string gateway = network["gateway"].Value;
                     SetGateway(gateway, macAddress);
 
-                    foreach (dynamic dns in network["dns"])
-                    {
-                        SetDNS(dns.Value, macAddress);
-                    }
+                    string dnsServers = string.Join(",", JsonConvert.DeserializeObject<ICollection<string>>(network["dns"].ToString()));
+
+                    SetDNS(dnsServers, macAddress);
+
                     Logger.Info("Done setting network with mac" + macAddress);
                 }
-
             }
-
         }
 
        private static Collection<string> GetExistingMacAddresses()

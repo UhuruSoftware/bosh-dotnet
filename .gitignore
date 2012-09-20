@@ -15,4 +15,3 @@ doc/*.XML
 *.tlog
 BuildLog.htm
 *.obj
-src/SSHServer/out

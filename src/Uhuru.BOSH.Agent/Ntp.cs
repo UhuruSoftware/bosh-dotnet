@@ -7,9 +7,9 @@
 namespace Uhuru.BOSH.Agent
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
+    using System.Globalization;
+    using System.Net.Sockets;
+    using System.Threading;
     using Uhuru.Utilities;
 
     /// <summary>
@@ -81,8 +81,12 @@ namespace Uhuru.BOSH.Agent
         /// <returns></returns>
         public static Ntp GetNtpOffset()
         {
-            //TODO detect timeserver
-            return GetNtpOffset("time.windows.com");
+            foreach (dynamic ntpServer in Config.Settings["ntp"])
+            {
+                return Ntp.GetNtpOffset(Convert.ToString(ntpServer.Value).Trim());
+            }
+
+            return new Ntp() { Message = "bad ntp server" };
         }
 
         /// <summary>
@@ -92,21 +96,56 @@ namespace Uhuru.BOSH.Agent
         /// <returns></returns>
         public static Ntp GetNtpOffset(string timeserver)
         {
+            Logger.Debug("Retrieving NTP information from {0}", timeserver);
+
+            int retryCount = 5;
             Ntp currentNtp = new Ntp();
-            try
+            while (retryCount > 0)
             {
-                NtpClient ntpClient = new NtpClient(timeserver);
-                ntpClient.Connect(false);
-                currentNtp.offset = ntpClient.LocalClockOffset;
-                currentNtp.currentTime = DateTime.Now;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error while retrieving ntp information", ex);
-                currentNtp.message = ex.Message;
+                try
+                {
+                    NtpClient ntpClient = new NtpClient(timeserver);
+                    ntpClient.Connect(false);
+                    currentNtp.offset = ntpClient.LocalClockOffset;
+                    currentNtp.currentTime = DateTime.Now;
+                    break;
+                }
+                catch (SocketException se)
+                {
+                    Logger.Error("Error while retrieving ntp information: {0}", se.ToString());
+                    currentNtp.message = se.Message;
+                    retryCount--;
+                    Thread.Sleep(1000);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Error while retrieving ntp information: {0}", ex.ToString());
+                    currentNtp.message = ex.Message;
+                }
             }
             return currentNtp;
             
+        }
+
+        public static void SetTime(double timeOffset)
+        {
+            Logger.Debug("Updating time");
+
+            Uhuru.BOSH.Agent.NativeMethods.Systemtime st;
+
+            DateTime trts = DateTime.Now.AddMilliseconds(timeOffset);
+            st.year = (short)trts.Year;
+            st.month = (short)trts.Month;
+            st.dayOfWeek = (short)trts.DayOfWeek;
+            st.day = (short)trts.Day;
+            st.hour = (short)trts.Hour;
+            st.minute = (short)trts.Minute;
+            st.second = (short)trts.Second;
+            st.milliseconds = (short)trts.Millisecond;
+
+            Uhuru.BOSH.Agent.NativeMethods.SetLocalTime(ref st);
+
+            Logger.Debug("Updated local time: {0}", DateTime.Now.ToString(CultureInfo.InvariantCulture));
         }
     }
 }
