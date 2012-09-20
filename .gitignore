@@ -12,3 +12,7 @@ StyleCop.Cache
 *.trx
 doc/*.xml
 doc/*.XML
+*.tlog
+BuildLog.htm
+*.obj
+src/SSHServer/out
