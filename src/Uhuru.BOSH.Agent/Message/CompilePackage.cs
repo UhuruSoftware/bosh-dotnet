@@ -115,8 +115,8 @@ namespace Uhuru.BOSH.Agent.Message
             }
             catch (Exception e)
             {
-                this.logger.Warning("Uncaught exception: ", e.ToString());
-                throw new MessageHandlerException("Uncaught exception in Compile Package.", e);
+                this.logger.Warning("Uncaught exception: {0}", e.ToString());
+                throw new MessageHandlerException("Uncaught exception in Compile Package.\nOutput:\n" + (File.Exists(this.logFile) ? File.ReadAllText(this.logFile) : ""), e);
             }
             finally
             {
@@ -221,22 +221,33 @@ namespace Uhuru.BOSH.Agent.Message
                     usedDiskPercent.ToString(CultureInfo.InvariantCulture) + "% is grater then " + this.maxDiskUsagePercent.ToString(CultureInfo.InvariantCulture) + "%");
             }
 
+
+            string packagingExecutive = Path.Combine(this.compileDir, "packaging");
+
             // Default PATHEXT env var
             string[] execExtensions = new string[] { ".com", ".exe", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".jse", ".wsf", ".wsh", ".msc", ".ps1" };
-            string packagingExecutive = "package";
+            string defaultExtension = ".bat";
 
             foreach (var ext in execExtensions)
             {
-                if (File.Exists(Path.Combine(compileDir, "package" + ext)))
+                if (File.Exists(packagingExecutive + ext))
                 {
-                    packagingExecutive = Path.Combine(compileDir, "package" + ext);
+                    packagingExecutive = packagingExecutive + ext;
                     break;
                 }
             }
 
+            File.WriteAllText(Path.Combine(this.installDir, "dummy"), "dummy");
+
             if (File.Exists(packagingExecutive))
             {
-                logger.Info("Compiling " + this.packageName + " " + this.packageVersion);
+                if (string.IsNullOrEmpty(new FileInfo(packagingExecutive).Extension))
+                {
+                    File.Move(packagingExecutive, packagingExecutive + defaultExtension);
+                    packagingExecutive = packagingExecutive + defaultExtension;
+                }
+
+                this.logger.Info("Compiling " + this.packageName + " " + this.packageVersion);
 
                 var pi = new ProcessStartInfo(packagingExecutive);
 
@@ -259,7 +270,6 @@ namespace Uhuru.BOSH.Agent.Message
                 if (pr.ExitCode != 0)
                 {
                     throw(new MessageHandlerException("Compile Package Failure (exit code: " + pr.ExitCode + ")", output));
-                    
                 }
 
                 this.logger.Info(output);
