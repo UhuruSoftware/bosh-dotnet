@@ -27,8 +27,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "session", "SSHServer\sessio
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shlex", "SSHServer\shlex.vcxproj", "{69451C6E-93F8-4CCC-93E0-F550D799DFFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uhuru.SSHServer.Build", "Uhuru.SSHServer.Build\Uhuru.SSHServer.Build.csproj", "{A53B7D51-0188-4ED7-93E6-072AE605DA7C}"
-EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = bosh-dotnet.vsmdi
@@ -152,18 +150,6 @@ Global
 		{69451C6E-93F8-4CCC-93E0-F550D799DFFD}.Release|Win32.ActiveCfg = Release|Win32
 		{69451C6E-93F8-4CCC-93E0-F550D799DFFD}.Release|Win32.Build.0 = Release|Win32
 		{69451C6E-93F8-4CCC-93E0-F550D799DFFD}.Release|x86.ActiveCfg = Release|Win32
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Debug|Win32.ActiveCfg = Debug|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Debug|x86.ActiveCfg = Debug|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Debug|x86.Build.0 = Debug|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Release|Any CPU.ActiveCfg = Release|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Release|Mixed Platforms.Build.0 = Release|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Release|Win32.ActiveCfg = Release|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Release|x86.ActiveCfg = Release|x86
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,6 +158,5 @@ Global
 		{04EC38E5-E4C0-48A6-AF48-59D99CF099BF} = {6A80B200-1A1D-4C7C-BC87-AFF6CC6F8633}
 		{8E7BC544-7B6F-4431-8575-014C912CFF61} = {6A80B200-1A1D-4C7C-BC87-AFF6CC6F8633}
 		{69451C6E-93F8-4CCC-93E0-F550D799DFFD} = {6A80B200-1A1D-4C7C-BC87-AFF6CC6F8633}
-		{A53B7D51-0188-4ED7-93E6-072AE605DA7C} = {6A80B200-1A1D-4C7C-BC87-AFF6CC6F8633}
 	EndGlobalSection
 EndGlobal
