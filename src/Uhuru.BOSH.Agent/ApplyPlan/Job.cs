@@ -302,8 +302,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
                 File.WriteAllText(outputPath, outputFile);
             }
-
-
         }
 
         /// <summary>
@@ -422,83 +420,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         //    //Logger.Error("Not implemented: ConfigureMonit");
         //}
 
-      ////def install_job_monitrc(template_path, label)
-      ////  if @config_binding.nil?
-      ////    config_failed("Unable to configure monit, " +
-      ////                  "no binding provided")
-      ////  end
-
-      ////  template = ERB.new(File.read(template_path))
-      ////  out_file = File.join(@install_path, "#{label}.monitrc")
-
-      ////  begin
-      ////    result = template.result(@config_binding)
-      ////  rescue Exception => e
-      ////    line = e.backtrace.first.match(/:(\d+):/).captures.first
-      ////    config_failed("failed to process monit template " +
-      ////                  "'#{File.basename(template_path)}': " +
-      ////                  "line #{line}, error: #{e.message}")
-      ////  end
-
-      ////  File.open(out_file, "w") do |f|
-      ////    f.write(add_modes(result))
-      ////  end
-
-      ////  # Monit will load all {base_dir}/monit/job/*.monitrc files,
-      ////  # so we need to blow away this directory when we clean up.
-      ////  link_path = File.join(@base_dir, "monit", "job", "#{label}.monitrc")
-
-      ////  FileUtils.mkdir_p(File.dirname(link_path))
-      ////  Bosh::Agent::Util.create_symlink(out_file, link_path)
-      ////end
-
-        //TODO: JIRA UH-1204
-        private static void InstallJobMonitrc()
-        {
-            Logger.Error("Not implemented: Install Job Monitrc");
-        }
-
-      ////# HACK
-      ////# Force manual mode on all services which don't have mode already set.
-      ////# FIXME: this parser is very simple and thus generates space-delimited
-      ////# output. Can be improved to respect indentation for mode. Also it doesn't
-      ////# skip quoted tokens.
-      ////def add_modes(job_monitrc)
-      ////  state = :out
-      ////  need_mode = true
-      ////  result = ""
-
-      ////  tokens = job_monitrc.split(/\s+/)
-
-      ////  return "" if tokens.empty?
-
-      ////  while (t = tokens.shift)
-      ////    if t == "check"
-      ////      if state == :in && need_mode
-      ////        result << "mode manual "
-      ////      end
-      ////      state = :in
-      ////      need_mode = true
-
-      ////    elsif t == "mode" && %w(passive manual active).include?(tokens[0])
-      ////      need_mode = false
-      ////    end
-
-      ////    result << t << " "
-      ////  end
-
-      ////  if need_mode
-      ////    result << "mode manual "
-      ////  end
-
-      ////  result.strip
-      ////end
-
-        //TODO: JIRA UH-1205
-        private static void AddModes()
-        {
-            Logger.Error("Not implemented: Add Modes");
-        }
 
       ////def install_failed(message)
       ////  raise InstallationError, "Failed to install job '#{@name}': #{message}"
