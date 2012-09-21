@@ -53,6 +53,7 @@ EXIT", diskIndex);
             info.Arguments = String.Format(CultureInfo.InvariantCulture, "/s {0}", fileName);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
+            info.CreateNoWindow = true;
 
             using (Process p = new Process())
             {
@@ -421,6 +422,11 @@ EXIT", diskIndex, mountPath);
         /// <returns></returns>
         public static int GetDiskIndexForMountPoint(string mountPoint)
         {
+            if (string.IsNullOrEmpty(mountPoint))
+            {
+                throw new ArgumentNullException("mountPoint");
+            }
+
             string volumeId = GetVolumeDeviceId(mountPoint).TrimEnd(new char[] { '\\' });
 
             Logger.Debug("Mount point {0} volume ID: {1}", mountPoint, volumeId);
@@ -518,9 +524,12 @@ EXIT", diskIndex, mountPath);
                     ManagementObjectCollection moc = volume.GetInstances();
                     foreach (ManagementObject mo in moc)
                     {
-                        if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+                        if (mo["SCSITargetId"] != null)
                         {
-                            return int.Parse(mo["Index"].ToString(), CultureInfo.InvariantCulture);
+                            if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+                            {
+                                return int.Parse(mo["Index"].ToString(), CultureInfo.InvariantCulture);
+                            }
                         }
                     }
                 }

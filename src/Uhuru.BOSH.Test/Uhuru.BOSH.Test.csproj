@@ -115,6 +115,7 @@
     <Compile Include="Integration\HandlerTests.cs" />
     <Compile Include="Integration\MonitTest.cs" />
     <Compile Include="Unit\NtpTest.cs" />
+    <Compile Include="Unit\Platforms\Windows\DiskTest.cs" />
     <Compile Include="Unit\RemoteExceptionTest.cs" />
     <Compile Include="Unit\RubyErbTests.cs" />
     <Compile Include="Unit\StateTest.cs" />
