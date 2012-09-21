@@ -26,12 +26,12 @@ namespace Uhuru.BOSH.Agent
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Util", Justification = "FxCop bug"), 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Util", Justification = "FxCop bug"),
     System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Keeping name the same as VMWare's code")]
     public static class Util
     {
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "spec", Justification="TODO: JIRA UH-1207")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "spec", Justification = "TODO: JIRA UH-1207")]
         internal static dynamic configBinding(dynamic spec)
         {
             throw new NotImplementedException();
@@ -75,7 +75,7 @@ namespace Uhuru.BOSH.Agent
                         blobSHA1 = BitConverter.ToString(sha.ComputeHash(fs)).Replace("-", "");
                     }
                 }
-                if (String.Compare(blobSHA1,checksum, StringComparison.OrdinalIgnoreCase) != 0)
+                if (String.Compare(blobSHA1, checksum, StringComparison.OrdinalIgnoreCase) != 0)
                 {
                     throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Expected sha1: {0}, Downloaded sha1: {1}", checksum, blobSHA1));
                 }
@@ -94,17 +94,18 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        internal static void CreateSymLink(string installPath, string linkPath)
+        internal static void CreateSymLink(string targetPath, string linkPath)
         {
-            // TODO: replace this with the native call from AlphaFS libarary
-            // Alphaleonis.Win32.Filesystem.File.CreateSymbolicLink(linkPath, installPath, Alphaleonis.Win32.Filesystem.SymbolicLinkTarget.Directory);
-
-            Process p = Process.Start("cmd.exe", String.Format(CultureInfo.InvariantCulture, "/c mklink /D {0} {1}", linkPath, installPath));
-            p.WaitForExit();
-            if (p.ExitCode != 0)
+            // Delete the linkPath if it is a directory link
+            if (Directory.Exists(linkPath) &&
+                (Alphaleonis.Win32.Filesystem.File.GetAttributes(linkPath).HasFlag(Alphaleonis.Win32.Filesystem.FileAttributes.ReparsePoint)))
             {
-                Logger.Error(String.Format(CultureInfo.InvariantCulture, "Failed creating symbolic link between {0} and {1}", installPath, linkPath));
+                // Paranoia: Use false parameter to prevent the deletion of a real directory with files in it
+                Directory.Delete(linkPath, false);
             }
+
+            Alphaleonis.Win32.Filesystem.File.GetAttributes("asdf");
+            Alphaleonis.Win32.Filesystem.File.CreateSymbolicLink(targetPath, linkPath, Alphaleonis.Win32.Filesystem.SymbolicLinkTarget.Directory);
         }
 
         internal static RegistryKey SetupUhuruKey()
@@ -116,7 +117,7 @@ namespace Uhuru.BOSH.Agent
                 softwareKey.CreateSubKey("Uhuru");
                 uhuruSubKey = softwareKey.OpenSubKey("Uhuru", true);
             }
-            
+
 
             RegistryKey uhuruCloudTargetsSubKey = uhuruSubKey.OpenSubKey("BoshAgent", true);
             if (uhuruCloudTargetsSubKey == null)
