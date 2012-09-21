@@ -74,12 +74,35 @@ namespace Uhuru.BOSH.Agent
                 
                 MountPersistentDisk();
                 HardenPermissions();
+
+                ActivateWindows();
             }
 
             var ret = new Dictionary<string, object>();
             //ret["settings"] = this.settings;
 
             return ret;
+        }
+
+        private void ActivateWindows()
+        {
+            if (SettingNotNull("env", "windows", "product_key"))
+            {
+                if (!string.IsNullOrEmpty(this.settings["env"]["windows"]["product_key"].ToString()))
+                {
+                    Logger.Info("Activating Windows");
+                    try
+                    {
+                        Util.ActivateWindows(this.settings["env"]["windows"]["product_key"].Value);
+                        Logger.Info("Finished activating Windows");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("Failed activating windows: {0}", ex.ToString());
+                        throw new BoshException("Failed activating windows", ex);
+                    }
+                }
+            }
         }
 
         private void SetupDiskData()
@@ -399,6 +422,31 @@ namespace Uhuru.BOSH.Agent
         {
             // Most of the code doesn't apply to Windows systems.
             // Analyze what steps are required for Windows.
+        }
+
+
+        private bool SettingNotNull(params string[] keys)
+        {
+            dynamic hash = this.settings;
+            for (int i = 0; i < keys.Count(); i++)
+            {
+                try
+                {
+                    if (hash[keys[i]] != null)
+                    {
+                        hash = hash[keys[i]];
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
