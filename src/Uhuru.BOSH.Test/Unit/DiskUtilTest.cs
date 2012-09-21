@@ -7,11 +7,11 @@ using Uhuru.BOSH.Agent.Message;
 
 namespace Uhuru.BOSH.Test.Unit
 {
-    [TestClass]
+    [TestClass, DeploymentItem("log4net.config"), DeploymentItem("unity.config")]
     public class DiskUtilTest
     {
-        [TestMethod]
-        public void TC001_GetVolumeDeviceIdTest()
+        [TestMethod, TestCategory("Unit")]
+        public void TC001_GetDiskIndexForMountPointTest()
         {
             // Arrange
             string mountPoint = @"c:\";
@@ -20,11 +20,11 @@ namespace Uhuru.BOSH.Test.Unit
             int id = DiskUtil.GetDiskIndexForMountPoint(mountPoint);
 
             // Assert
-            Assert.AreEqual(0, id);
+            Assert.AreNotEqual(-1, id);
         }
 
-        [TestMethod]
-        public void TC002_GetDiskIdForScsiDeviceIdTest()
+        [TestMethod, TestCategory("Unit")]
+        public void TC002_GetDiskIndexForDiskIdTest()
         {
             // Arrange
             int diskId = 0;
@@ -33,7 +33,33 @@ namespace Uhuru.BOSH.Test.Unit
             int index = DiskUtil.GetDiskIndexForDiskId(diskId);
 
             // Assert
-            Assert.AreEqual(diskId, index);
+            Assert.AreNotEqual(int.MinValue, index);
+        }
+
+        [TestMethod, TestCategory("Unit")]
+        public void TC003_IsMountPointTest()
+        {
+            // Arrange
+            string mountPoint = @"c:\";
+
+            // Act
+            bool isMountPoint = DiskUtil.IsMountPoint(mountPoint);
+
+            // Assert
+            Assert.IsTrue(isMountPoint);
+        }
+
+        [TestMethod, TestCategory("Unit")]
+        public void TC004_GetVolumeDeviceIdTest()
+        {
+            // Arrange
+            string mountPoint = @"c:\";
+
+            // Act
+            string volumeDeviceId = DiskUtil.GetVolumeDeviceId(mountPoint);
+
+            // Assert
+            Assert.IsNotNull(volumeDeviceId);
         }
     }
 }

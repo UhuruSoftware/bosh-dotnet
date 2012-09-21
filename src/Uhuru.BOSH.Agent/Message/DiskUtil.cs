@@ -528,7 +528,7 @@ EXIT", diskIndex, mountPath);
                 Thread.Sleep(1000);
             }
             Logger.Debug("Could not find disk index for disk id: " + diskId);
-            return -int.MaxValue;
+            return int.MinValue;
         }
     }
 }

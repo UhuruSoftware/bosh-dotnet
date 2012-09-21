@@ -7,10 +7,10 @@ using Uhuru.BOSH.Agent;
 
 namespace Uhuru.BOSH.Test.Unit
 {
-    [TestClass]
+    [TestClass, DeploymentItem("log4net.config"), DeploymentItem("unity.config")]
     public class NtpTest
     {
-        [TestMethod]
+        [TestMethod, TestCategory("Unit")]
         public void TC001_TestNtp()
         {
             //Arrange
@@ -22,10 +22,9 @@ namespace Uhuru.BOSH.Test.Unit
             //Assert
             Assert.AreEqual(null, currnetNtp.Message);
             Assert.AreNotEqual(0, currnetNtp.Offset);
-            
         }
 
-        [TestMethod]
+        [TestMethod, TestCategory("Unit")]
         public void TC002_InvalidNtpServer()
         {
             //Arrange
