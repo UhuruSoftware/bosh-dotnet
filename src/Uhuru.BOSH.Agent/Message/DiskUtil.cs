@@ -411,7 +411,7 @@ EXIT", diskIndex, mountPath);
 
         private static int CalculateDiskUsage(UInt64 capacity, UInt64 freeSpace)
         {
-            return (int)((capacity - freeSpace) / capacity * 100);
+            return (int)(100 * (capacity - freeSpace) / capacity);
         }
 
         /// <summary>

@@ -10,7 +10,7 @@ namespace Uhuru.BOSH.Test.Unit
     [TestClass, DeploymentItem("log4net.config"), DeploymentItem("unity.config")]
     public class NtpTest
     {
-        [TestMethod, TestCategory("Unit")]
+        [TestMethod, TestCategory("Unit"), Timeout(20000)]
         public void TC001_TestNtp()
         {
             //Arrange
@@ -24,7 +24,7 @@ namespace Uhuru.BOSH.Test.Unit
             Assert.AreNotEqual(0, currnetNtp.Offset);
         }
 
-        [TestMethod, TestCategory("Unit")]
+        [TestMethod, TestCategory("Unit"), Timeout(30000)]
         public void TC002_InvalidNtpServer()
         {
             //Arrange
