@@ -8,17 +8,17 @@ namespace Uhuru.BOSH.Agent
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.IO;
-    using Uhuru.Utilities;
     using System.Diagnostics;
-    using System.Management;
-    using Uhuru.BOSH.Agent.Providers;
-    using Uhuru.BOSH.Agent.Message;
-    using Uhuru.BOSH.Agent.Errors;
     using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Management;
+    using System.Threading;
     using Newtonsoft.Json;
+    using Uhuru.BOSH.Agent.Errors;
+    using Uhuru.BOSH.Agent.Message;
+    using Uhuru.BOSH.Agent.Providers;
+    using Uhuru.Utilities;
 
     /// <summary>
     /// TODO: Update summary.
@@ -26,13 +26,7 @@ namespace Uhuru.BOSH.Agent
     public class Bootstrap
     {
         private IPlatform platform;
-        // private Infrastructure settings;
         private dynamic settings;
-
-        ////    def initialize
-        ////      FileUtils.mkdir_p(File.join(base_dir, 'bosh'))
-        ////      @platform = Bosh::Agent::Config.platform
-        ////    end
 
         public Bootstrap()
         {
@@ -57,41 +51,12 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        ////    def configure
-        ////      logger.info("Configuring instance")
-
-        ////      load_settings
-        ////      logger.info("Loaded settings: #{@settings.inspect}")
-
-        ////      if @settings
-        ////        update_iptables
-        ////        update_passwords
-        ////        update_agent_id
-        ////        update_credentials
-        ////        update_hostname
-        ////        update_mbus
-        ////        update_blobstore
-        ////        setup_networking
-        ////        update_time
-        ////        setup_data_disk
-        ////        setup_tmp
-
-        ////        Bosh::Agent::Monit.setup_monit_user
-        ////        Bosh::Agent::Monit.setup_alerts
-
-        ////        mount_persistent_disk
-        ////        harden_permissions
-        ////      end
-        ////      { "settings" => @settings }
-        ////    end
-
         public Dictionary<string, object> Configure()
         {
             Logger.Info("Configure instance");
 
             LoadSettings();
-            // Logger.Info("Loaded settings: {0}", this.settings.ToString());
-
+            
             if (this.settings != null)
             {
                 UpdateIPTables();
@@ -101,28 +66,43 @@ namespace Uhuru.BOSH.Agent
                 UpdateHostname();
                 UpdateMbus();
                 UpdateBlobStore();
-                SetupNetwork(); 
+                SetupNetwork();
+                Thread.Sleep(5000);
                 UpdateTime();
                 SetupDiskData();
                 SetupTemp();
-
-        ////Bosh::Agent::Monit.setup_monit_user
-        ////Bosh::Agent::Monit.setup_alerts
-
+                
                 MountPersistentDisk();
                 HardenPermissions();
+
+                ActivateWindows();
             }
-            //if (this.settings != null)
-            //{
-            //    UpdateIptables();
-            //    UpdatePasswords();
-            //    throw new NotImplementedException();
-            //}
 
             var ret = new Dictionary<string, object>();
-            // ret["settings"] = this.settings;
+            //ret["settings"] = this.settings;
 
             return ret;
+        }
+
+        private void ActivateWindows()
+        {
+            if (SettingNotNull("env", "windows", "product_key"))
+            {
+                if (!string.IsNullOrEmpty(this.settings["env"]["windows"]["product_key"].ToString()))
+                {
+                    Logger.Info("Activating Windows");
+                    try
+                    {
+                        Util.ActivateWindows(this.settings["env"]["windows"]["product_key"].Value);
+                        Logger.Info("Finished activating Windows");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("Failed activating windows: {0}", ex.ToString());
+                        throw new BoshException("Failed activating windows", ex);
+                    }
+                }
+            }
         }
 
         private void SetupDiskData()
@@ -165,8 +145,13 @@ namespace Uhuru.BOSH.Agent
 
             foreach (dynamic ntpServer in this.settings["ntp"])
             {
-                Ntp ntp = Ntp.GetNtpOffset(ntpServer.Value);
-                Logger.Info("Current time offset is :" + ntp.Offset + " to time server " + ntpServer); //TODO update time
+                Ntp ntp = Ntp.GetNtpOffset(Convert.ToString(ntpServer.Value).Trim());
+                if (string.IsNullOrEmpty(ntp.Message))
+                {
+                    Logger.Info("Current time offset is :" + ntp.Offset + " to time server " + ntpServer);
+                    Ntp.SetTime(ntp.Offset);
+                    break;
+                }
             }
         }
 
@@ -214,12 +199,7 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        ////    def load_settings
-        ////      @settings = Bosh::Agent::Config.infrastructure.load_settings
-        ////      Bosh::Agent::Config.settings = @settings
-        ////    end
-
-        public void LoadSettings()
+        private void LoadSettings()
         {
             Logger.Info("Loading settings");
 
@@ -269,7 +249,7 @@ namespace Uhuru.BOSH.Agent
         ////      end
         ////    end
 
-        public void UpdateIPTables()
+        private void UpdateIPTables()
         {
             if (this.settings["iptables"] == null)
             {
@@ -280,12 +260,7 @@ namespace Uhuru.BOSH.Agent
             throw new NotImplementedException();
         }
 
-
-        ////    def update_passwords
-        ////      @platform.update_passwords(@settings) unless @settings["env"].nil?
-        ////    end
-
-        public void UpdatePasswords()
+        private void UpdatePasswords()
         {
             if (this.settings["env"] != null && this.settings["env"].Count > 0)
             {
@@ -298,11 +273,7 @@ namespace Uhuru.BOSH.Agent
             
         }
 
-        ////    def update_agent_id
-        ////      Bosh::Agent::Config.agent_id = @settings["agent_id"]
-        ////    end
-
-        public void UpdateAgentId()
+        private void UpdateAgentId()
         {
             
             Logger.Info("Updating agent Id");
@@ -310,22 +281,16 @@ namespace Uhuru.BOSH.Agent
             Logger.Info("New agent id is :" + Config.AgentId);
         }
 
-        ////    def update_credentials
-        ////      env = @settings["env"]
-        ////      if env && bosh_env = env["bosh"]
-        ////        if bosh_env["credentials"]
-        ////          Bosh::Agent::Config.credentials = bosh_env["credentials"]
-        ////        end
-        ////      end
-        ////    end
-
-        public void UpdateCredentials()
+        private void UpdateCredentials()
         {
-            if (this.settings["env"]["bosh"]["credentials"] != null)
+            if (this.settings["env"] != null)
             {
-                if (this.settings["env"]["bosh"]["credentials"].Count > 0)
+                if (this.settings["env"]["bosh"] != null)
                 {
-                    throw new NotImplementedException();
+                    if (this.settings["env"]["bosh"]["credentials"] != null)
+                    {
+                        Config.Credentials = this.settings["env"]["bosh"]["credentials"];
+                    }
                 }
             }
             else
@@ -333,96 +298,6 @@ namespace Uhuru.BOSH.Agent
                 Logger.Info("No ENV settings detects, skipping credential update process");
             }
         }
-
-        ////    def update_hostname
-        ////      agent_id = @settings['agent_id']
-
-        ////      template = ERB.new(ETC_HOST_TEMPATE, 0, '%<>-')
-        ////      result = template.result(binding)
-        ////      File.open('/etc/hosts', 'w') { |f| f.puts(result) }
-
-        ////      `hostname #{agent_id}`
-        ////      File.open('/etc/hostname', 'w') { |f| f.puts(agent_id) }
-        ////    end
-
-        ////    def update_mbus
-        ////      Bosh::Agent::Config.mbus = @settings['mbus']
-        ////    end
-
-        ////    def update_blobstore
-        ////      blobstore_settings = @settings["blobstore"]
-
-        ////      blobstore_provider =  blobstore_settings["plugin"]
-        ////      blobstore_options =  blobstore_settings["properties"]
-
-        ////      Bosh::Agent::Config.blobstore_provider = blobstore_provider
-        ////      Bosh::Agent::Config.blobstore_options.merge!(blobstore_options)
-        ////    end
-
-        ////    def setup_networking
-        ////      Bosh::Agent::Config.platform.setup_networking
-        ////    end
-
-        ////    def update_time
-        ////      ntp_servers = @settings['ntp'].join(" ")
-        ////      unless ntp_servers.empty?
-        ////        logger.info("Configure ntp-servers: #{ntp_servers}")
-        ////        Bosh::Agent::Util.update_file(ntp_servers, '/var/vcap/bosh/etc/ntpserver')
-        ////        output = `ntpdate #{ntp_servers}`
-        ////        logger.info(output)
-        ////      else
-        ////        logger.warn("no ntp-servers configured")
-        ////      end
-        ////    end
-
-        ////    def setup_data_disk
-        ////      data_disk = Bosh::Agent::Config.platform.get_data_disk_device_name
-        ////      swap_partition = "#{data_disk}1"
-        ////      data_partition = "#{data_disk}2"
-
-        ////      if File.blockdev?(data_disk)
-
-        ////        if Dir["#{data_disk}[1-9]"].empty?
-        ////          logger.info("Found unformatted drive")
-        ////          logger.info("Partition #{data_disk}")
-        ////          Bosh::Agent::Util.partition_disk(data_disk, data_sfdisk_input)
-
-        ////          logger.info("Create swap and data partitions")
-        ////          %x[mkswap #{swap_partition}]
-        ////          %x[/sbin/mke2fs -t ext4 -j #{data_partition}]
-        ////        end
-
-        ////        logger.info("Swapon and mount data partition")
-        ////        %x[swapon #{swap_partition}]
-        ////        %x[mkdir -p #{base_dir}/data]
-
-        ////        data_mount = "#{base_dir}/data"
-        ////        unless Pathname.new(data_mount).mountpoint?
-        ////          %x[mount #{data_partition} #{data_mount}]
-        ////        end
-
-        ////        setup_data_sys
-        ////      end
-        ////    end
-
-        ////    def data_sfdisk_input
-        ////      ",#{swap_size},S\n,,L\n"
-        ////    end
-
-        ////    def swap_size
-        ////      data_disk = Bosh::Agent::Config.platform.get_data_disk_device_name
-        ////      disk_size = Util.block_device_size(data_disk)
-        ////      if mem_total > disk_size/2
-        ////        return (disk_size/2)/1024
-        ////      else
-        ////        return mem_total/1024
-        ////      end
-        ////    end
-
-        ////    def mem_total
-        ////      # MemTotal:        3952180 kB
-        ////      File.readlines('/proc/meminfo').first.split(/\s+/)[1].to_i
-        ////    end
 
         static long MemTotal()
         {
@@ -462,31 +337,6 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
-        ////    def setup_tmp
-        ////      # use a custom TMPDIR for agent itself
-        ////      agent_tmp_dir = File.join(base_dir, 'data', 'tmp')
-        ////      FileUtils.mkdir_p(agent_tmp_dir)
-        ////      ENV["TMPDIR"] = agent_tmp_dir
-
-        ////      # first time: for /tmp on the root fs
-        ////      tmp_permissions
-
-        ////      unless Pathname.new('/tmp').mountpoint?
-        ////        tmp_size = 128
-        ////        root_tmp = File.join(base_dir, 'data', 'root_tmp')
-
-        ////        # If it's not mounted on /tmp - we don't care - blow it away
-        ////        %x[/usr/bin/truncate -s #{tmp_size}M #{root_tmp}]
-        ////        %x[chmod 0700 #{root_tmp}]
-        ////        %x[mke2fs -t ext4 -m 1 -F #{root_tmp}]
-
-        ////        %x[mount -t ext4 -o loop #{root_tmp} /tmp]
-
-        ////        # 2nd time for the new /tmp mount
-        ////        tmp_permissions
-        ////      end
-        ////    end
-
         static void SetupTemp()
         {
             string agentTmpDir = Path.Combine(BaseDir, "data", "tmp");
@@ -495,34 +345,8 @@ namespace Uhuru.BOSH.Agent
                 Directory.CreateDirectory(agentTmpDir);
             }
 
-            Logger.Warning("TODO Not Implemented");
-            // complate 
+            Environment.SetEnvironmentVariable("TMPDIR", agentTmpDir);
         }
-
-        ////    def tmp_permissions
-        ////      %x[chown root:#{BOSH_APP_USER} /tmp]
-        ////      %x[chmod 0770 /tmp]
-        ////      %x[chmod 0700 /var/tmp]
-        ////    end
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "TODO: JIRA UH-1211")]
-        void TempPermissiosn()
-        {
-            // todo: maybe not necessary for windows
-        }
-
-
-        ////    def mount_persistent_disk
-        ////      if @settings['disks']['persistent'].keys.size > 1
-        ////        # hell on earth
-        ////        raise Bosh::Agent::FatalError, "Fatal: more than one persistent disk on boot"
-        ////      else
-        ////        cid = @settings['disks']['persistent'].keys.first
-        ////        if cid
-        ////          Bosh::Agent::Config.platform.mount_persistent_disk(cid)
-        ////        end
-        ////      end
-        ////    end
 
         void MountPersistentDisk()
         {
@@ -542,8 +366,6 @@ namespace Uhuru.BOSH.Agent
                     }
                 }
             }
-            
-            // todo: implement after the settings are classes are stabilized
         }
 
         ////    def harden_permissions
@@ -602,29 +424,29 @@ namespace Uhuru.BOSH.Agent
             // Analyze what steps are required for Windows.
         }
 
-        ////    def setup_cron_at_allow
-        ////      %w{/etc/cron.allow /etc/at.allow}.each do |file|
-        ////        File.open(file, 'w') { |fh| fh.puts(BOSH_APP_USER) }
-        ////      end
-        ////    end
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification="TODO: JIRA UH-1211")]
-        void SetupCronToAllow()
+
+        private bool SettingNotNull(params string[] keys)
         {
-            // Analyze what steps are required for Windows.
+            dynamic hash = this.settings;
+            for (int i = 0; i < keys.Count(); i++)
+            {
+                try
+                {
+                    if (hash[keys[i]] != null)
+                    {
+                        hash = hash[keys[i]];
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return true;
         }
-
-        // todo: use C# templateing system. Google is not aware of an ERB implementation in/for C#
-
-        ////    ETC_HOST_TEMPATE = <<TEMPLATE
-        ////127.0.0.1 localhost <%= agent_id %>
-
-        ////# The following lines are desirable for IPv6 capable hosts
-        ////::1 localhost ip6-localhost ip6-loopback <%= agent_id %>
-        ////fe00::0 ip6-localnet
-        ////ff00::0 ip6-mcastprefix
-        ////ff02::1 ip6-allnodes
-        ////ff02::2 ip6-allrouters
-        ////ff02::3 ip6-allhosts
-        ////TEMPLATE
     }
 }

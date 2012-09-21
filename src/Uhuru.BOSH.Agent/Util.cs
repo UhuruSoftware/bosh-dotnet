@@ -21,6 +21,7 @@ namespace Uhuru.BOSH.Agent
     using Microsoft.Win32;
     using System.Security.AccessControl;
     using System.Security.Principal;
+    using System.Management;
 
     /// <summary>
     /// TODO: Update summary.
@@ -124,6 +125,46 @@ namespace Uhuru.BOSH.Agent
                 uhuruCloudTargetsSubKey = uhuruSubKey.OpenSubKey("BoshAgent", true);
             }
             return uhuruCloudTargetsSubKey;
+        }
+
+        internal static void ActivateWindows(string productKey)
+        {
+            using (ManagementClass objMC = new ManagementClass("SoftwareLicensingService"))
+            {
+                ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                foreach (ManagementObject objMO in objMOC)
+                {
+                    ManagementBaseObject methodParameters = objMO.GetMethodParameters("InstallProductKey");
+                    methodParameters["ProductKey"] = productKey;
+                    objMO.InvokeMethod("InstallProductKey", methodParameters, null);
+
+                    objMO.InvokeMethod("RefreshLicenseStatus", null);
+                }
+            }
+
+            using (ManagementClass objMC = new ManagementClass("SoftwareLicensingProduct"))
+            {
+                ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                foreach (ManagementObject objMO in objMOC)
+                {
+                    if (objMO["PartialProductKey"] != null)
+                    {
+                        objMO.InvokeMethod("Activate", null);
+                    }
+                }
+            }
+
+            using (ManagementClass objMC = new ManagementClass("SoftwareLicensingService"))
+            {
+                ManagementObjectCollection objMOC = objMC.GetInstances();
+
+                foreach (ManagementObject objMO in objMOC)
+                {
+                    objMO.InvokeMethod("RefreshLicenseStatus", null);
+                }
+            }
         }
     }
 }

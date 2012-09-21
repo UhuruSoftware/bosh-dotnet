@@ -491,32 +491,25 @@ namespace Uhuru.BOSH.Agent
         /// <param name="updateSystemTime">if set to <c>true</c> [update system time].</param>
         public void Connect(bool updateSystemTime)
         {
-            try
-            {
-                // Resolve server address
-                IPHostEntry hostadd = Dns.Resolve(TimeServer);
-                IPEndPoint EPhost = new IPEndPoint(hostadd.AddressList[0], 123);
+            // Resolve server address
+            IPHostEntry hostadd = Dns.GetHostEntry(TimeServer);
+            IPEndPoint EPhost = new IPEndPoint(hostadd.AddressList[0], 123);
 
-                //Connect the time server
-                using (UdpClient timeSocket = new UdpClient())
+            //Connect the time server
+            using (UdpClient timeSocket = new UdpClient())
+            {
+                timeSocket.Connect(EPhost);
+
+                // Initialize data structure
+                Initialize();
+                timeSocket.Send(NTPData, NTPData.Length);
+                NTPData = timeSocket.Receive(ref EPhost);
+                if (!IsResponseValid())
                 {
-                    timeSocket.Connect(EPhost);
-
-                    // Initialize data structure
-                    Initialize();
-                    timeSocket.Send(NTPData, NTPData.Length);
-                    NTPData = timeSocket.Receive(ref EPhost);
-                    if (!IsResponseValid())
-                    {
-                        throw new InvalidOperationException("Invalid response from " + TimeServer);
-                    }
-                    ReceptionTimestamp = DateTime.Now;
-
+                    throw new InvalidOperationException("Invalid response from " + TimeServer);
                 }
-            }
-            catch
-            {
-                throw;
+                ReceptionTimestamp = DateTime.Now;
+
             }
 
             // Update system time

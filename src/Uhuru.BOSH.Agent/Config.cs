@@ -164,7 +164,7 @@ namespace Uhuru.BOSH.Agent
             set;
         }
 
-        public static string Credentials
+        public static dynamic Credentials
         {
             get;
             set;
