@@ -13,8 +13,7 @@ namespace Uhuru.BOSH.Test.Unit
         [TestMethod]
         public void TC001_TestNetwork()
         {
-            WindowsNetwork wn = new WindowsNetwork();
-            wn.SetupNetwork();
+            WindowsNetwork.SetupNetwork();
         }
     }
 }
