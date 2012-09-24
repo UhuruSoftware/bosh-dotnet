@@ -1,4 +1,0 @@
-﻿@ECHO OFF
-if not (%job_change%)==(job_check_status) exit 1
-if not (%hash_change%)==(hash_unchanged) exit 1
-if not (%updated_packages%)==() exit 1

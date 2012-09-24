@@ -12,9 +12,6 @@ namespace Uhuru.BOSH.Test.Unit
     [TestClass]
     public class RubyErbTests
     {
-
-        string erbTemplatePath = @"E:\_code\private-bosh-dotnet\src\Uhuru.BOSH.Test\Resources\WinServBosh.exe.config.erb";
-
         [TestMethod]
         //[DeploymentItem(@"Ruby\erb.rb")]
         [DeploymentItem(@"Ruby\erb.rb", @"Ruby")]
@@ -71,6 +68,7 @@ namespace Uhuru.BOSH.Test.Unit
 
         [TestMethod]
         [DeploymentItem(@"Ruby", @"Ruby")]
+        [DeploymentItem(@"Resources\WinServBosh.exe.config.erb")]
         public void TC004_TestERBWithFile()
         {
             //Arrange
@@ -78,7 +76,7 @@ namespace Uhuru.BOSH.Test.Unit
             string currentProp = @"{boshtest: {outputfile: ""c:\\test.txt"",testmessage: ""this is a test""}}";
 
             //Act
-            string result = erbTemplate.Execute(erbTemplatePath, currentProp);
+            string result = erbTemplate.Execute("WinServBosh.exe.config.erb", currentProp);
             
             //Assert
             Assert.AreNotEqual(result, string.Empty);

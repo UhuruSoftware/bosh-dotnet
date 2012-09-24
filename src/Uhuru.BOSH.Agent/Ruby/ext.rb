@@ -1,5 +1,4 @@
-﻿require 'ostruct'
-
+﻿
 class Object
  def to_openstruct
    self

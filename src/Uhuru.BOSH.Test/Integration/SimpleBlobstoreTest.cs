@@ -5,9 +5,9 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Uhuru.BOSH.BlobstoreClient;
 using Uhuru.BOSH.BlobstoreClient.Clients;
-using System.Yaml;
 using System.IO;
 using Uhuru.BOSH.BlobstoreClient.Errors;
+using Newtonsoft.Json;
 
 namespace Uhuru.BOSH.Test.Integration
 {
@@ -15,41 +15,26 @@ namespace Uhuru.BOSH.Test.Integration
     public class SimpleBlobstoreTest
     {
 
-
-        string yamlOptions =@"
-{
-    ""blobstore"":
-    {
-        ""plugin"":""simple"",
-        ""properties"":
+        string yamlOptions = @"
         {
-            ""endpoint"":""http://10.0.3.30:25251"",
-            ""user"":""agent"",
-            ""password"":""agent""
-        }
-    }
-}";
-
-        string yamlOptions2 = @"
-{
-    ""blobstore"":
-    {
-        ""plugin"":""simple"",
-        ""properties"":
-        {
-            ""endpoint"":""http://127.0.0.1:9999"",
-            ""user"":""admin"",
-            ""password"":""admin""
-        }
-    }
-}";
+            ""blobstore"":
+            {
+                ""plugin"":""simple"",
+                ""properties"":
+                {
+                    ""endpoint"":""http://127.0.0.1:9999"",
+                    ""user"":""admin"",
+                    ""password"":""admin""
+                }
+            }
+        }";
 
         string content = "tralalalalalalal";
 
-        [TestMethod]
+        [TestMethod] //todo: vladi: fix this test
         public void CreateContentTest()
         {
-            dynamic ynode = YamlNode.FromYaml(yamlOptions).FirstOrDefault();
+            dynamic ynode = (JsonConvert.DeserializeObject(yamlOptions) as dynamic);
 
 
             IClient sc = Blobstore.CreateClient("simple", ynode["blobstore"]["properties"]);
@@ -64,17 +49,17 @@ namespace Uhuru.BOSH.Test.Integration
 
         [TestMethod]
         public void CreateFileTest()
-        {            
+        {
             FileInfo fileToUpload = new FileInfo(Path.GetTempFileName());
             FileInfo downloadedFile = new System.IO.FileInfo(Path.GetTempFileName());
 
             // Set the file size
             using (var fstream = fileToUpload.OpenWrite())
             {
-                fstream.SetLength(1024 * 1024 * 500);
+                fstream.SetLength(1024 * 1024 * 1);
             }
 
-            dynamic ynode = YamlNode.FromYaml(yamlOptions).FirstOrDefault();
+            dynamic ynode = (JsonConvert.DeserializeObject(yamlOptions) as dynamic);
 
             IClient sc = Blobstore.CreateClient("simple", ynode["blobstore"]["properties"]);
 
@@ -87,14 +72,14 @@ namespace Uhuru.BOSH.Test.Integration
             fileToUpload.Delete();
             downloadedFile.Delete();
 
-            sc.Delete(objectId);
+            //sc.Delete(objectId);
         }
 
         [TestMethod]
         [ExpectedException(typeof(BlobstoreException), "Could not delete object")]
         public void InvalidDeleteTest()
         {
-            dynamic ynode = YamlNode.FromYaml(yamlOptions).FirstOrDefault();
+            dynamic ynode = (JsonConvert.DeserializeObject(yamlOptions) as dynamic);
 
             IClient sc = Blobstore.CreateClient("simple", ynode["blobstore"]["properties"]);
 

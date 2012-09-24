@@ -44,11 +44,11 @@ namespace Uhuru.BOSH.Agent.Message
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        private static object SetupSsh(dynamic parm)
+        private static object SetupSsh(dynamic parameters)
         {
             
-            string userName = parm["user"].Value;
-            string password = "password1234!";//parm["password"].Value;
+            string userName = parameters["user"].Value;
+            string password = parameters["password"].Value;
             Logger.Info("Setting up SSH with user:" + userName +" and password: " + password);
 
             SshResult sshResult = new SshResult();

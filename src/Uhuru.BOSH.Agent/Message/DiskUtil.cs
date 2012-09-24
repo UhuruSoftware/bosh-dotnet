@@ -515,7 +515,17 @@ EXIT", diskIndex, mountPath);
         /// <returns>Disk Index</returns>
         public static int GetDiskIndexForDiskId(int diskId)
         {
-            int retryCount = 10;
+            return GetDiskIndexForDiskId(diskId, true);
+        }
+
+        /// <summary>
+        /// Gets the disk index for disk id.
+        /// </summary>
+        /// <param name="diskId">The SCSI disk id.</param>
+        /// <returns>Disk Index</returns>
+        public static int GetDiskIndexForDiskId(int diskId, bool retry)
+        {
+            int retryCount = retry == true ? 10 : 1;
 
             while (retryCount > 0)
             {

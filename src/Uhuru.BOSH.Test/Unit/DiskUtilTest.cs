@@ -30,13 +30,16 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC002_GetDiskIndexForDiskIdTest()
         {
             // Arrange
-            int diskId = 0;
+            // Try to get index for disk 0 or 1, should be one of the two on a normal Windows installation
+            int diskId0 = 0;
+            int diskId1 = 1;
 
             // Act
-            int index = DiskUtil.GetDiskIndexForDiskId(diskId);
+            int index0 = DiskUtil.GetDiskIndexForDiskId(diskId0, false);
+            int index1 = DiskUtil.GetDiskIndexForDiskId(diskId1, false);
 
             // Assert
-            Assert.AreNotEqual(int.MinValue, index);
+            Assert.AreNotEqual(int.MinValue, Math.Max(index0, index1));
         }
 
         [TestMethod, TestCategory("Unit"), Timeout(30000)]
@@ -69,10 +72,27 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC005_DiskHasPartitionTest()
         {
             // Arrange
-            int diskId = 0;
+            // Try getting info for disk 0 or 1, one of them should exist on a normal Windows installation
+            int diskId0 = 0;
+            int diskId1 = 1;
 
             // Act
-            bool hasPartition = DiskUtil.DiskHasPartition(diskId);
+            bool hasPartition = false;
+
+            try
+            {
+                hasPartition = DiskUtil.DiskHasPartition(diskId0);
+            }
+            catch { }
+
+            if (!hasPartition)
+            {
+                try
+                {
+                    hasPartition = DiskUtil.DiskHasPartition(diskId1);
+                }
+                catch { }
+            }
 
             // Assert
             Assert.IsTrue(hasPartition);
@@ -261,7 +281,7 @@ namespace Uhuru.BOSH.Test.Unit
             int diskId = int.MinValue;
 
             // Act
-            int index = DiskUtil.GetDiskIndexForDiskId(diskId);
+            int index = DiskUtil.GetDiskIndexForDiskId(diskId, false);
 
             // Assert
             Assert.AreEqual(int.MinValue, index);

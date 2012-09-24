@@ -14,24 +14,6 @@ namespace Uhuru.BOSH.Test.Integration
     public class MonitTest
     {
         [TestMethod]
-        public void TC001_TestValid()
-        {
-            //Arrange
-            Monit monit = Monit.GetInstance(@"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Resources\Monit");
-            //monit.ServiceDefinitionDirectory = ;
-            monit.Enable();
-            monit.Start();
-
-            //Act
-            while (true)
-            {
-                Thread.Sleep(10000);
-                monit.StartServices();
-            }
-            //Assert
-        }
-
-        [TestMethod]
         public void TC002_TestGetVitals()
         {
             //Arrange

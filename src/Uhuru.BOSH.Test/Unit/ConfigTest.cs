@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Uhuru.BOSH.Agent;
-using System.Yaml;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -16,28 +15,11 @@ namespace Uhuru.BOSH.Test.Unit
     public class ConfigTest
     {
         [TestMethod]
-        public void TC001_LoadConfigFirstRun()
-        {
-            //Arrange
-            string configFile = @"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Resources\settings.json";
-            YamlNode root = null;
-
-            //Act
-            //string fileContent = File.ReadAllText(configFile);
-            
-
-            Config.Setup(new Newtonsoft.Json.Linq.JObject(), true);
-
-            //Assert
-            
-        }
-
-        [TestMethod]
+        [DeploymentItem("Resources\\settings.json")]
         public void TC002_LoadConfigExistingFile()
         {
             //Arrange
-            string configFile = @"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Resources\settings.json";
-            YamlNode root = null;
+            string configFile = @"settings.json";
 
             //Act
             string fileContent = File.ReadAllText(configFile);

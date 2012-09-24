@@ -27,32 +27,6 @@ namespace Uhuru.BOSH.Test.Unit
   }
 }";
 
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext context)
-        {
-            Config.Settings = JsonConvert.DeserializeObject(settings);
-            Config.BaseDir = @"C:\test";
-        }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
-
         /// <summary>
         ///A test for LookupDiskByCid
         ///</summary>
@@ -60,6 +34,8 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC001_LookupDiskByCidTest()
         {
             // Arrange
+            Config.Settings = JsonConvert.DeserializeObject(settings);
+            Config.BaseDir = @"C:\test";
             string cid = "344";
             string expected = "2";
             string actual;
@@ -78,6 +54,8 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC002_GetDataDiskDeviceNameTest()
         {
             // Arrange
+            Config.Settings = JsonConvert.DeserializeObject(settings);
+            Config.BaseDir = @"C:\test";
             string expected = "1";
             string actual;
 
@@ -95,6 +73,8 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC003_StorePathTest()
         {
             // Arrange
+            Config.Settings = JsonConvert.DeserializeObject(settings);
+            Config.BaseDir = @"C:\test";
             string expected = @"C:\test\store";
             string actual;
 
@@ -112,6 +92,8 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC004_BaseDirTest()
         {
             // Arrange
+            Config.Settings = JsonConvert.DeserializeObject(settings);
+            Config.BaseDir = @"C:\test";
             string expected = @"C:\test";
             string actual;
 
@@ -126,6 +108,8 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC005_LookupDiskByCidExceptionTest()
         {
             // Arrange
+            Config.Settings = JsonConvert.DeserializeObject(settings);
+            Config.BaseDir = @"C:\test";
             string cid = "afasd";
             Exception expected = null;
             string actual = null;

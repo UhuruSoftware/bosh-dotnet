@@ -1,0 +1,8 @@
+---
+name: win_dea
+templates:
+    install.bat.erb: install.bat
+
+packages:
+  - win_dea
+

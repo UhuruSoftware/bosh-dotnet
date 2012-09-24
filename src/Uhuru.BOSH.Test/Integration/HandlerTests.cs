@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Uhuru.BOSH.Agent;
-using System.Yaml;
 using System.IO;
 using System.Threading;
 using Uhuru.NatsClient;
@@ -20,6 +19,7 @@ namespace Uhuru.BOSH.Test.Unit
     {
         private static string configFile = @"C:\vcap\bosh\settings.json";
         [TestMethod]
+        [Ignore] // This test is used for debugging
         public void TC001_TestHandler()
         {
             //Arrange
@@ -40,16 +40,15 @@ namespace Uhuru.BOSH.Test.Unit
         }
 
         [TestMethod]
+        [Ignore] // todo: vladi: implement this test properly
         public void TC002_TestPing()
         {
             //Arrange
-            YamlNode root = null;
             using (TextReader textReader = new StreamReader(configFile))
             {
-                YamlNode[] nodes = YamlNode.FromYaml(textReader);
-                root = nodes[0];
+                
             }
-            Config.Setup(root, false);
+            Config.Setup(null, false);
             Handler.Start();
             Thread.Sleep(5000);
             string pingMessage = "{\"method\":\"ping\",\"arguments\":[],\"reply_to\":\"director.6d811790-5ceb-4251-93d8-5efa8bbf3bac.5de47a59-21ce-4db6-a7b9-5012a6cdf3bb\"}";
@@ -66,9 +65,10 @@ namespace Uhuru.BOSH.Test.Unit
         }
 
         [TestMethod]
-        public void TC003_test_aa()
+        [DeploymentItem("Resources\\job.MF")]
+        public void TC003_Test_Manifest()
         {
-            JobManifest testjobManifest = LoadManifest(@"E:\_me\job.MF");
+            JobManifest testjobManifest = LoadManifest(@"job.MF");
         }
 
         private static JobManifest LoadManifest(string jobManifestPath)

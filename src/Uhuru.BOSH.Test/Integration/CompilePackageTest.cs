@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Uhuru.BOSH.Agent;
-using System.Yaml;
 using System.IO;
 using System.Threading;
 using Uhuru.NatsClient;
