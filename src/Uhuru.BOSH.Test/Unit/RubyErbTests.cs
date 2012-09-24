@@ -15,6 +15,9 @@ namespace Uhuru.BOSH.Test.Unit
         [TestMethod]
         //[DeploymentItem(@"Ruby\erb.rb")]
         [DeploymentItem(@"Ruby\erb.rb", @"Ruby")]
+        [DeploymentItem(@"..\..\lib\IronRuby.JsonExt.dll")]
+        [DeploymentItem(@"..\..\lib\IronRuby.Libraries.dll")]
+        [DeploymentItem(@"..\..\lib\IronRuby.Libraries.Yaml.dll")]
         public void TC001_TestRuby()
         {
             //Arrange
