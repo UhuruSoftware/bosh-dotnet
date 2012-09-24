@@ -382,13 +382,25 @@ EXIT", diskIndex, mountPath);
         /// </returns>
         public static bool IsMountPoint(string path)
         {
+            return IsMountPoint(path, true);
+        }
+
+        /// <summary>
+        /// Determines whether [is mount point] [the specified path].
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>
+        ///   <c>true</c> if [is mount point] [the specified path]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsMountPoint(string path, bool retry)
+        {
             if(string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("path");
             }
 
             char[] trimChars = { '\\' };
-            int retryCount = 10;
+            int retryCount = retry == true ? 10 : 1;
 
             while (retryCount > 0)
             {
@@ -479,6 +491,16 @@ EXIT", diskIndex, mountPath);
         /// <returns></returns>
         public static string GetVolumeDeviceId(string mountPoint)
         {
+            return GetVolumeDeviceId(mountPoint, true);
+        }
+
+        /// <summary>
+        /// Gets the volume device id.
+        /// </summary>
+        /// <param name="mountPoint">The mount point.</param>
+        /// <returns></returns>
+        public static string GetVolumeDeviceId(string mountPoint, bool retry)
+        {
             if (string.IsNullOrEmpty(mountPoint))
             {
                 throw new ArgumentNullException("mountPoint");
@@ -486,7 +508,7 @@ EXIT", diskIndex, mountPath);
 
             char[] trimChars = { '\\' };
 
-            int retryCount = 10;
+            int retryCount = retry == true ? 10 : 1;
 
             while (retryCount > 0)
             {

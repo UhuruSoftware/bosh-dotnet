@@ -49,7 +49,7 @@ namespace Uhuru.BOSH.Test.Unit
             string mountPoint = @"c:\";
 
             // Act
-            bool isMountPoint = DiskUtil.IsMountPoint(mountPoint);
+            bool isMountPoint = DiskUtil.IsMountPoint(mountPoint, false);
 
             // Assert
             Assert.IsTrue(isMountPoint);

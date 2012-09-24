@@ -14,10 +14,11 @@ namespace Uhuru.BOSH.Test.Integration
     public class MonitTest
     {
         [TestMethod]
+        [DeploymentItem(@"Resources\Monit\MonitFile1.xml", "Monit")]
         public void TC002_TestGetVitals()
         {
             //Arrange
-            Monit monit = Monit.GetInstance(@"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Resources\Monit");
+            Monit monit = Monit.GetInstance(@"Monit");
 
             //Act
             Vitals vitals = monit.GetVitals;

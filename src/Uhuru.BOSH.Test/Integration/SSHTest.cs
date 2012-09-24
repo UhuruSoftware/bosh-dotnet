@@ -18,7 +18,7 @@ namespace Uhuru.BOSH.Test.Integration
     [DeploymentItem("Assets\\state.yml", "Bosh")]
     public class SSHTest
     {
-        [TestMethod]
+        [TestMethod, Ignore]
         public void TC001_TestSSH()
         {
             //Arrange

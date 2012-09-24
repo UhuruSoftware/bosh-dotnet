@@ -10,7 +10,7 @@ using Uhuru.NatsClient;
 using Newtonsoft.Json;
 using Uhuru.BOSH.Agent.Objects;
 
-namespace Uhuru.BOSH.Test.Unit
+namespace Uhuru.BOSH.Test.Integration
 {
     [TestClass]
     [DeploymentItem("log4net.config")]
