@@ -56,7 +56,7 @@ namespace Uhuru.BOSH.Agent
             Logger.Info("Configure instance");
 
             LoadSettings();
-            
+
             if (this.settings != null)
             {
                 UpdateIPTables();
@@ -71,7 +71,7 @@ namespace Uhuru.BOSH.Agent
                 UpdateTime();
                 SetupDiskData();
                 SetupTemp();
-                
+
                 MountPersistentDisk();
                 HardenPermissions();
 
@@ -106,7 +106,7 @@ namespace Uhuru.BOSH.Agent
         }
 
         private void SetupDiskData()
-        {   
+        {
             int dataDiskId = int.Parse(this.platform.GetDataDiskDeviceName, CultureInfo.InvariantCulture);
 
             string dataDir = Path.Combine(BaseDir, "data");
@@ -217,7 +217,7 @@ namespace Uhuru.BOSH.Agent
         ////      output
         ////    end
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "cmd", Justification = "TODO: JIRA UH-1211"), 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "cmd", Justification = "TODO: JIRA UH-1211"),
         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "TODO: JIRA UH-1211")]
         public void IPTables(string cmd)
         {
@@ -266,16 +266,16 @@ namespace Uhuru.BOSH.Agent
             {
                 this.platform.UpdatePasswords(this.settings);
             }
-            else 
+            else
             {
                 Logger.Info("No ENV settings detects, skipping password update process");
             }
-            
+
         }
 
         private void UpdateAgentId()
         {
-            
+
             Logger.Info("Updating agent Id");
             Config.AgentId = this.settings["agent_id"].Value;
             Logger.Info("New agent id is :" + Config.AgentId);
@@ -316,25 +316,14 @@ namespace Uhuru.BOSH.Agent
         static void SetupDataSys()
         {
             string dataSysDirectory = Path.Combine(BaseDir, "data", "sys");
-            if(!Directory.Exists(dataSysDirectory))
-            {
-                Directory.CreateDirectory(dataSysDirectory);
-            }
-            foreach (string dir in new string[] { "log", "run" })
-            {
-                string path = Path.Combine(BaseDir, "data", "sys", dir);
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-            }
+
+            // TODO: stefi: change directory permissions
+            Directory.CreateDirectory(Path.Combine(BaseDir, "data", "sys", "log")); // create dir: /var/vcap/data/sys/log
+            Directory.CreateDirectory(Path.Combine(BaseDir, "data", "sys", "run")); // create dir: /var/vcap/data/sys/run
+
             string sysDirectory = Path.Combine(BaseDir, "sys");
-            Process p = Process.Start("cmd.exe", String.Format(CultureInfo.InvariantCulture, "/c mklink /D {0} {1}", sysDirectory, dataSysDirectory));
-            p.WaitForExit();
-            if (p.ExitCode != 0)
-            {
-                Logger.Error(String.Format(CultureInfo.InvariantCulture, "Failed creating symbolic link between {0} and {1}", sysDirectory, dataSysDirectory));
-            }
+
+            Util.CreateSymLink(dataSysDirectory, sysDirectory);
         }
 
         static void SetupTemp()
@@ -417,7 +406,7 @@ namespace Uhuru.BOSH.Agent
 
         ////    end
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification="TODO: JIRA UH-1211")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "TODO: JIRA UH-1211")]
         void HardenPermissions()
         {
             // Most of the code doesn't apply to Windows systems.
