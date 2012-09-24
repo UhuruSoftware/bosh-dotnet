@@ -243,15 +243,15 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="MonitSpec\regen_cs_from_xsd.bat" />
-    <None Include="Ruby\erb.rb">
+    <Content Include="Ruby\erb.rb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Ruby\ext.rb">
+    </Content>
+    <Content Include="Ruby\ext.rb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Ruby\ostruct.rb">
+    </Content>
+    <Content Include="Ruby\ostruct.rb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="unity.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

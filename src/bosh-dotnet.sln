@@ -4,7 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F61EC6BF-5FB5-45A7-B7FE-678B9D25938F}"
 	ProjectSection(SolutionItems) = preProject
 		bosh-dotnet.vsmdi = bosh-dotnet.vsmdi
-		Local.testsettings = Local.testsettings
+		bosh.testsettings = bosh.testsettings
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Uhuru.BOSH.Agent", "Uhuru.BOSH.Agent\Uhuru.BOSH.Agent.csproj", "{25C9BC3C-1897-4B00-858A-3CE7E4CB06F1}"

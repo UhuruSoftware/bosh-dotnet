@@ -724,31 +724,5 @@ using System.Collections.ObjectModel;
 
         public HeartbeatProcessor HeartBeatProcessor { get; set; }
 
-        class Ping : IMessage
-        {
-            public object Process(dynamic args)
-            {
-                return "pong";
-            }
-
-            public bool IsLongRunning()
-            {
-                return false;
-            }
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification="TODO Not used yet")]
-        class Noop :IMessage
-        {
-            public object Process(dynamic args)
-            {
-                return "nope";
-            }
-            public bool IsLongRunning()
-            {
-                return false;
-            }
-        }
-
     }
 }

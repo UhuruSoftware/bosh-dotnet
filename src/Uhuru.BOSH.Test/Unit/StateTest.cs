@@ -6,16 +6,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Uhuru.BOSH.Agent;
 using Uhuru.BOSH.Agent.Objects;
 using System.IO;
-using System.Yaml;
 using Uhuru.BOSH.Agent.Errors;
 using Newtonsoft.Json.Linq;
 
 namespace Uhuru.BOSH.Test.Unit
 {
     [TestClass]
+    [DeploymentItem("Assets\\state.yml")]
     public class StateTest
     {
-        private static string yamlLocation = @"E:\_work\bosh-dotnet\src\Uhuru.BOSH.Test\Assets\state.yml";
 
         [TestMethod]
         public void TC001_TestStateNoConfigFile()
@@ -28,7 +27,7 @@ namespace Uhuru.BOSH.Test.Unit
 
             //Assert
             Assert.IsNull(testState.Job);
-            Assert.Equals(0, testState.Networks.Count);
+            Assert.AreEqual(0, testState.Networks.Count);
             
         }
 
@@ -37,7 +36,7 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC002_TestGetIps()
         {
             //Arrange
-            State testState = new State(yamlLocation);
+            State testState = new State("state.yml");
 
             //Act
 
@@ -48,7 +47,7 @@ namespace Uhuru.BOSH.Test.Unit
 
             //Assert
             Assert.AreEqual(1, ips.Count);
-            Assert.AreEqual(ips[0], "127.0.0.1");
+            Assert.AreEqual(ips[0], "10.0.3.132");
             
         }
 
@@ -102,17 +101,17 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC003_TestJob()
         {
             //Arrange
-            State testState = new State(yamlLocation);
+            State testState = new State("state.yml");
             
             //Act
             Job currentJob = testState.Job;
 
             //Assert
-            Assert.AreEqual("micro", currentJob.Name);
-            Assert.AreEqual("0.5-dev", currentJob.Version);
-            Assert.AreEqual("d5941f9a113489e8bc14adb61d3bb619cd9566bd", currentJob.SHA1);
-            Assert.AreEqual("micro", currentJob.Template);
-            Assert.AreEqual("da4dea43-fa56-4a4a-bb18-dba8961d0f6f", currentJob.BlobstoreId);
+            Assert.AreEqual("win_dea", currentJob.Name);
+            Assert.AreEqual("0.2-dev", currentJob.Version);
+            Assert.AreEqual("cea000d7e5611f3fff6ddbf46163b6a4b025664b", currentJob.SHA1);
+            Assert.AreEqual("win_dea", currentJob.Template);
+            Assert.AreEqual("c9034ac9-ffc1-4aff-b17a-9be8533a6bfa", currentJob.BlobstoreId);
             
         }
 
@@ -120,13 +119,13 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC004_TestValue()
         {
             //Arrange
-            State testState = new State(yamlLocation);
+            State testState = new State("state.yml");
 
             //Act
             string deployment = ((dynamic)testState.GetValue("deployment")).Value;
 
             //Assert
-            Assert.AreEqual("micro", deployment);
+            Assert.AreEqual("uhuru-cf", deployment);
 
         }
 
@@ -134,14 +133,14 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC005_TestNetworks()
         {
             //Arrange
-            State testState = new State(yamlLocation);
+            State testState = new State("state.yml");
 
             //Act
             Network network = testState.Networks.First();
 
             //Assert
-            Assert.AreEqual("127.0.0.1", network.IP);
-            Assert.AreEqual("local", network.Name);
+            Assert.AreEqual("10.0.3.132", network.IP);
+            Assert.AreEqual("default", network.Name);
 
         }
 
@@ -149,20 +148,15 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC006_TestWrite()
         {
             //Arrange
-            string newFile = yamlLocation.Replace("apply_spec.yml", "apply_spec_test.yml");
-            State testState = new State(yamlLocation);
+            string newFile = "state_test.yml";
+            State testState = new State("state.yml");
             State newTestState = new State(newFile);
             StateException exception = null;
-            YamlNode[] data;
-            using (TextReader textReader = new StreamReader(yamlLocation))
-            {
-                data = YamlNode.FromYaml(textReader);
-            }
 
             //Act
             try
             {
-                newTestState.Write(data[0]);
+                newTestState.Write(testState.ToHash());
             }
             catch (StateException stateException)
             {
@@ -173,8 +167,5 @@ namespace Uhuru.BOSH.Test.Unit
             Assert.IsNull(exception);
             Assert.AreEqual(newTestState.Job.Name, testState.Job.Name);
         }
-
-
-        
     }
 }

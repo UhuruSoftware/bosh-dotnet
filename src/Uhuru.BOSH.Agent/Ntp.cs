@@ -96,6 +96,11 @@ namespace Uhuru.BOSH.Agent
         /// <returns></returns>
         public static Ntp GetNtpOffset(string timeserver)
         {
+            if (string.IsNullOrEmpty(timeserver))
+            {
+                throw new ArgumentNullException("timeserver");
+            }
+
             Logger.Debug("Retrieving NTP information from {0}", timeserver);
 
             int retryCount = 5;

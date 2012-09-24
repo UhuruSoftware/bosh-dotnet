@@ -33,7 +33,7 @@ namespace Uhuru.BOSH.Agent
         private Job job= null;
         private Collection<Network> networks = new Collection<Network>();
 
-        private static readonly object locker = new object();
+        private readonly object locker = new object();
 
        
 
@@ -87,11 +87,20 @@ namespace Uhuru.BOSH.Agent
             }
         }
 
+        /// <summary>
+        /// Converts the object to a hash.
+        /// </summary>
+        /// <returns>A dynamic hash</returns>
         public dynamic ToHash()
         {
             return data;
         }
 
+        /// <summary>
+        /// Sets a value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
         public void SetValue(string key, dynamic value)
         {
             lock (locker)
@@ -182,7 +191,7 @@ namespace Uhuru.BOSH.Agent
         /// <summary>
         /// Gets the default state.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A default state dynamic object.</returns>
         private static dynamic GetDefaultState()
         {
             string defaultState = "{ \"deployment\": \"\", \"networks\" : { }, \"resource_pool\" : { } }";
@@ -208,18 +217,21 @@ namespace Uhuru.BOSH.Agent
         {
             Collection<Network> currentNetworks =null;
 
-            if (data["networks"] == null)
+            if (data["networks"] != null)
             {
                 currentNetworks = new Collection<Network>();
+
                 foreach (dynamic net in data["networks"])
                 {
-                    Network network = new Network();
-                    network.Name = net.First.Name;
-                    network.IP = net.First["ip"].Value;
-                    currentNetworks.Add(network);
+                    Network newNet = new Network();
+                    dynamic network = net.Value;
+
+                    newNet.Name = net.Name;
+                    newNet.IP = network["ip"].Value;
+                    currentNetworks.Add(newNet);
                 }
             }
-
+            
             return currentNetworks;
         }
     }

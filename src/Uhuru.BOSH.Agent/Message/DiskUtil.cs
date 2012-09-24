@@ -53,6 +53,7 @@ EXIT", diskIndex);
             info.Arguments = String.Format(CultureInfo.InvariantCulture, "/s {0}", fileName);
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
+            info.CreateNoWindow = true;
 
             using (Process p = new Process())
             {
@@ -411,7 +412,7 @@ EXIT", diskIndex, mountPath);
 
         private static int CalculateDiskUsage(UInt64 capacity, UInt64 freeSpace)
         {
-            return (int)((capacity - freeSpace) / capacity * 100);
+            return (int)(100 * (capacity - freeSpace) / capacity);
         }
 
         /// <summary>
@@ -421,6 +422,11 @@ EXIT", diskIndex, mountPath);
         /// <returns></returns>
         public static int GetDiskIndexForMountPoint(string mountPoint)
         {
+            if (string.IsNullOrEmpty(mountPoint))
+            {
+                throw new ArgumentNullException("mountPoint");
+            }
+
             string volumeId = GetVolumeDeviceId(mountPoint).TrimEnd(new char[] { '\\' });
 
             Logger.Debug("Mount point {0} volume ID: {1}", mountPoint, volumeId);
@@ -509,7 +515,17 @@ EXIT", diskIndex, mountPath);
         /// <returns>Disk Index</returns>
         public static int GetDiskIndexForDiskId(int diskId)
         {
-            int retryCount = 10;
+            return GetDiskIndexForDiskId(diskId, true);
+        }
+
+        /// <summary>
+        /// Gets the disk index for disk id.
+        /// </summary>
+        /// <param name="diskId">The SCSI disk id.</param>
+        /// <returns>Disk Index</returns>
+        public static int GetDiskIndexForDiskId(int diskId, bool retry)
+        {
+            int retryCount = retry == true ? 10 : 1;
 
             while (retryCount > 0)
             {
@@ -518,9 +534,12 @@ EXIT", diskIndex, mountPath);
                     ManagementObjectCollection moc = volume.GetInstances();
                     foreach (ManagementObject mo in moc)
                     {
-                        if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+                        if (mo["SCSITargetId"] != null)
                         {
-                            return int.Parse(mo["Index"].ToString(), CultureInfo.InvariantCulture);
+                            if (mo["SCSITargetId"].ToString().Equals(diskId.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+                            {
+                                return int.Parse(mo["Index"].ToString(), CultureInfo.InvariantCulture);
+                            }
                         }
                     }
                 }

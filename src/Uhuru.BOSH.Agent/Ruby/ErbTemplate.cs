@@ -29,17 +29,18 @@ namespace Uhuru.BOSH.Agent.Ruby
             currentScope.SetVariable("templateText", templateText);
             currentScope.SetVariable("currentprop", binding);
            //TODO Improve this
-            dynamic result = engine.Execute(@"
-            Dir.chdir 'C:\vcap\bosh\agent\Ruby'
-            require 'erb.rb'      
-            require 'ext.rb'
+            
+            dynamic result = engine.Execute(string.Format(@"
+            require '{0}\Ruby\ostruct.rb'
+            require '{0}\Ruby\erb.rb'      
+            require '{0}\Ruby\ext.rb'
             
             properties = eval(currentprop.to_s).to_openstruct
             
             template = ERB.new(templateText.to_s)
             result = template.result(binding)
             result
-            ", currentScope);
+            ", Path.GetDirectoryName(typeof(ScriptEngine).Assembly.Location)), currentScope);
 
             return result.ToString().Trim();
         }

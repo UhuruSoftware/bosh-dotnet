@@ -9,12 +9,6 @@ namespace Uhuru.BOSH.Test.Unit
     [TestClass]
     public class EncryptionHandlerTest
     {
-        [TestMethod]
-        public void TestMethod1()
-        {
-        }
-
-        
         //before(:each) do
         //  @credentials = Bosh::EncryptionHandler.generate_credentials
         //  @cipher = Gibberish::AES.new(@credentials["crypt_key"])

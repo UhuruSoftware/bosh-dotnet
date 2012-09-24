@@ -462,7 +462,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                 if (fileContent[i].StartsWith("packages", StringComparison.OrdinalIgnoreCase))
                 {
                     i++;
-                    while (!String.IsNullOrEmpty(fileContent[i]) || i == fileContent.Length)
+                    while (i < fileContent.Length && !String.IsNullOrEmpty(fileContent[i]))
                     {
                         jobManifest.AddPackage(fileContent[i].Split('-')[1].Trim());
                         i++;

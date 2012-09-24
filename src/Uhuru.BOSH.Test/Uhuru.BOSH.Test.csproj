@@ -61,9 +61,7 @@
     <Reference Include="Microsoft.Scripting.Metadata">
       <HintPath>..\..\lib\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=4.0.3.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\Newtonsoft.Json.dll</HintPath>
@@ -95,6 +93,10 @@
     <Reference Include="Uhuru.NatsClient, Version=0.9.0.0, Culture=neutral, PublicKeyToken=14594b8a48a91b15, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Uhuru.NatsClient.dll</HintPath>
     </Reference>
+    <Reference Include="Uhuru.Utilities, Version=0.9.0.0, Culture=neutral, PublicKeyToken=14594b8a48a91b15, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Uhuru.Utilities.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -110,11 +112,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="Unit\ConfigTest.cs" />
+    <Compile Include="Unit\HandlerTest.cs" />
     <Compile Include="Unit\DiskUtilTest.cs" />
     <Compile Include="Unit\EncryptionHandlerTest.cs" />
     <Compile Include="Integration\HandlerTests.cs" />
     <Compile Include="Integration\MonitTest.cs" />
     <Compile Include="Unit\NtpTest.cs" />
+    <Compile Include="Unit\Platforms\Windows\DiskTest.cs" />
     <Compile Include="Unit\RemoteExceptionTest.cs" />
     <Compile Include="Unit\RubyErbTests.cs" />
     <Compile Include="Unit\StateTest.cs" />
@@ -124,8 +128,12 @@
     <EmbeddedResource Include="Resources\Monit\MonitFile1.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Content Include="Resources\Drain\drain_shutdown.txt" />
-    <Content Include="Resources\Drain\drain_status.txt" />
+    <Content Include="Resources\Drain\drain_shutdown.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Drain\drain_status.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="uhuruTest.config">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -135,7 +143,9 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Assets\apply_spec.yml" />
+    <Content Include="Assets\state.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="log4net_test.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -148,21 +158,18 @@
     <EmbeddedResource Include="Resources\uhuruTest.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\WinServBosh.exe.config.erb">
+    <Content Include="Resources\WinServBosh.exe.config.erb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    </Content>
     <EmbeddedResource Include="Resources\hubba.tgz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <None Include="Ruby\erb.rb">
+    <Content Include="Resources\Drain\drain_update.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Ruby\ext.rb">
+    </Content>
+    <Content Include="Resources\job.MF">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Ruby\ostruct.rb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Performance\" />
@@ -177,10 +184,6 @@
     <ProjectReference Include="..\Uhuru.BOSH.BlobstoreClient\Uhuru.BOSH.BlobstoreClient.csproj">
       <Project>{D90250E7-149D-422C-A116-B1D7AC75CEA3}</Project>
       <Name>Uhuru.BOSH.BlobstoreClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\YamlSerializer\YamlSerializer.csproj">
-      <Project>{AD9F3A60-C492-4823-8F24-6F4854E7CBF5}</Project>
-      <Name>YamlSerializer</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
