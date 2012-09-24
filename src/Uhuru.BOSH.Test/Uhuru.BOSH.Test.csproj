@@ -110,6 +110,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="Unit\ConfigTest.cs" />
+    <Compile Include="Unit\HandlerTest.cs" />
     <Compile Include="Unit\DiskUtilTest.cs" />
     <Compile Include="Unit\EncryptionHandlerTest.cs" />
     <Compile Include="Integration\HandlerTests.cs" />
