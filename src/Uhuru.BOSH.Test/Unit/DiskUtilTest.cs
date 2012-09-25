@@ -23,7 +23,7 @@ namespace Uhuru.BOSH.Test.Unit
             int id = DiskUtil.GetDiskIndexForMountPoint(mountPoint);
 
             // Assert
-            Assert.AreNotEqual(-1, id);
+            Assert.AreNotEqual(int.MinValue, id);
         }
 
         [TestMethod, TestCategory("Unit"), Timeout(30000)]
@@ -192,23 +192,13 @@ namespace Uhuru.BOSH.Test.Unit
         {
             // Arrange
             string mountPoint = Path.Combine(@"c:\", Guid.NewGuid().ToString());
-            int id = int.MinValue;
-            Exception expected = null;
+            int id = 0;
 
             // Act
-            try
-            {
-                id = DiskUtil.GetDiskIndexForMountPoint(mountPoint);
-            }
-            catch (Exception ex)
-            {
-                expected = ex;
-            }
+            id = DiskUtil.GetDiskIndexForMountPoint(mountPoint);
             
             // Assert
             Assert.AreEqual(int.MinValue, id);
-            Assert.IsNotNull(expected);
-            Assert.IsInstanceOfType(expected, typeof(MessageHandlerException));
         }
 
         [TestMethod, TestCategory("Unit"), Timeout(30000)]
@@ -285,6 +275,24 @@ namespace Uhuru.BOSH.Test.Unit
 
             // Assert
             Assert.AreEqual(int.MinValue, index);
+        }
+
+        [TestMethod, TestCategory("Unit"), Timeout(30000)]
+        public void TC016_MountEntryTest()
+        {
+            // Arrange
+            int diskId0 = 0;
+            int diskId1 = 1;
+
+            string actual0 = null;
+            string actual1 = null;
+
+            // Act
+            actual0 = DiskUtil.MountEntry(diskId0);
+            actual1 = DiskUtil.MountEntry(diskId1);
+
+            // Assert
+            Assert.IsTrue(actual0 != null || actual1 != null);
         }
     }
 }
