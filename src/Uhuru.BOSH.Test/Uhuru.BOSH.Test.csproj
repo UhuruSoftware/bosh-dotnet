@@ -107,6 +107,7 @@
     <Compile Include="AssemblyFileInfo.cs" />
     <Compile Include="Integration\CompilePackageTest.cs" />
     <Compile Include="Integration\DrainTest.cs" />
+    <Compile Include="Integration\ListDiskTest.cs" />
     <Compile Include="Integration\SimpleBlobstoreTest.cs" />
     <Compile Include="Integration\SSHTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

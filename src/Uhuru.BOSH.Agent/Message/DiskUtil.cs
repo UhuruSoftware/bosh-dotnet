@@ -40,42 +40,24 @@ namespace Uhuru.BOSH.Agent.Message
             Logger.Info("Checking mount entry");
 
             int diskIndex = GetDiskIndexForDiskId(diskId);
-
-            string script = String.Format(CultureInfo.InvariantCulture, @"SELECT DISK {0}
-SELECT PARTITION 1
-DETAIL PARTITION
-EXIT", diskIndex);
-            string fileName = Path.GetTempFileName();
-            File.WriteAllText(fileName, script);
-
-            ProcessStartInfo info = new ProcessStartInfo();
-            info.FileName = "diskpart.exe";
-            info.Arguments = String.Format(CultureInfo.InvariantCulture, "/s {0}", fileName);
-            info.RedirectStandardOutput = true;
-            info.UseShellExecute = false;
-            info.CreateNoWindow = true;
-
-            using (Process p = new Process())
+            if (diskIndex == int.MinValue)
             {
-                p.StartInfo = info;
-                p.Start();
-                p.WaitForExit(60000);
-                if (!p.HasExited)
+                return null;
+            }
+
+            foreach (string volume in Alphaleonis.Win32.Filesystem.Volume.GetVolumes())
+            {
+                foreach (string mountPoint in Alphaleonis.Win32.Filesystem.Volume.GetVolumePathNamesForVolume(volume))
                 {
-                    p.Kill();
-                    return null;
-                }
-                else
-                {
-                    string output = p.StandardOutput.ReadToEnd();
-                    Logger.Warning(output);
-                    if (output.Contains(@"C:\vcap\store\"))
-                        //TODO imeplemnt block and mount point
-                        return @"C:\vcap\store\";
-                    else
-                        return null;
+                    if (GetDiskIndexForMountPoint(mountPoint) == diskIndex)
+                    {
+                        return mountPoint;
+                    }
                 }
             }
+
+            return null;
+
         }
 
         static int GUARD_RETRIES = 600;
@@ -90,6 +72,13 @@ EXIT", diskIndex);
             int unmountAttempts = GUARD_RETRIES;
 
             int diskIndex = GetDiskIndexForMountPoint(mountPoint);
+
+            if (diskIndex == int.MinValue)
+            {
+                throw new MessageHandlerException("Could not get disk id.");
+            }
+
+            Logger.Debug("Found disk index {0} for mount point {1}", diskIndex, mountPoint);
 
             string script = String.Format(CultureInfo.InvariantCulture, @"SELECT DISK {0}
 SELECT PARTITION 1
@@ -458,7 +447,7 @@ EXIT", diskIndex, mountPath);
                 NativeMethods.CloseHandle(file);
             }
 
-            int diskIndex = -1;
+            int diskIndex = int.MinValue;
 
             if (bytesReturned > 0)
             {
@@ -471,16 +460,8 @@ EXIT", diskIndex, mountPath);
                     diskIndex = extent.DiskNumber;
                 }
             }
-
-            if (diskIndex == -1)
-            {
-                throw new MessageHandlerException("Could not get disk id.");
-            }
-            else
-            {
-                Logger.Debug("Found disk index {0} for mount point {1}", diskIndex, mountPoint);
-                return diskIndex;
-            }
+ 
+            return diskIndex;
 
         }
 
