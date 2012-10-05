@@ -42,7 +42,7 @@ using System.IO;
 
                 string tarballPath = Path.Combine(outDir, "files.tgz");
 
-                Uhuru.Utilities.FileArchive.TarAndZipFile(tmpDir, tarballPath);
+                FileArchive.TarAndZipFile(tmpDir, tarballPath);
 
                 return tarballPath;
 

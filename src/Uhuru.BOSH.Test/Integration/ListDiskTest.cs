@@ -24,7 +24,7 @@ namespace Uhuru.BOSH.Test.Integration
   }
 }";
 
-        [TestMethod, TestCategory("Integration"), Timeout(30000), DeploymentItem("log4net.config"), DeploymentItem("unity.config")]
+        [TestMethod, TestCategory("Integration"), Timeout(30000), DeploymentItem("NLog.config"), DeploymentItem("unity.config")]
         public void TC001_ListDiskProcessTest()
         {
             // Arrange

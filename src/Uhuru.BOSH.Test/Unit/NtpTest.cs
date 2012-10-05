@@ -7,7 +7,7 @@ using Uhuru.BOSH.Agent;
 
 namespace Uhuru.BOSH.Test.Unit
 {
-    [TestClass, DeploymentItem("log4net.config"), DeploymentItem("unity.config")]
+    [TestClass, DeploymentItem("NLog.config"), DeploymentItem("unity.config")]
     public class NtpTest
     {
         [TestMethod, TestCategory("Unit"), Timeout(20000)]

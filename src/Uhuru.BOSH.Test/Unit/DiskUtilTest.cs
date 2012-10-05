@@ -10,7 +10,7 @@ using System.IO;
 
 namespace Uhuru.BOSH.Test.Unit
 {
-    [TestClass, DeploymentItem("log4net.config"), DeploymentItem("unity.config")]
+    [TestClass, DeploymentItem("NLog.config"), DeploymentItem("unity.config")]
     public class DiskUtilTest
     {
         [TestMethod, TestCategory("Unit"), Timeout(30000)]

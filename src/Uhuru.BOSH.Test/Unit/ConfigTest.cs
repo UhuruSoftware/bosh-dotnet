@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 namespace Uhuru.BOSH.Test.Unit
 {
     [TestClass]
-    [DeploymentItem("log4net.config")]
+    [DeploymentItem("NLog.config")]
     [DeploymentItem("unity.config")]
     public class ConfigTest
     {

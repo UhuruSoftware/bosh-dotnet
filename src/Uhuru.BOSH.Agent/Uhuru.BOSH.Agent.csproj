@@ -70,9 +70,6 @@
     <Reference Include="IronRuby.Libraries.Yaml">
       <HintPath>..\..\lib\IronRuby.Libraries.Yaml.dll</HintPath>
     </Reference>
-    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\..\lib\log4net.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Dynamic">
       <HintPath>..\..\lib\Microsoft.Dynamic.dll</HintPath>
@@ -95,6 +92,14 @@
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Newtonsoft.Json, Version=4.0.3.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="SevenZipSharp, Version=0.64.3890.29348, Culture=neutral, PublicKeyToken=20de82c62b055c88, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\SevenZipSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -132,6 +137,7 @@
     <Compile Include="Errors\UnknownInfrastructureException.cs" />
     <Compile Include="Errors\UnknownMessageException.cs" />
     <Compile Include="Ext.cs" />
+    <Compile Include="FileArchive.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Message\BaseMessage.cs" />
     <Compile Include="Message\IMessage.cs" />
@@ -236,13 +242,12 @@
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
     <None Include="key.snk" />
-    <None Include="log4net.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="MonitSpec\MonitSpec.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="MonitSpec\regen_cs_from_xsd.bat" />
+    <EmbeddedResource Include="lib\7z64.dll" />
+    <EmbeddedResource Include="lib\7z86.dll" />
     <Content Include="Ruby\erb.rb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -252,6 +257,7 @@
     <Content Include="Ruby\ostruct.rb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="NLog.config" />
     <None Include="unity.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

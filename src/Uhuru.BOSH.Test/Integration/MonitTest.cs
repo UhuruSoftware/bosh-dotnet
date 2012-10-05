@@ -9,7 +9,7 @@ using System.Threading;
 namespace Uhuru.BOSH.Test.Integration
 {
     [TestClass]
-    [DeploymentItem("log4net.config")]
+    [DeploymentItem("NLog.config")]
     [DeploymentItem("unity.config")]
     public class MonitTest
     {

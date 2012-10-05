@@ -13,7 +13,7 @@ namespace Uhuru.BOSH.Test.Unit
     ///This is a test class for DiskTest and is intended
     ///to contain all DiskTest Unit Tests
     ///</summary>
-    [TestClass, DeploymentItem("log4net.config"), DeploymentItem("unity.config")]
+    [TestClass, DeploymentItem("NLog.config"), DeploymentItem("unity.config")]
     public class DiskTest
     {
 
