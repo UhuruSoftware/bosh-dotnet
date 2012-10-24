@@ -4,7 +4,7 @@ set PATH=c:\ruby\bin;%PATH%
 start cmd /C "nats-server"
 cd c:\ruby\simple_blobstore_server
 start cmd /C "ruby bin\simple_blobstore_server"
-cd c:\build\private-bosh-dotnet\src
+cd c:\build\src
 @echo Running build.bat
 cmd /c build.bat > e:\bochsresults\build.log
 @echo Running test.bat
