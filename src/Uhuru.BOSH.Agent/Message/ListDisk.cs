@@ -33,9 +33,6 @@ namespace Uhuru.BOSH.Agent.Message
 
             cids = settings["disks"]["persistent"] ?? new string[] {};
 
-            if (cids.Count == 0)
-                return cids.ToString();
-
             foreach (var cid in cids)
             {
                 int diskId = int.Parse(Config.Platform.LookupDiskByCid(cid.Name));
