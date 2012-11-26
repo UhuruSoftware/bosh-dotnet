@@ -27,7 +27,7 @@ namespace Uhuru.BOSH.Agent.Ruby
             //    currentScope.SetVariable(variable.Key, variable.Value.ToString());
             //}
             currentScope.SetVariable("templateText", templateText);
-            currentScope.SetVariable("currentprop", binding);
+            currentScope.SetVariable("currentspec", binding);
            //TODO Improve this
             
             dynamic result = engine.Execute(string.Format(@"
@@ -35,7 +35,8 @@ namespace Uhuru.BOSH.Agent.Ruby
             require '{0}\Ruby\erb.rb'      
             require '{0}\Ruby\ext.rb'
             
-            properties = eval(currentprop.to_s).to_openstruct
+            spec = eval(currentspec.to_s).to_openstruct
+            properties = spec.properties
             
             template = ERB.new(templateText.to_s)
             result = template.result(binding)

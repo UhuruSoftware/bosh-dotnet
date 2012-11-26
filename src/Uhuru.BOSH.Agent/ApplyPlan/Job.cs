@@ -85,7 +85,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private string blobstoreId;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification="JIRA UH-1201")]
         private dynamic configBinding;
-        private dynamic jobProperties;
+        private dynamic jobBinding;
         Monit monit;
 
         public Job(dynamic spec, dynamic jobProperties)
@@ -101,7 +101,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                     throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Invalid spec. {0} is missing", requiredKey));
                 }
             }
-            this.jobProperties = jobProperties;
+            this.jobBinding = jobProperties;
             baseDir = Config.BaseDir;
 
             Init(spec);
@@ -277,8 +277,8 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                 InstallFailed("Malformed manifest file : " + ex.ToString());
             }
 
-            Logger.Info("Building properties ruby object using :" + jobProperties.ToString());
-            string properties = GetRubyObject(jobProperties);
+            Logger.Info("Building properties ruby object using :" + jobBinding.ToString());
+            string properties = GetRubyObject(jobBinding);
             Logger.Info ("Object built " + properties);
 
             foreach (var t in currentJobManifest.Templates)

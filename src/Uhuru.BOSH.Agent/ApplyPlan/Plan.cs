@@ -101,11 +101,10 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
             dynamic jobSpec = spec["job"];
             dynamic packageSpecs = spec["packages"];
-            dynamic jobProperties = spec["properties"];
-
+           
             if (jobSpec != null && jobSpec.ToString() != "")
             {
-                this.job = new Job(jobSpec, jobProperties);
+                this.job = new Job(jobSpec, spec);
             }
 
             if (packageSpecs != null)
