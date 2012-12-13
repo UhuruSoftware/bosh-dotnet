@@ -29,10 +29,7 @@ namespace Uhuru.BOSH.Agent.Message
         {
             try
             {
-                if (Config.Configure)
-                {
-                    Monit.GetInstance().StopServices();
-                }
+                Monit.GetInstance().StopServices();
                 return "stopped";
             }
             catch (Exception e)

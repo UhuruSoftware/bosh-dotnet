@@ -278,8 +278,8 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
 
             Logger.Info("Building properties ruby object using :" + jobBinding.ToString());
-            string properties = GetRubyObject(jobBinding);
-            Logger.Info ("Object built " + properties);
+            string spec = GetRubyObject(jobBinding);
+            Logger.Info ("Object built " + spec);
 
             foreach (var t in currentJobManifest.Templates)
             {
@@ -296,7 +296,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
                 Logger.Info("Running ERB");
                 ErbTemplate erbTemplate = new ErbTemplate();
-                string outputFile = erbTemplate.Execute(templatePath, properties);
+                string outputFile = erbTemplate.Execute(templatePath, spec);
                 
                 Logger.Info("Writing output file :" + outputFile);
 
@@ -309,7 +309,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         /// </summary>
         /// <param name="jsonProperty">The JSON property.</param>
         /// <returns></returns>
-        public string GetRubyObject(dynamic jsonProperty)
+        public static string GetRubyObject(dynamic jsonProperty)
         {
             StringBuilder currentObject = new StringBuilder();
             bool isJobject = false;
@@ -352,13 +352,13 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             return currentObject.ToString();
         }
 
-        private void ProcessJProperty(ref StringBuilder currentObject, dynamic child)
+        private static void ProcessJProperty(ref StringBuilder currentObject, dynamic child)
         {
             if (child is JProperty)
             {
                 if (currentObject.ToString() != "{")
                     currentObject.Append(", ");
-                currentObject.Append(child.Name + ": ");
+                currentObject.Append(":\""+child.Name+ "\"=> ");
                 currentObject.Append(GetRubyObject(child));
             }
         }

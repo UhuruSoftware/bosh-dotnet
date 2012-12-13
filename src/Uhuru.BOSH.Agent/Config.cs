@@ -212,7 +212,7 @@ namespace Uhuru.BOSH.Agent
                 Config.BaseDir = config["base_dir"] !=null ? config["base_dir"].Value : DEFAULT_BASE_DIR;
                 Config.AgentId = config["agent_id"].Value;
                 Config.MessageBus = config["mbus"].Value;
-                Config.BlobstoreOptions = config["blobstore_options"] != null ? config["blobstore_options"].Value : null;
+                Config.BlobstoreOptions = config["blobstore"]["properties"] != null ? config["blobstore"]["properties"] : null;
             }
             else
             {
@@ -222,7 +222,7 @@ namespace Uhuru.BOSH.Agent
                 Config.MessageBus = "nats://localhost:4222";
                 Config.BlobstoreOptions = null;
             }
-            Config.BlobstoreProvider = config["blobstore_provider"] != null ? config["blobstore_provider"].Value : null;
+            Config.BlobstoreProvider = config["blobstore"] != null ? config["blobstore"]["plugin"].Value : null;
             Config.InfrastructureName = "Windows"; //TODO Always windows, from unity
             Config.PlatformName = "vcap"; //TODO From unity
             Config.ProcessAlerts = true; //TODO from commandline
