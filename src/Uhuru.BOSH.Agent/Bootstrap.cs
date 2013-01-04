@@ -98,11 +98,16 @@ namespace Uhuru.BOSH.Agent
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error("Failed activating windows: {0}", ex.ToString());
-                        throw new BoshException("Failed activating windows", ex);
+                        LogWindowsActivationError(ex.ToString());
                     }
                 }
             }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "WindowsActivationError", Justification="Make message easier to find")]
+        private static void LogWindowsActivationError(string exception)
+        {
+            Logger.Error("!!WindowsActivationError!! Failed activating windows: {0}", exception);
         }
 
         private void SetupDiskData()
