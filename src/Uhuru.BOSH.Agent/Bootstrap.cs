@@ -99,7 +99,6 @@ namespace Uhuru.BOSH.Agent
                     catch (Exception ex)
                     {
                         Logger.Error("Failed activating windows: {0}", ex.ToString());
-                        throw new BoshException("Failed activating windows", ex);
                     }
                 }
             }
