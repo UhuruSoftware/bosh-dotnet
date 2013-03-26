@@ -28,8 +28,8 @@ namespace Uhuru.BOSH.Test.Integration
             
             //ConfigBlobStore
             Config.Configure = true;
-            Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
-            Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
+            Config.BlobstoreProvider = Config.Settings["blobstore"]["provider"].Value;
+            Config.BlobstoreOptions = Config.Settings["blobstore"]["options"];
             Monit.GetInstance().Start();
             //Act
             Handler.Start();

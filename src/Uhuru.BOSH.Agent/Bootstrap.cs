@@ -168,11 +168,11 @@ namespace Uhuru.BOSH.Agent
         private void UpdateBlobStore()
         {
             Logger.Info("Setting blob store provider");
-            Config.BlobstoreProvider = this.settings["blobstore"]["plugin"].Value;
+            Config.BlobstoreProvider = this.settings["blobstore"]["provider"].Value;
             Logger.Info("Set blob store provider to : " + Config.BlobstoreProvider);
 
             // TODO: analyze if a merge is necessary
-            Config.BlobstoreOptions = this.settings["blobstore"]["properties"];
+            Config.BlobstoreOptions = this.settings["blobstore"]["options"];
         }
 
         private void UpdateMbus()

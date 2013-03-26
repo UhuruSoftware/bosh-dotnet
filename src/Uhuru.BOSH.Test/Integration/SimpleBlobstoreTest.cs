@@ -19,8 +19,8 @@ namespace Uhuru.BOSH.Test.Integration
         {
             ""blobstore"":
             {
-                ""plugin"":""simple"",
-                ""properties"":
+                ""provider"":""simple"",
+                ""options"":
                 {
                     ""endpoint"":""http://127.0.0.1:9999"",
                     ""user"":""admin"",
