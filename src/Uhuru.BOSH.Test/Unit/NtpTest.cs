@@ -14,7 +14,7 @@ namespace Uhuru.BOSH.Test.Unit
         public void TC001_TestNtp()
         {
             //Arrange
-            string timeServer = "time.windows.com";
+            string timeServer = "pool.ntp.org";
 
             //Act
             Ntp currnetNtp = Ntp.GetNtpOffset(timeServer);

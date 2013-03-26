@@ -36,8 +36,8 @@ namespace Uhuru.BOSH.Test.Integration
             dynamic args = JsonConvert.DeserializeObject(argsString);
             //ConfigBlobStore
             Config.Configure = true;
-            Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
-            Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
+            Config.BlobstoreProvider = Config.Settings["blobstore"]["provider"].Value;
+            Config.BlobstoreOptions = Config.Settings["blobstore"]["options"];
             Monit.GetInstance().Start();
 
             //Act
@@ -65,8 +65,8 @@ namespace Uhuru.BOSH.Test.Integration
             dynamic args = JsonConvert.DeserializeObject(argsString);
             //ConfigBlobStore
             Config.Configure = true;
-            Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
-            Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
+            Config.BlobstoreProvider = Config.Settings["blobstore"]["provider"].Value;
+            Config.BlobstoreOptions = Config.Settings["blobstore"]["options"];
             Config.Nats = new NatsClient.Reactor();
             Uri natsUri = new Uri(Config.MessageBus);
             Config.Nats.Start(natsUri);
@@ -100,8 +100,8 @@ namespace Uhuru.BOSH.Test.Integration
             dynamic args = JsonConvert.DeserializeObject(argsString);
             //ConfigBlobStore
             Config.Configure = true;
-            Config.BlobstoreProvider = Config.Settings["blobstore"]["plugin"].Value;
-            Config.BlobstoreOptions = Config.Settings["blobstore"]["properties"];
+            Config.BlobstoreProvider = Config.Settings["blobstore"]["provider"].Value;
+            Config.BlobstoreOptions = Config.Settings["blobstore"]["options"];
             Config.Nats = new NatsClient.Reactor();
             Uri natsUri = new Uri(Config.MessageBus);
             Config.Nats.Start(natsUri);
