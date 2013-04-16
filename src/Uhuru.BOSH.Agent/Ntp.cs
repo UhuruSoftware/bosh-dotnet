@@ -126,6 +126,7 @@ namespace Uhuru.BOSH.Agent
                 {
                     Logger.Error("Error while retrieving ntp information: {0}", ex.ToString());
                     currentNtp.message = ex.Message;
+                    break;
                 }
             }
             return currentNtp;
