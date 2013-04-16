@@ -50,7 +50,8 @@ namespace Uhuru.BOSH.Agent.Message
 
                 ProcessStartInfo info = new ProcessStartInfo();
                 info.FileName = "robocopy";
-                info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} {1} /MIR /R:1 /W:1 /COPYALL", BaseMessage.StorePath, BaseMessage.StoreMigrationTarget);
+                string systemDirectories = string.Join(" ", new string[] { Path.Combine(BaseMessage.StorePath, "System Volume Information"), Path.Combine(BaseMessage.StorePath, "$Recycle.Bin") });
+                info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} {1} /MIR /R:1 /W:1 /COPYALL /XD {2}", BaseMessage.StorePath, BaseMessage.StoreMigrationTarget, systemDirectories);
                 info.RedirectStandardOutput = true;
                 info.UseShellExecute = false;
 
@@ -61,7 +62,7 @@ namespace Uhuru.BOSH.Agent.Message
                     p.Start();
                     p.WaitForExit();
                     Logger.Debug(p.StandardOutput.ReadToEnd());
-                    if (p.ExitCode != 0)
+                    if (p.ExitCode != 0 || p.ExitCode != 1)
                     {
                         throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to copy data from old to new store disk"));
                     }
