@@ -498,11 +498,14 @@ namespace Uhuru.BOSH.Agent
             //Connect the time server
             using (UdpClient timeSocket = new UdpClient())
             {
+                timeSocket.Client.SendTimeout = 10;
+                timeSocket.Client.ReceiveTimeout = 10;
                 timeSocket.Connect(EPhost);
-
+                
                 // Initialize data structure
                 Initialize();
                 timeSocket.Send(NTPData, NTPData.Length);
+                
                 NTPData = timeSocket.Receive(ref EPhost);
                 if (!IsResponseValid())
                 {
