@@ -178,20 +178,11 @@ using System.Collections.ObjectModel;
                             catch (Exception ex)
                             {
                                 Logger.Error("Nats start Error :" + ex.ToString());
-                                //TODO Improve this
-                                //if (retries <= 0)
-                                //{
-                                //    throw ex;
-                                //}
-                                //else
-                                //{
-                                    Thread.Sleep(NATS_RECONNECT_SLEEP);
-                                //}
+                                Thread.Sleep(NATS_RECONNECT_SLEEP);
                             }
                         } while (retries-- > 0);
 
                         this.HeartBeatProcessor.Enable(Config.HeartbeatInterval * 1000);
-                        //this.SetupSshdMonitor();
 
                         if (this.ProcessAlerts)
                         {
@@ -203,7 +194,6 @@ using System.Collections.ObjectModel;
                             else
                             {
                                 Logger.Debug(string.Format(CultureInfo.InvariantCulture, "SMTP: {0}", this.SmtpPassword));
-                                //this.Processor = AlertProcessor.Start("127.0.0.1", this.SmtpPort, this.SmtpUser, this.SmtpPassword);
                             }
                         }
                     }
@@ -225,12 +215,12 @@ using System.Collections.ObjectModel;
         void Nats_OnError(object sender, ReactorErrorEventArgs e)
         {
             Logger.Error("Nats on Error :" + e.Exception.ToString());
+            throw e.Exception;
         }
 
         private void Retry()
         {
             StartHandler();
-            //throw new NotImplementedException();
         }
 
         public void Shutdown()
