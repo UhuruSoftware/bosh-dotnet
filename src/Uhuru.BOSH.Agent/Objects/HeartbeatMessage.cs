@@ -69,7 +69,7 @@ namespace Uhuru.BOSH.Agent.Objects
         /// <value>
         /// The offset.
         /// </value>
-        [JsonProperty("offset")]
+        [JsonProperty("offset", NullValueHandling = NullValueHandling.Ignore)]
         public string Offset { get; set; }
 
         /// <summary>
@@ -78,7 +78,16 @@ namespace Uhuru.BOSH.Agent.Objects
         /// <value>
         /// The timestamp.
         /// </value>
-        [JsonProperty("timestamp")]
+        [JsonProperty("timestamp", NullValueHandling = NullValueHandling.Ignore)]
         public string Timestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [JsonProperty("message", NullValueHandling=NullValueHandling.Ignore)]
+        public string Message { get; set; }
     }
 }

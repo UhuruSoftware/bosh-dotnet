@@ -11,6 +11,10 @@ namespace Uhuru.BOSH.Agent
     using System.Net.Sockets;
     using System.Threading;
     using Uhuru.Utilities;
+    using System.Diagnostics;
+    using System.Text.RegularExpressions;
+    using System.Text;
+    using Uhuru.BOSH.Agent.Objects;
 
     /// <summary>
     /// A class the connects to a specified time server and returns the offset
@@ -31,7 +35,7 @@ namespace Uhuru.BOSH.Agent
             {
                 return currentTime;
             }
-            private set
+            set
             {
                 currentTime = value;
             }
@@ -46,7 +50,7 @@ namespace Uhuru.BOSH.Agent
             {
                 return offset;
             }
-            private set
+            set
             {
                 offset = value;
             }
@@ -61,7 +65,7 @@ namespace Uhuru.BOSH.Agent
             {
                 return message;
             }
-            internal set
+            set
             {
                 message = value;
             }
@@ -79,14 +83,44 @@ namespace Uhuru.BOSH.Agent
         /// Gets the NTP offset using the default time server.
         /// </summary>
         /// <returns></returns>
-        public static Ntp GetNtpOffset()
+        public static NtpMessage GetNtpOffset()
         {
-            foreach (dynamic ntpServer in Config.Settings["ntp"])
+            StringBuilder output = new StringBuilder();
+            using(Process w32tm = new Process())
             {
-                return Ntp.GetNtpOffset(Convert.ToString(ntpServer.Value).Trim());
+                ProcessStartInfo info = new ProcessStartInfo();
+                info.Arguments = "/query /status /verbose";
+                info.FileName = "w32tm";
+                info.RedirectStandardOutput = true;
+                info.RedirectStandardInput = true;
+                info.CreateNoWindow = true;
+                info.UseShellExecute = false;
+                w32tm.StartInfo = info;
+                w32tm.EnableRaisingEvents = true;
+                w32tm.OutputDataReceived += new DataReceivedEventHandler(
+                    delegate(object sender, DataReceivedEventArgs e)
+                    {
+                        output.Append(e.Data);
+                    }
+                    );
+                w32tm.Start(); w32tm.BeginOutputReadLine();
+                w32tm.WaitForExit();
+                w32tm.CancelOutputRead(); 
             }
+            int exitCode = int.Parse(Regex.Match(output.ToString(), @"Last Sync Error:\s\d*", RegexOptions.None).Value.Replace("Last Sync Error:", "").Trim());
+            if (exitCode == 0)
+            {
+                double offset = double.Parse(Regex.Match(output.ToString(), @"Phase Offset:\s\d*.\d*", RegexOptions.None).Value.Replace("Phase Offset:", "").Trim());
 
-            return new Ntp() { Message = "bad ntp server" };
+                NtpMessage currentNtp = new NtpMessage();
+                currentNtp.Offset = offset.ToString(CultureInfo.InvariantCulture);
+                currentNtp.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss", CultureInfo.InvariantCulture);
+                return currentNtp;
+            }
+            else
+            {
+                return new NtpMessage() { Message = "bad ntp server" };
+            }
         }
 
         /// <summary>
