@@ -148,16 +148,25 @@ namespace Uhuru.BOSH.Agent
                 return;
             }
 
+            List<string> ntpServers = new List<string>();
             foreach (dynamic ntpServer in this.settings["ntp"])
             {
-                Ntp ntp = Ntp.GetNtpOffset(Convert.ToString(ntpServer.Value).Trim());
-                if (string.IsNullOrEmpty(ntp.Message))
-                {
-                    Logger.Info("Current time offset is :" + ntp.Offset + " to time server " + ntpServer);
-                    Ntp.SetTime(ntp.Offset);
-                    break;
-                }
+                ntpServers.Add(Convert.ToString(ntpServer.Value).Trim());
             }
+
+            ProcessStartInfo configNtpInfo = new ProcessStartInfo();
+            configNtpInfo.Arguments = String.Format("/config /update /manualpeerlist:\"{0}\" /syncfromflags:MANUAL", String.Join(" ",ntpServers));
+            configNtpInfo.FileName = "w32tm";
+            configNtpInfo.CreateNoWindow = true;
+            configNtpInfo.UseShellExecute = false;
+            Process.Start(configNtpInfo).WaitForExit(20000);
+
+            ProcessStartInfo resyncInfo = new ProcessStartInfo();
+            resyncInfo.Arguments = "/resync";
+            resyncInfo.FileName = "w32tm";
+            resyncInfo.CreateNoWindow = true;
+            resyncInfo.UseShellExecute = false;
+            Process.Start(resyncInfo).WaitForExit(20000);
         }
 
         private void SetupNetwork()
