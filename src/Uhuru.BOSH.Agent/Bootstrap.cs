@@ -19,6 +19,7 @@ namespace Uhuru.BOSH.Agent
     using Uhuru.BOSH.Agent.Message;
     using Uhuru.BOSH.Agent.Providers;
     using Uhuru.Utilities;
+    using Microsoft.Win32;
 
     /// <summary>
     /// TODO: Update summary.
@@ -71,6 +72,7 @@ namespace Uhuru.BOSH.Agent
                 UpdateTime();
                 SetupDiskData();
                 SetupTemp();
+                ChangeUsersHomeDirectory();
 
                 MountPersistentDisk();
                 HardenPermissions();
@@ -82,6 +84,24 @@ namespace Uhuru.BOSH.Agent
             //ret["settings"] = this.settings;
 
             return ret;
+        }
+
+        private static void ChangeUsersHomeDirectory()
+        {
+            string usersDir = Path.Combine(BaseDir, "data", "users");
+            Logger.Info("Setting users home directory path to: {0}", usersDir);
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList", true))
+                {
+                    key.SetValue("ProfilesDirectory", usersDir, RegistryValueKind.ExpandString);                    
+                }
+                Logger.Info("Finished setting users home dir path");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Could not change users home directory path: {0}", ex.ToString());
+            }
         }
 
         private void ActivateWindows()
