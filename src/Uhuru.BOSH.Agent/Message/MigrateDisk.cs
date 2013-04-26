@@ -50,8 +50,9 @@ namespace Uhuru.BOSH.Agent.Message
 
                 ProcessStartInfo info = new ProcessStartInfo();
                 info.FileName = "robocopy";
-                string systemDirectories = string.Join(" ", new string[] { Path.Combine(BaseMessage.StorePath, "System Volume Information"), Path.Combine(BaseMessage.StorePath, "$Recycle.Bin") });
-                info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} {1} /MIR /R:1 /W:1 /COPYALL /XD {2}", BaseMessage.StorePath, BaseMessage.StoreMigrationTarget, systemDirectories);
+                string systemVolumeInfo = "\""+ Path.Combine(BaseMessage.StorePath, "System Volume Information")+ "\"";
+                string recicleBinPath = "\"" + Path.Combine(BaseMessage.StorePath, "$Recycle.Bin") + "\"";
+                info.Arguments = String.Format(CultureInfo.InvariantCulture, "{0} {1} /MIR /R:1 /W:1 /COPYALL /XD {2} {3}", BaseMessage.StorePath, BaseMessage.StoreMigrationTarget, systemVolumeInfo, recicleBinPath);
                 info.RedirectStandardOutput = true;
                 info.UseShellExecute = false;
 
