@@ -39,16 +39,11 @@ namespace Uhuru.BOSH.Agent.Message
         /// </summary>
         public object Mount()
         {
-            if (Config.Configure)
-            {
                 UpdateSettings();
                 Logger.Info("Current settings :" + BaseMessage.Settings.ToString());
                 Logger.Info("MountDisk: {0} - {1}", cid, BaseMessage.Settings["disks"].ToString());
 
                 return SetupDisk();
-            }
-
-            return string.Empty;
         }
 
         /// <summary>

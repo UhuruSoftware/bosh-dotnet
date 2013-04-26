@@ -63,9 +63,9 @@ namespace Uhuru.BOSH.Agent.Message
                     p.Start();
                     p.WaitForExit();
                     Logger.Debug(p.StandardOutput.ReadToEnd());
-                    if (p.ExitCode != 0 || p.ExitCode != 1)
+                    if (p.ExitCode > 2)
                     {
-                        throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to copy data from old to new store disk"));
+                        throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Failed to copy data from old to new store disk with exit code {0}", p.ExitCode.ToString()));
                     }
                 }
                 finally
