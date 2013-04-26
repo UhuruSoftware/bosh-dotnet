@@ -72,7 +72,7 @@ namespace Uhuru.BOSH.Agent.Message
 			sshResult.Command = "setup";
 			try
 			{
-				Uhuru.Utilities.WindowsVCAPUsers.CreateUser(userName, password);
+                Uhuru.Utilities.WindowsUsersAndGroups.CreateUser(userName, password, "User created and managed by BOSH.");
 				Uhuru.Utilities.WindowsUsersAndGroups.AddUserToGroup(userName, "Administrators");
 				sshResult.Status = "success";
 				Logger.Info("Created user for SSH");
@@ -117,7 +117,17 @@ namespace Uhuru.BOSH.Agent.Message
 
 			try
 			{
-				WindowsVCAPUsers.DeleteUser(userName);
+                try
+                {
+                    UserImpersonator.DeleteUserProfile(userName, string.Empty);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning("Failed to delete user's profile" + ex.ToString());
+                }
+
+                WindowsUsersAndGroups.DeleteUser(userName);
+
 				File.Delete(Path.Combine(Config.BaseDir, "bosh", "salt", userName + ".salt"));
 				Logger.Info("Deleted salt file");
 				sshResult.Status = "success";
