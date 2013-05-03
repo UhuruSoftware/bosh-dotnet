@@ -17,6 +17,7 @@ using System.Threading;
     using Uhuru.Utilities;
     using System.Diagnostics;
     using System.Globalization;
+    using System.Management;
 
     /// <summary>
     /// TODO: Update summary.
@@ -370,6 +371,7 @@ using System.Threading;
                      ServiceController serviceController = (from entity in allServices
                                                             where entity.DisplayName == serviceName
                                                             select entity).First();
+                     Process.Start("sc.exe", String.Format("config {0} start= demand", serviceController.ServiceName)).WaitForExit();
                      try
                      {
                          serviceController.Start();
@@ -402,14 +404,57 @@ using System.Threading;
                     ServiceController serviceController = (from entity in allServices
                                                            where entity.DisplayName == serviceName
                                                            select entity).First();
+
+                    Process.Start("sc.exe", String.Format("config {0} start= disabled", serviceController.ServiceName)).WaitForExit();
                     try
                     {
-                        serviceController.Stop();
+                        int timeout = 30;
+                        while (serviceController.Status == ServiceControllerStatus.StartPending || serviceController.Status == ServiceControllerStatus.StopPending)
+                        {                            
+                            if (timeout == 0)
+                            {
+                                KillService(serviceController.ServiceName);
+                                Thread.Sleep(1000);
+                                break;
+                            }
+                            Thread.Sleep(1000);
+                            serviceController.Refresh();
+                            timeout--;
+                        }
+                        
+                        serviceController.Refresh();
+                        if (serviceController.Status != ServiceControllerStatus.Stopped)
+                        {
+                            serviceController.Stop();
+                            serviceController.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromMinutes(60));
+                            serviceController.Refresh();
+                            if (serviceController.Status != ServiceControllerStatus.Stopped)
+                            {
+                                KillService(serviceController.ServiceName);
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
                         Logger.Error("Cannot stop service " + serviceController.DisplayName + " " + ex.ToString());
                     }
+                    finally
+                    {
+                        Process.Start("sc.exe", String.Format("config {0} start= demand", serviceController.ServiceName)).WaitForExit();
+                    }
+                }
+            }
+        }
+
+        private static void KillService(string serviceName)
+        {
+            using (ManagementObject service = new ManagementObject(@"Win32_service.Name='" + serviceName + "'"))
+            {
+                object o = service.GetPropertyValue("ProcessId");
+                int processId = (int)((UInt32)o);
+                using (Process process = Process.GetProcessById(processId))
+                {
+                    process.Kill();
                 }
             }
         }

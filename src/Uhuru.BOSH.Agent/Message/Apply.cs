@@ -101,10 +101,10 @@ namespace Uhuru.BOSH.Agent.Message
             {
                 try
                 {
+                    Monit.GetInstance().StopServices();
                     ApplyJob();
                     ApplyPackage();
                     ConfigureJob();
-                    
                 }
                 catch (Exception ex)
                 {
