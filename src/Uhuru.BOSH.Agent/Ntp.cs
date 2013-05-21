@@ -85,40 +85,51 @@ namespace Uhuru.BOSH.Agent
         /// <returns></returns>
         public static NtpMessage GetNtpOffset()
         {
-            StringBuilder output = new StringBuilder();
-            using(Process w32tm = new Process())
+            try
             {
-                ProcessStartInfo info = new ProcessStartInfo();
-                info.Arguments = "/query /status /verbose";
-                info.FileName = "w32tm";
-                info.RedirectStandardOutput = true;
-                info.RedirectStandardInput = true;
-                info.CreateNoWindow = true;
-                info.UseShellExecute = false;
-                w32tm.StartInfo = info;
-                w32tm.EnableRaisingEvents = true;
-                w32tm.OutputDataReceived += new DataReceivedEventHandler(
-                    delegate(object sender, DataReceivedEventArgs e)
-                    {
-                        output.Append(e.Data);
-                    }
-                    );
-                w32tm.Start(); w32tm.BeginOutputReadLine();
-                w32tm.WaitForExit();
-                w32tm.CancelOutputRead(); 
-            }
-            int exitCode = int.Parse(Regex.Match(output.ToString(), @"Last Sync Error:\s\d*", RegexOptions.None).Value.Replace("Last Sync Error:", "").Trim());
-            if (exitCode == 0)
-            {
-                double offset = double.Parse(Regex.Match(output.ToString(), @"Phase Offset:\s\d*.\d*", RegexOptions.None).Value.Replace("Phase Offset:", "").Trim());
+                StringBuilder output = new StringBuilder();
+                using (Process w32tm = new Process())
+                {
+                    ProcessStartInfo info = new ProcessStartInfo();
+                    info.Arguments = "/query /status /verbose";
+                    info.FileName = "w32tm";
+                    info.RedirectStandardOutput = true;
+                    info.RedirectStandardInput = true;
+                    info.CreateNoWindow = true;
+                    info.UseShellExecute = false;
+                    w32tm.StartInfo = info;
+                    w32tm.EnableRaisingEvents = true;
+                    w32tm.OutputDataReceived += new DataReceivedEventHandler(
+                        delegate(object sender, DataReceivedEventArgs e)
+                        {
+                            output.Append(e.Data);
+                        }
+                        );
+                    w32tm.Start(); w32tm.BeginOutputReadLine();
+                    w32tm.WaitForExit();
+                    w32tm.CancelOutputRead();
+                }
 
-                NtpMessage currentNtp = new NtpMessage();
-                currentNtp.Offset = offset.ToString(CultureInfo.InvariantCulture);
-                currentNtp.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss", CultureInfo.InvariantCulture);
-                return currentNtp;
+                int exitCode = 0;
+                if (int.TryParse(Regex.Match(output.ToString(), @"Last Sync Error:\s\d*", RegexOptions.None).Value.Replace("Last Sync Error:", "").Trim(), out exitCode))
+                {
+                    if (exitCode == 0)
+                    {
+                        double offset;
+                        if (double.TryParse(Regex.Match(output.ToString(), @"Phase Offset:\s\d*.\d*", RegexOptions.None).Value.Replace("Phase Offset:", "").Trim(), out offset))
+                        {
+                            NtpMessage currentNtp = new NtpMessage();
+                            currentNtp.Offset = offset.ToString(CultureInfo.InvariantCulture);
+                            currentNtp.Timestamp = DateTime.Now.ToString("dd MMM HH:mm:ss", CultureInfo.InvariantCulture);
+                            return currentNtp;
+                        }
+                    }
+                }
+                return new NtpMessage() { Message = "bad ntp server" };
             }
-            else
+            catch (Exception ex)
             {
+                Logger.Warning("Could not get NTP offset: {0}", ex.ToString());
                 return new NtpMessage() { Message = "bad ntp server" };
             }
         }
