@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,19 +13,21 @@ using Newtonsoft.Json;
 namespace Uhuru.BOSH.Test.Integration
 {
     [TestClass]
-    public class SimpleBlobstoreTest
+    public class DavBlobstoreTest
     {
 
+        // ""endpoint"":""http://10.0.5.114:25251"",
+        // ""endpoint"":""http://roblob.uhurucloud.net:9988"",
         string yamlOptions = @"
         {
             ""blobstore"":
             {
-                ""provider"":""simple"",
+                ""provider"":""dav"",
                 ""options"":
                 {
-                    ""endpoint"":""http://127.0.0.1:9999"",
-                    ""user"":""admin"",
-                    ""password"":""admin""
+                    ""endpoint"":""http://10.0.5.114:25251"",
+                    ""user"":""director"",
+                    ""password"":""director""
                 }
             }
         }";
@@ -37,7 +40,7 @@ namespace Uhuru.BOSH.Test.Integration
             dynamic ynode = (JsonConvert.DeserializeObject(yamlOptions) as dynamic);
 
 
-            IClient sc = Blobstore.CreateClient("simple", ynode["blobstore"]["options"]);
+            IClient sc = Blobstore.CreateClient("dav", ynode["blobstore"]["options"]);
 
             string objectId = sc.Create(content);
 
@@ -61,7 +64,7 @@ namespace Uhuru.BOSH.Test.Integration
 
             dynamic ynode = (JsonConvert.DeserializeObject(yamlOptions) as dynamic);
 
-            IClient sc = Blobstore.CreateClient("simple", ynode["blobstore"]["options"]);
+            IClient sc = Blobstore.CreateClient("dav", ynode["blobstore"]["options"]);
 
             string objectId = sc.Create(fileToUpload);
 
@@ -81,7 +84,7 @@ namespace Uhuru.BOSH.Test.Integration
         {
             dynamic ynode = (JsonConvert.DeserializeObject(yamlOptions) as dynamic);
 
-            IClient sc = Blobstore.CreateClient("simple", ynode["blobstore"]["options"]);
+            IClient sc = Blobstore.CreateClient("dav", ynode["blobstore"]["options"]);
 
             sc.Delete("test");
         }

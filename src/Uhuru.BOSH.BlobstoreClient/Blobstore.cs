@@ -26,6 +26,9 @@ namespace Uhuru.BOSH.BlobstoreClient
                 case "simple":
                     return new SimpleClient(options);
 
+                case "dav":
+                    return new DavClient(options);
+
                 case "local":
                     return new LocalClient(options);
 
