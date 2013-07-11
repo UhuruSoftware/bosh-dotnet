@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="SimpleClient.cs" company="">
+// <copyright file="DavClient.cs" company="">
 // TODO: Update copyright text.
 // </copyright>
 // -----------------------------------------------------------------------
@@ -14,16 +14,17 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     using System.Net;
     using Uhuru.BOSH.BlobstoreClient.Errors;
     using System.Collections.Specialized;
+    using System.Security.Cryptography;
 
     /// <summary>
     /// TODO: Update summary.
     /// </summary>
-    public class SimpleClient : BaseClient
+    public class DavClient : BaseClient
     {
         protected string endpoint;
         protected string authorizationHeader;
 
-        public SimpleClient(dynamic options)
+        public DavClient(dynamic options)
             : base((object)options)
         {
             endpoint = (string)options["endpoint"].Value;
@@ -68,18 +69,16 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
             }
         }
 
-
         protected string url(string id)
         {
-            string ret = endpoint + "/resources";
-            if (id == null)
-            {
-                return ret;
-            }
-            else
-            {
-                return ret + "/" + id;
-            }
+            byte[] bucket = 
+                new SHA1CryptoServiceProvider()
+                .ComputeHash(Encoding.UTF8.GetBytes(id))
+                .Take(1).ToArray();
+
+            var prefix = BitConverter.ToString(bucket).ToLower().Trim(new char[] { '-' });
+
+            return endpoint + "/" + prefix + "/" + id;
         }
 
 
@@ -92,10 +91,10 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 
             request.ContentType = "multipart/form-data; boundary=" + boundary;
-            request.Method = "POST";
+            request.Method = "PUT";
             request.Headers[HttpRequestHeader.Authorization] = authorization;
 
-            // diable this to allow streaming big files, without beeing out of memory.
+            // disable this to allow streaming big files, without being out of memory.
             request.AllowWriteStreamBuffering = false;
 
             string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
@@ -109,7 +108,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
             {
                 requestStream.Write(boundaryBytes, 0, boundaryBytes.Length);
                 requestStream.Write(headerBytes, 0, headerBytes.Length);
-                
+
                 FileStream fileStream = file.OpenRead();
 
                 // fileStream.CopyTo(requestStream, 1024 * 1024);
@@ -125,7 +124,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
                 }
                 fileStream.Close();
 
-                
+
                 requestStream.Write(trailerBytes, 0, trailerBytes.Length);
                 requestStream.Close();
 
@@ -144,17 +143,22 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
         {
             try
             {
-                return HttpUploadFile(url(id), contentsFilePath, "content", "application/octet-stream", authorizationHeader);
+                if (id == null) {
+                    id = Guid.NewGuid().ToString();
+                }
 
-                //using (var client = new WebClient())
-                //{
-                //    client.Headers[HttpRequestHeader.Authorization] = authorizationHeader;
-                //    client.Headers[HttpRequestHeader.ContentType] = "application/octet-stream";
+                //HttpUploadFile(url(id), contentsFilePath, "content", "application/octet-stream", authorizationHeader);
 
-                //    var response = client.UploadFile(url(null), "POST", contentsFilePath.FullName);
-                    
-                //    return Encoding.ASCII.GetString(response);
-                //}
+
+                using (var client = new WebClient())
+                {
+                    client.Headers[HttpRequestHeader.Authorization] = authorizationHeader;
+                    client.Headers[HttpRequestHeader.ContentType] = "application/octet-stream";
+
+                    var response = client.UploadFile(url(id), "PUT", contentsFilePath.FullName);
+                }
+
+                return id;
             }
             catch (Exception e)
             {

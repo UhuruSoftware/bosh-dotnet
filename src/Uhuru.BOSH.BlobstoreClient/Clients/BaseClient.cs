@@ -28,13 +28,18 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
 
         public virtual string Create(string contents)
         {
+            return this.Create(contents, null);
+        }
+
+        public virtual string Create(string contents, string id)
+        {
             try
             {
                 string tempFile = TempPath();
 
                 File.WriteAllText(tempFile, contents);
 
-                return CreateFile(new FileInfo(tempFile));
+                return CreateFile(id, new FileInfo(tempFile));
             }
             catch (BlobstoreException)
             {
@@ -48,13 +53,18 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
 
         public virtual string Create(byte[] contents)
         {
+            return this.Create(contents, null);
+        }
+
+        public virtual string Create(byte[] contents, string id)
+        {
             try
             {
                 string tempFile = TempPath();
 
                 File.WriteAllBytes(tempFile, contents);
 
-                return CreateFile(new FileInfo(tempFile));
+                return CreateFile(id, new FileInfo(tempFile));
             }
             catch (BlobstoreException)
             {
@@ -68,7 +78,12 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
 
         public virtual string Create(FileInfo contentsFilePath)
         {
-            return CreateFile(contentsFilePath);
+            return this.Create(contentsFilePath, null);
+        }
+
+        public virtual string Create(FileInfo contentsFilePath, string id)
+        {
+            return CreateFile(id, contentsFilePath);
         }
 
         public virtual string Get(string id)
@@ -103,7 +118,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
 
 
         // Creates the blob from a file.
-        public virtual string CreateFile(FileInfo contentsFilePath)
+        public virtual string CreateFile(string id, FileInfo contentsFilePath)
         {
             throw new NotImplementedException();
         }

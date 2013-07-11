@@ -50,6 +50,7 @@
     <Compile Include="Clients\AmazonS3Client.cs" />
     <Compile Include="Clients\AtmosClient.cs" />
     <Compile Include="Clients\BaseClient.cs" />
+    <Compile Include="Clients\DavClient.cs" />
     <Compile Include="Clients\IClient.cs" />
     <Compile Include="Clients\LocalClient.cs" />
     <Compile Include="Clients\SimpleClient.cs" />
