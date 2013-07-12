@@ -15,6 +15,7 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
     using Uhuru.BOSH.BlobstoreClient.Errors;
     using System.Collections.Specialized;
     using System.Security.Cryptography;
+    using System.Threading;
 
     /// <summary>
     /// TODO: Update summary.
@@ -87,7 +88,6 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
 
-            //request.ContentType = "multipart/form-data; boundary=" + boundary;
             request.ContentType = contentType;
             request.Method = "PUT";
             request.Headers[HttpRequestHeader.Authorization] = authorization;
@@ -95,39 +95,26 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
             // disable this to allow streaming big files, without being out of memory.
             request.AllowWriteStreamBuffering = false;
 
-            //string boundary = Guid.NewGuid().ToString("N");
-            //byte[] boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
-            //string headerTemplate = "Content-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"\r\nContent-Type: {2}\r\n\r\n";
-            //string header = string.Format(headerTemplate, paramName, file, contentType);
-            //byte[] headerBytes = Encoding.UTF8.GetBytes(header);
-            //byte[] trailerBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
-            //request.ContentLength = boundaryBytes.Length + headerBytes.Length + trailerBytes.Length + file.Length;
-
             request.ContentLength = file.Length;
 
             using (Stream requestStream = request.GetRequestStream())
             {
-                //requestStream.Write(boundaryBytes, 0, boundaryBytes.Length);
-                //requestStream.Write(headerBytes, 0, headerBytes.Length);
 
-                FileStream fileStream = file.OpenRead();
+                using (FileStream fileStream = file.OpenRead())
+                {                  
+                    int bufferSize = 1024 * 1024;
 
-                fileStream.CopyTo(requestStream, 1024 * 1024);
+                    byte[] buffer = new byte[bufferSize];
+                    int bytesRead = 0;
+                    while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
+                    {
+                        requestStream.Write(buffer, 0, bytesRead);
+                        requestStream.Flush();
+                    }
 
-                int bufferSize = 1024 * 1024;
-
-                byte[] buffer = new byte[bufferSize];
-                int bytesRead = 0;
-                while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
-                {
-                    requestStream.Write(buffer, 0, bytesRead);
-                    requestStream.Flush();
+                    // fileStream.CopyTo(requestStream, 1024 * 1024);
                 }
-                fileStream.Close();
 
-                //requestStream.Write(trailerBytes, 0, trailerBytes.Length);
-                requestStream.Flush();
-                requestStream.Close();
             }
 
             using (var respnse = request.GetResponse())
