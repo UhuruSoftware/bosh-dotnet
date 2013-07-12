@@ -91,6 +91,8 @@ namespace Uhuru.BOSH.BlobstoreClient.Clients
             request.ContentType = contentType;
             request.Method = "PUT";
             request.Headers[HttpRequestHeader.Authorization] = authorization;
+            // request.ReadWriteTimeout = 1000 * 1000;
+            request.Timeout = 1000 * 1000;
 
             // disable this to allow streaming big files, without being out of memory.
             request.AllowWriteStreamBuffering = false;
