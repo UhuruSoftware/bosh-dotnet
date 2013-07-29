@@ -208,6 +208,7 @@ using System.Collections.ObjectModel;
                             this.Retry();
                         }
                         Logger.Fatal(string.Format(CultureInfo.InvariantCulture, "Unable to reconnect to NATS after {0} retries, exiting...", MAX_NATS_RETRIES));
+                        Environment.FailFast(string.Format(CultureInfo.InvariantCulture, "Unable to reconnect to NATS after {0} retries, exiting...", MAX_NATS_RETRIES), ex);
                     }
                 });
         }
