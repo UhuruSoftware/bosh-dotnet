@@ -42,7 +42,7 @@ using System.IO;
 
                 string tarballPath = Path.Combine(outDir, "files.tgz");
 
-                FileArchive.TarAndZipFile(tmpDir, tarballPath);
+                FileArchive.ZipFile(tmpDir, tarballPath);
 
                 return tarballPath;
 

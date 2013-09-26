@@ -13,6 +13,7 @@ namespace Uhuru.BOSH.Agent.Message
     using Uhuru.Utilities;
     using Uhuru.BOSH.Agent.ApplyPlan;
     using Uhuru.BOSH.Agent.Errors;
+    using System.Threading;
 
 
     /// <summary>
@@ -102,6 +103,8 @@ namespace Uhuru.BOSH.Agent.Message
                 try
                 {
                     Monit.GetInstance().StopServices();
+                    // TODO make sure processes have exited, even if windows reports services as stopped
+                    Thread.Sleep(10000);
                     ApplyJob();
                     ApplyPackage();
                     ConfigureJob();

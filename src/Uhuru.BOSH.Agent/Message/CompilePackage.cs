@@ -184,19 +184,8 @@ namespace Uhuru.BOSH.Agent.Message
             }
             Directory.CreateDirectory(this.compileDir);
 
-            var sourceFileInfo = new FileInfo(this.sourceFile);
-
-
-            string tarFile = Path.ChangeExtension(this.sourceFile, "tar");
-            string tgzFile = Path.ChangeExtension(this.sourceFile, "tgz");
-
-            File.Move(this.sourceFile, tgzFile);
-
-            // The fist step just decompresses the gzip stream
-            FileArchive.UnzipFile(sourceFileInfo.DirectoryName, tgzFile);
-
-            // The second and final step will untal the files
-            FileArchive.UnzipFile(this.compileDir, tarFile);
+            // Extract file
+            FileArchive.UnzipFile(this.compileDir, this.sourceFile);
         }
 
         /// <summary>

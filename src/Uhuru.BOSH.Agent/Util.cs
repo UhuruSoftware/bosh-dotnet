@@ -44,7 +44,7 @@ namespace Uhuru.BOSH.Agent
 
         internal static void UnpackBlob(string blobstoreId, string checksum, string installPath)
         {
-            Logger.Info("Retrieving blob: ", blobstoreId);
+            Logger.Info("Retrieving blob: {0}", blobstoreId);
 
             IClient blobstoreClient = Blobstore.CreateClient(Config.BlobstoreProvider, Config.BlobstoreOptions);
 
@@ -80,12 +80,10 @@ namespace Uhuru.BOSH.Agent
                     throw new MessageHandlerException(String.Format(CultureInfo.InvariantCulture, "Expected sha1: {0}, Downloaded sha1: {1}", checksum, blobSHA1));
                 }
 
-                string tarFile = Path.ChangeExtension(blobDataFile, "tar");
-                FileArchive.UnzipFile(fileInfo.DirectoryName, blobDataFile);
-                if (File.Exists(tarFile))
-                    FileArchive.UnzipFile(installPath, tarFile);
-                else
-                    FileArchive.UnzipFile(installPath, blobDataFile);
+                Logger.Debug("Extracting {0}", blobDataFile);
+                FileArchive.UnzipFile(installPath, blobDataFile);
+                Logger.Debug("Done extracting {0}", blobDataFile);
+                File.Delete(fileInfo.FullName);
             }
             catch (Exception ex)
             {
