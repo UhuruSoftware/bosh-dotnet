@@ -125,9 +125,9 @@ namespace Uhuru.BOSH.Agent.Message
         public void ApplyJob()
         {
             Logger.Info("Applying job");
-            if (newPlan.HasJob)
+            if (newPlan.HasJobs)
             {
-                newPlan.InstallJob();
+                newPlan.InstallJobs();
             }
             else
             {
@@ -156,8 +156,8 @@ namespace Uhuru.BOSH.Agent.Message
         /// </summary>
         private void ConfigureJob()
         {
-            if (newPlan.HasJob)
-                newPlan.ConfigureJob();
+            if (newPlan.HasJobs)
+                newPlan.ConfigureJobs();
         }
 
         /// <summary>

@@ -23,9 +23,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
     /// </summary>
     public class Job
     {
-      ////attr_reader :install_path
-      ////attr_reader :link_path
-      ////attr_reader :template
 
         public string InstallPath
         {
@@ -51,30 +48,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-      ////def initialize(spec, config_binding = nil)
-      ////  unless spec.is_a?(Hash)
-      ////    raise ArgumentError, "Invalid job spec, " +
-      ////                         "Hash expected, #{spec.class} given"
-      ////  end
-      ////  %w(name template version sha1 blobstore_id).each do |key|
-      ////    if spec[key].nil?
-      ////      raise ArgumentError, "Invalid spec, #{key} is missing"
-      ////    end
-      ////  end
-
-      ////  @base_dir = Bosh::Agent::Config.base_dir
-      ////  @name = spec["name"]
-      ////  @template = spec["template"]
-      ////  @version = spec["version"]
-      ////  @checksum = spec["sha1"]
-      ////  @blobstore_id = spec["blobstore_id"]
-      ////  @config_binding = config_binding
-
-      ////  @install_path = File.join(@base_dir, "data", "jobs",
-      ////                            @template, @version)
-      ////  @link_path = File.join(@base_dir, "jobs", @template)
-      ////end
-
         private string baseDir;
         private string name;
         private string template;
@@ -83,28 +56,25 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private string version;
         private string checksum;
         private string blobstoreId;
+        private dynamic bindSpec;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification="JIRA UH-1201")]
-        private dynamic configBinding;
-        private dynamic jobBinding;
         Monit monit;
 
-        public Job(dynamic spec, dynamic jobProperties)
+        public Job(string jobName, string templateName, dynamic templateSpec, dynamic bindSpec)
         {
-            // TODO: check to se if any king of IDictionary
-            // if (spec is IDictionary<,>)
 
-            var required = new string[] { "name", "template", "version", "sha1", "blobstore_id" };
-            foreach (var requiredKey in required)
-            {
-                if (spec[requiredKey] == null)
-                {
-                    throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Invalid spec. {0} is missing", requiredKey));
-                }
-            }
-            this.jobBinding = jobProperties;
+            Helpers.ValidateSpec(templateSpec);
+
+            this.bindSpec = bindSpec;
             baseDir = Config.BaseDir;
+            name = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", jobName, templateName);
+            template = templateName;
+            version = templateSpec["version"].Value;
+            checksum = templateSpec["sha1"].Value;
+            blobstoreId = templateSpec["blobstore_id"].Value;
 
-            Init(spec);
+            installPath = Path.Combine(baseDir, "data", "jobs", template, version);
+            linkPath = Path.Combine(baseDir, "jobs", template);
 
             monit = Monit.GetInstance();
 
@@ -115,31 +85,17 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-        private void Init(dynamic spec)
+        public void PrepareForInstall()
         {
-            name = spec["name"].Value;
-            template = spec["template"].Value;
-            version = spec["version"].Value;
-            checksum = spec["sha1"].Value;
-            blobstoreId = spec["blobstore_id"].Value;
-            configBinding = spec["config_binding"] != null ? spec["config_binding"].Value : null;
-            installPath = Path.Combine(baseDir, "data", "jobs", template, version);
-            linkPath = Path.Combine(baseDir, "jobs", template);
+            Helpers.FetchBits(installPath, blobstoreId, checksum);
         }
-
-      ////def install
-      ////  fetch_template
-      ////  bind_configuration
-      ////  harden_permissions
-      ////rescue SystemCallError => e
-      ////  install_failed("system call error: #{e.message}")
-      ////end
+       
 
         public void Install()
         {
             try
             {
-                FetchTemplate();
+                Helpers.FetchBitsAndSymlink(installPath, linkPath, blobstoreId, checksum);
                 BindConfiguration();
                 HardenPermissions();
             }
@@ -150,19 +106,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         }
 
 
-      ////def configure
-      ////  run_post_install_hook
-      ////  configure_monit
-      ////rescue SystemCallError => e
-      ////  config_failed("system call error: #{e.message}")
-      ////end
-
         public void Configure()
         {
             try
             {
                 RunPreInstallHook();
-                //ConfigureMonit();
             }
             catch (Exception e)
             {
@@ -170,86 +118,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-      ////private
-
-      ////def fetch_template
-      ////  FileUtils.mkdir_p(File.dirname(@install_path))
-      ////  FileUtils.mkdir_p(File.dirname(@link_path))
-
-      ////  Bosh::Agent::Util.unpack_blob(@blobstore_id, @checksum, @install_path)
-      ////  Bosh::Agent::Util.create_symlink(@install_path, @link_path)
-      ////end
-
-        private void FetchTemplate()
-        {
-            Directory.CreateDirectory(installPath);
-            //Directory.CreateDirectory(linkPath);
-
-            Util.UnpackBlob(blobstoreId, checksum, installPath);
-            Util.CreateSymLink(installPath, linkPath);
-        }
-
-      ////def bind_configuration
-      ////  if @config_binding.nil?
-      ////    install_failed("unable to bind configuration, " +
-      ////                   "no binding provided")
-      ////  end
-
-      ////  bin_dir = File.join(@install_path, "bin")
-      ////  manifest_path = File.join(@install_path, "job.MF")
-
-      ////  unless File.exists?(manifest_path)
-      ////    install_failed("cannot find job manifest")
-      ////  end
-
-      ////  FileUtils.mkdir_p(bin_dir)
-
-      ////  begin
-      ////    manifest = YAML.load_file(manifest_path)
-      ////  rescue ArgumentError
-      ////    install_failed("malformed job manifest")
-      ////  end
-
-      ////  unless manifest.is_a?(Hash)
-      ////    install_failed("invalid job manifest, " +
-      ////                   "Hash expected, #{manifest.class} given")
-      ////  end
-
-      ////  templates = manifest["templates"] || {}
-
-      ////  unless templates.kind_of?(Hash)
-      ////    install_failed("invalid value for templates in job manifest, " +
-      ////                   "Hash expected, #{templates.class} given")
-      ////  end
-
-      ////  templates.each_pair do |src, dst|
-      ////    template_path = File.join(@install_path, "templates", src)
-      ////    output_path = File.join(@install_path, dst)
-
-      ////    unless File.exists?(template_path)
-      ////      install_failed("template '#{src}' doesn't exist")
-      ////    end
-
-      ////    template = ERB.new(File.read(template_path))
-      ////    begin
-      ////      result = template.result(@config_binding)
-      ////    rescue Exception => e
-      ////      # We are essentially running an arbitrary code,
-      ////      # hence such a generic rescue clause
-      ////      line = e.backtrace.first.match(/:(\d+):/).captures.first
-      ////      install_failed("failed to process configuration template " +
-      ////                     "'#{src}': " +
-      ////                     "line #{line}, error: #{e.message}")
-      ////    end
-
-      ////    FileUtils.mkdir_p(File.dirname(output_path))
-      ////    File.open(output_path, "w") { |f| f.write(result) }
-
-      ////    if File.basename(File.dirname(output_path)) == "bin"
-      ////      FileUtils.chmod(0755, output_path)
-      ////    end
-      ////  end
-      ////end
 
         private void BindConfiguration()
         {
@@ -277,8 +145,8 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
                 InstallFailed("Malformed manifest file : " + ex.ToString());
             }
 
-            Logger.Info("Building properties ruby object using :" + jobBinding.ToString());
-            string spec = GetRubyObject(jobBinding);
+            Logger.Info("Building properties ruby object using :" + bindSpec.ToString());
+            string spec = GetRubyObject(bindSpec);
             Logger.Info ("Object built " + spec);
 
             foreach (var t in currentJobManifest.Templates)
@@ -363,23 +231,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-      ////def harden_permissions
-      ////  return unless Bosh::Agent::Config.configure
-
-      ////  FileUtils.chown_R("root", Bosh::Agent::BOSH_APP_USER, @install_path)
-      ////  chmod_others = "chmod -R o-rwx #{@install_path} 2>&1"
-      ////  chmod_group = "chmod g+rx #{@install_path} 2>&1"
-
-      ////  out = %x(#{chmod_others})
-      ////  unless $?.exitstatus == 0
-      ////    install_failed("error executing '#{chmod_others}': #{out}")
-      ////  end
-
-      ////  out = %x(#{chmod_group})
-      ////  unless $?.exitstatus == 0
-      ////    install_failed("error executing '#{chmod_group}': #{out}")
-      ////  end
-      ////end
 
         //TODO: JIRA UH-1203
         private static void HardenPermissions()
@@ -388,10 +239,6 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             Logger.Error("Not implemented: Harden Permissions");
         }
 
-      ////# TODO: move from util here? (not being used anywhere else)
-      ////def run_post_install_hook
-      ////  Bosh::Agent::Util.run_hook("post_install", @template)
-      ////end
 
         private void RunPreInstallHook()
         {
@@ -402,38 +249,14 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             //Logger.Error("Not implemented: RunPostInstallHook");
         }
 
-      ////def configure_monit
-      ////  Dir.foreach(@install_path).each do |file|
-      ////    full_path = File.expand_path(file, @install_path)
 
-      ////    if file == "monit"
-      ////      install_job_monitrc(full_path, @name)
-      ////    elsif file =~ /(.*)\.monit$/
-      ////      install_job_monitrc(full_path, "#{@name}_#{$1}")
-      ////    end
-      ////  end
-      ////end
-
-        //public void ConfigureMonit()
-        //{
-        //    Logger.Info("Configuring Uhuru monit");
-        //    //Logger.Error("Not implemented: ConfigureMonit");
-        //}
-
-
-      ////def install_failed(message)
-      ////  raise InstallationError, "Failed to install job '#{@name}': #{message}"
-      ////end
 
         private void InstallFailed(string message)
         {
             throw new InstallationException("Failed to install job" + this.name + " : " + message, null);
         }
 
-      ////def config_failed(message)
-      ////  raise ConfigurationError, "Failed to configure job " +
-      ////                            "'#{@name}': #{message}"
-      ////end
+
 
         private static JobManifest LoadManifest(string jobManifestPath)
         {

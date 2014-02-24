@@ -30,11 +30,11 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         }
 
 
-        public Job Job
+        public Collection<Job> Jobs
         {
             get
             {
-                return job;
+                return jobs;
             }
         }
 
@@ -48,68 +48,49 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         }
 
         private dynamic deployment;
-        private Job job;
+        private Collection<Job> jobs;
         private Collection<Package> packages;
         private dynamic spec;
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification="TODO: Not used yet")]
-        private dynamic configBinding;
 
 
-        ////def initialize(spec)
-        ////  unless spec.is_a?(Hash)
-        ////    raise ArgumentError, "Invalid spec format, Hash expected, " +
-        ////                         "#{spec.class} given"
-        ////  end
-
-        ////  @spec = spec
-        ////  @deployment = spec["deployment"]
-        ////  @job = nil
-        ////  @packages = []
-        ////  @config_binding = Bosh::Agent::Util.config_binding(spec)
-
-        ////  job_spec = spec["job"]
-        ////  package_specs = spec["packages"]
-
-        ////  # By default stemcell VM has '' as job
-        ////  # in state.yml, handling this very special case
-        ////  if job_spec && job_spec != ""
-        ////    @job = Job.new(job_spec, @config_binding)
-        ////  end
-
-        ////  if package_specs
-        ////    unless package_specs.is_a?(Hash)
-        ////      raise ArgumentError, "Invalid package specs format " +
-        ////                           "in apply spec, Hash expected " +
-        ////                           "#{package_specs.class} given"
-        ////    end
-
-        ////    package_specs.each_pair do |package_name, package_spec|
-        ////      @packages << Package.new(package_spec)
-        ////    end
-        ////  end
-        ////end
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         public Plan(dynamic spec)
         {
-            // TODO: optionally: check to se if spec is a IDidctionry<any type> if it is possible
 
             this.spec = spec;
             this.deployment = spec["deployment"];
-            this.job = null;
+            this.jobs = null;
             this.packages = new Collection<Package>();
-            //this.configBinding = Util.conigBinding(spec);
+            string jobName = "";
 
             dynamic jobSpec = spec["job"];
             dynamic packageSpecs = spec["packages"];
+            
            
             if (jobSpec != null && jobSpec.ToString() != "")
             {
-                this.job = new Job(jobSpec, spec);
+                jobName = jobSpec["name"].Value;
+                this.jobs = new Collection<Job>();
+
+                if (IsLegacySpec(jobSpec))
+                {
+                    Job job = new Job(jobName, jobSpec["template"], jobSpec,spec);
+                    this.jobs.Add(job);
+                }
+                else
+                {
+                    foreach (var templateSpec in jobSpec["templates"])
+                    {
+                        Job job = new Job(jobName, templateSpec["name"].Value, templateSpec, spec);
+                        jobs.Add(job);
+
+                    }
+                }
+                
             }
 
             if (packageSpecs != null)
             {
-                // todo: assert packageSpec is a Hash
 
                 foreach (var i in packageSpecs)
                 {
@@ -119,21 +100,17 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-        ////def has_job?
-        ////  !@job.nil?
-        ////end
+        
 
-        public bool HasJob
+        public bool HasJobs
         {
             get
             {
-                return this.job != null;
+                return this.jobs != null;
             }
         }
 
-        ////def has_packages?
-        ////  !@packages.empty?
-        ////end
+        
 
         public bool HasPackages
         {
@@ -143,11 +120,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-        ////# TODO: figure out why it has to be an apply marker
-        ////def configured?
-        ////  @spec.key?("configuration_hash")
-        ////end
-
+        
         public bool Configured
         {
             get
@@ -156,42 +129,52 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-        ////def install_job
-        ////  @job.install if has_job?
-        ////end
 
-        public void InstallJob()
+        public void InstallJobs()
         {
-            if (this.HasJob)
+            if (this.HasJobs)
             {
-                this.job.Install();
+                foreach (Job job in jobs)
+                {
+                    job.Install();
+                }
             }
         }
 
-        ////def install_packages
-        ////  @packages.each do |package|
-        ////    package.install_for_job(@job)
-        ////  end
-        ////end
 
         public void InstallPackages()
         {
-            foreach (var i in packages)
+            if (this.HasJobs)
             {
-                i.InstallForJob(this.job);
+                foreach (Job job in jobs)
+                {
+                    foreach (var package in packages)
+                    {
+                        package.InstallForJob(job);                        
+                    }
+                }
             }
         }
 
-        ////def configure_job
-        ////  @job.configure if has_job?
-        ////end
-
-        public void ConfigureJob()
+       
+        public void ConfigureJobs()
         {
-            if (this.HasJob)
+            if (this.HasJobs)
             {
-                job.Configure();
+                foreach (Job job in jobs)
+                {
+                    job.Configure();
+                }
             }
+        }
+
+        private static bool IsLegacySpec(dynamic jobSpec)
+        {
+            if (jobSpec["template"] != null && jobSpec["templates"] == null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

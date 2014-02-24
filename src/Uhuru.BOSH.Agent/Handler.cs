@@ -139,6 +139,8 @@ using System.Collections.ObjectModel;
                     return new MigrateDisk();
                 case "prepare_network_change":
                     return new PrepareNetworkChange();
+                case "prepare":
+                    return new Prepare();
             }
             return null;
          //   return this.Processors[method];

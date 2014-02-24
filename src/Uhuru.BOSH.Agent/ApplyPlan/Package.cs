@@ -49,28 +49,7 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
         private string checksum;
         private string blobstoreId;
 
-      ////def initialize(spec)
-      ////  unless spec.is_a?(Hash)
-      ////    raise ArgumentError, "Invalid package spec, " +
-      ////                         "Hash expected, #{spec.class} given"
-      ////  end
 
-      ////  %w(name version sha1 blobstore_id).each do |key|
-      ////    if spec[key].nil?
-      ////      raise ArgumentError, "Invalid spec, #{key} is missing"
-      ////    end
-      ////  end
-
-      ////  @base_dir = Bosh::Agent::Config.base_dir
-      ////  @name = spec["name"]
-      ////  @version = spec["version"]
-      ////  @checksum = spec["sha1"]
-      ////  @blobstore_id = spec["blobstore_id"]
-
-      ////  @install_path = File.join(@base_dir, "data", "packages",
-      ////                            @name, @version)
-      ////  @link_path = File.join(@base_dir, "packages", @name)
-      ////end
 
 
         public Package(dynamic spec)
@@ -99,18 +78,12 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
 
         }
 
-      ////def install_for_job(job)
-      ////  fetch_package
-      ////  create_symlink_in_job(job) if job
-      ////rescue SystemCallError => e
-      ////  install_failed("System call error: #{e.message}")
-      ////end
 
         public void InstallForJob(Job job)
         {
             try
             {
-                FetchPackage();
+                Helpers.FetchBitsAndSymlink(installPath, linkPath, blobstoreId, checksum);
                 if (job != null) CreateSymlinkInJob(job);
             }
             catch(Exception e)
@@ -119,30 +92,12 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             }
         }
 
-      ////private
-
-      ////def fetch_package
-      ////  FileUtils.mkdir_p(File.dirname(@install_path))
-      ////  FileUtils.mkdir_p(File.dirname(@link_path))
-
-      ////  Bosh::Agent::Util.unpack_blob(@blobstore_id, @checksum, @install_path)
-      ////  Bosh::Agent::Util.create_symlink(@install_path, @link_path)
-      ////end
-
-        private void FetchPackage()
+        public void PrepareForInstall()
         {
-            Directory.CreateDirectory(installPath);
-
-            Util.UnpackBlob(blobstoreId, checksum, installPath);
-            Util.CreateSymLink(installPath, linkPath);
+            Helpers.FetchBits(installPath, blobstoreId, checksum);
         }
 
-      ////def create_symlink_in_job(job)
-      ////  symlink_path = symlink_path_in_job(job)
-      ////  FileUtils.mkdir_p(File.dirname(symlink_path))
-
-      ////  Bosh::Agent::Util.create_symlink(@install_path, symlink_path)
-      ////end
+     
 
         private void CreateSymlinkInJob(Job job)
         {
@@ -152,18 +107,12 @@ namespace Uhuru.BOSH.Agent.ApplyPlan
             Util.CreateSymLink(installPath, symlinkPath);
         }
 
-      ////def symlink_path_in_job(job)
-      ////  File.join(job.install_path, "packages", @name)
-      ////end
+     
 
         private string SymlinkPathInJob(Job job)
         {
             return Path.Combine(job.InstallPath, "packages", name);
         }
 
-      ////def install_failed(message)
-      ////  raise InstallationError, "Failed to install package " +
-      ////                           "'#{@name}': #{message}"
-      ////end
     }
 }

@@ -22,10 +22,7 @@ namespace Uhuru.BOSH.Agent.Ruby
             string templateText = File.ReadAllText(templatePath);
 
 
-            //foreach (var variable in vars)
-            //{
-            //    currentScope.SetVariable(variable.Key, variable.Value.ToString());
-            //}
+            
             currentScope.SetVariable("templateText", templateText);
             currentScope.SetVariable("currentspec", binding);
            //TODO Improve this

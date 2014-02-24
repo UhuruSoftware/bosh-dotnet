@@ -124,6 +124,7 @@
   <ItemGroup>
     <Compile Include="AgentException.cs" />
     <Compile Include="AgentRunner.cs" />
+    <Compile Include="ApplyPlan\Helpers.cs" />
     <Compile Include="EncryptionHandler.cs" />
     <Compile Include="ApplyPlan\Errors\Configuration.cs" />
     <Compile Include="ApplyPlan\Errors\InstallationError.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Message\BaseMessage.cs" />
     <Compile Include="Message\IMessage.cs" />
+    <Compile Include="Message\Prepare.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="Message\TestMessage.cs" />
     <Compile Include="MonitPerformance.cs" />

@@ -34,6 +34,7 @@ namespace Uhuru.BOSH.Agent
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "spec", Justification = "TODO: JIRA UH-1207")]
         internal static dynamic configBinding(dynamic spec)
         {
+            
             throw new NotImplementedException();
         }
 
