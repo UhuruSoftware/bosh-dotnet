@@ -32,6 +32,9 @@ namespace Uhuru.BOSH.Agent.Message
         
         public object Process(dynamic args)
         {
+            
+            Monit.GetInstance().StopServices();
+            
             dynamic spec;
             if (args.GetType().Name == "JObject")
                 spec = args;
