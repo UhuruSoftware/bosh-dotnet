@@ -153,12 +153,13 @@ namespace Uhuru.BOSH.Agent.Message
                 this.logger.Info("Installing dependency: " + depPackageName + " " + dependency.ToString());
                 string depBlobstoreId = dependency.Value["blobstore_id"].Value<string>();
                 string depSha1 = dependency.Value["sha1"].Value<string>();
-                string depInstallDir = Path.Combine(this.installBase, depPackageName, dependency["version"].Value<string>());
+                string depInstallDir = Path.Combine(this.installBase, depPackageName, dependency.Value["version"].Value<string>());
 
                 Util.UnpackBlob(depBlobstoreId, depSha1, depInstallDir);
 
                 string packageLinkDestination = Path.Combine(Config.BaseDir, "packages", depPackageName);
-
+                Directory.CreateDirectory(Path.Combine(Config.BaseDir, "packages"));
+                
                 Util.CreateSymLink(depInstallDir, packageLinkDestination);
             }
         }
